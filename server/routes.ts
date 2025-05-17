@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { openaiService } from "./services/openai.service";
 import { pineconeService } from "./services/pinecone.service";
+import { learnWorldsService } from "./services/learnworlds.service";
 import { insertExchangeSchema, insertSessionSchema } from "@shared/schema";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
