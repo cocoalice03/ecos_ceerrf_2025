@@ -195,5 +195,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Special endpoint for LearnWorlds integration
+  app.post("/api/learnworlds/chat", async (req: Request, res: Response) => {
+    try {
+      // Validate request
+      const chatSchema = z.object({
+        email: z.string().email(),
+        query: z.string().min(1).max(500),
+      });
+      
+      // Set CORS headers for LearnWorlds
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header("Access-Control-Allow-Methods", "POST, OPTIONS");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
+      
+      // Handle preflight requests
+      if (req.method === "OPTIONS") {
+        return res.status(200).send();
+      }
+      
+      const { email, query } = chatSchema.parse(req.body);
+      
+      // Process the query through the LearnWorlds service
+      const result = await learnWorldsService.processQuery(email, query);
+      
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Error processing LearnWorlds chat:", error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          status: 'error',
+          message: "Format de requête invalide", 
+          errors: error.errors 
+        });
+      }
+      
+      return res.status(500).json({ 
+        status: 'error',
+        message: "Une erreur est survenue lors du traitement de votre question. Veuillez réessayer plus tard."
+      });
+    }
+  });
+
   return httpServer;
 }
