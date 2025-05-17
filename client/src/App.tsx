@@ -42,10 +42,12 @@ function Router({ email }: { email: string | null }) {
     );
   }
 
+  // Gérer toutes les routes et sous-routes possibles
   return (
     <Switch>
-      <Route path="/" component={() => <Chat email={email} />} />
-      <Route component={NotFound} />
+      <Route path="/:path*">
+        <Chat email={email} />
+      </Route>
     </Switch>
   );
 }
