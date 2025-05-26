@@ -126,6 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Original email:", rawEmail);
       console.log("Decoded email:", decodedEmail);
+      console.log("Request body to validate:", requestBody);
       
       // Validate request
       const askSchema = z.object({
@@ -136,6 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validationResult = askSchema.safeParse(requestBody);
       if (!validationResult.success) {
         console.log("Validation errors:", validationResult.error.errors);
+        console.log("Failed validation on:", requestBody);
         return res.status(400).json({ 
           message: "Invalid request data", 
           errors: validationResult.error.errors 
