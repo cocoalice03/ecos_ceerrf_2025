@@ -110,6 +110,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ask", async (req: Request, res: Response) => {
     try {
       console.log("Request body:", req.body);
+      console.log("Request body type:", typeof req.body);
+      console.log("Email value:", req.body?.email);
+      console.log("Email type:", typeof req.body?.email);
       
       // Validate request
       const askSchema = z.object({
@@ -117,7 +120,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         question: z.string().min(1).max(500),
       });
       
-      const { email, question } = askSchema.parse(req.body);
+      const validationResult = askSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        console.log("Validation errors:", validationResult.error.errors);
+        return res.status(400).json({ 
+          message: "Invalid request data", 
+          errors: validationResult.error.errors 
+        });
+      }
+      
+      const { email, question } = validationResult.data;
       
       // Get today's date (UTC+2 timezone)
       const now = new Date();
