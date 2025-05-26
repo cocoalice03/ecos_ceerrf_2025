@@ -109,37 +109,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ask a question (main RAG endpoint)
   app.post("/api/ask", async (req: Request, res: Response) => {
     try {
-      // Validate request
-      // Clean and validate email first
-      console.log('DEBUG: Original request body:', JSON.stringify(req.body, null, 2));
-      let cleanEmail = req.body.email;
-      console.log('DEBUG: Original email:', cleanEmail);
-      
-      // Handle URL encoded emails
-      if (typeof cleanEmail === 'string') {
-        if (cleanEmail.includes('%')) {
-          cleanEmail = decodeURIComponent(cleanEmail);
-        }
-        if (cleanEmail.startsWith('?email=')) {
-          cleanEmail = cleanEmail.replace('?email=', '');
-        }
-        if (cleanEmail.includes('email=')) {
-          const emailMatch = cleanEmail.match(/email=([^&]+)/);
-          if (emailMatch) {
-            cleanEmail = emailMatch[1];
-          }
+      // Simple validation with email cleaning
+      let email = req.body.email || '';
+      const question = req.body.question || '';
+
+      // Clean up the email if it's URL encoded or malformed
+      if (typeof email === 'string') {
+        email = email.replace(/^.*email=/, '').replace(/%40/g, '@').replace(/%2E/g, '.');
+        if (email.includes('%')) {
+          email = decodeURIComponent(email);
         }
       }
-      
-      const askSchema = z.object({
-        email: z.string().email(),
-        question: z.string().min(1).max(500),
-      });
-      
-      const { email, question } = askSchema.parse({ 
-        email: cleanEmail, 
-        question: req.body.question 
-      });
+
+      // Basic validation
+      if (!email || !email.includes('@') || question.length === 0) {
+        return res.status(400).json({ 
+          message: "Email et question requis",
+          errors: [{ field: "email", message: "Email valide requis" }]
+        });
+      }
       
       // Get today's date (UTC+2 timezone)
       const now = new Date();
