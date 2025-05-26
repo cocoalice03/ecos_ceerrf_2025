@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Chat from "@/pages/chat";
 import AdminPage from "@/pages/admin";
+import LandingPage from "@/pages/landing";
 import { apiRequest } from "@/lib/queryClient";
 import { MessageCircle } from "lucide-react";
 
@@ -15,7 +16,6 @@ interface AppProps {
 }
 
 function Router({ email }: { email: string | null }) {
-  // Gérer toutes les routes, avec priorité pour l'admin
   return (
     <Switch>
       <Route path="/admin">
@@ -23,27 +23,7 @@ function Router({ email }: { email: string | null }) {
       </Route>
       <Route path="/*">
         {!email ? (
-          <div className="flex items-center justify-center min-h-screen bg-neutral-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-card">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
-                  <MessageCircle className="text-primary text-3xl h-8 w-8" />
-                </div>
-              </div>
-              <h3 className="text-center font-heading font-semibold text-xl mb-2">Assistant de Cours</h3>
-              <p className="text-center text-neutral-600 mb-6">
-                Ce chatbot est conçu pour vous accompagner dans votre apprentissage.
-              </p>
-              <div className="bg-blue-50 rounded-lg p-4 mb-6 text-sm">
-                <h4 className="font-medium text-blue-700 mb-2">Instructions d'accès :</h4>
-                <ol className="list-decimal pl-5 text-blue-700 space-y-2">
-                  <li>Si vous êtes un étudiant, accédez au chatbot depuis votre plateforme de cours</li>
-                  <li>Si vous êtes un administrateur, utilisez le code d'intégration fourni dans la documentation</li>
-                  <li>Pour les tests, ajoutez <code className="bg-blue-100 px-1 py-0.5 rounded">?email=votre@email.com</code> à l'URL</li>
-                </ol>
-              </div>
-            </div>
-          </div>
+          <LandingPage />
         ) : (
           <Chat email={email} />
         )}

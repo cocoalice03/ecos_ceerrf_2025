@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { openaiService } from "./services/openai.service";
 import { pineconeService } from "./services/pinecone.service";
 import { learnWorldsService } from "./services/learnworlds.service";
-import { insertExchangeSchema, insertSessionSchema } from "@shared/schema";
+import { insertExchangeSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { db } from "./db";
@@ -87,6 +88,8 @@ function verifyWebhookSignature(
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
   // Create HTTP server
   const httpServer = createServer(app);
 
