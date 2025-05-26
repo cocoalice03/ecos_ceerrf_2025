@@ -84,23 +84,29 @@ Requête SQL :`;
 
       let sqlQuery = response.choices[0].message.content?.trim() || '';
       
+      console.log("Réponse OpenAI brute:", sqlQuery);
+      
       // Extract SQL from response if it's wrapped in markdown or explanations
       const sqlMatch = sqlQuery.match(/```(?:sql)?\s*(SELECT[\s\S]*?)```/i);
       if (sqlMatch) {
         sqlQuery = sqlMatch[1].trim();
+        console.log("SQL extrait du markdown:", sqlQuery);
       } else {
         // Look for SELECT statement anywhere in the response
         const selectMatch = sqlQuery.match(/(SELECT[\s\S]*?)(?:\n\n|$)/i);
         if (selectMatch) {
           sqlQuery = selectMatch[1].trim();
+          console.log("SQL extrait par pattern:", sqlQuery);
         }
       }
       
       // Basic validation
       if (!sqlQuery.toLowerCase().includes('select')) {
+        console.log("Échec validation - pas de SELECT trouvé dans:", sqlQuery);
         throw new Error('Aucune requête SELECT valide trouvée dans la réponse');
       }
 
+      console.log("SQL final validé:", sqlQuery);
       return sqlQuery;
     } catch (error) {
       console.error("Error converting to SQL:", error);
