@@ -10,8 +10,8 @@ const openai = new OpenAI({
 export class PineconeService {
   private pinecone;
   private index;
-  private indexName: string;
-  private namespace: string;
+  private indexName: string = '';
+  private namespace: string = '';
   
   constructor() {
     try {
