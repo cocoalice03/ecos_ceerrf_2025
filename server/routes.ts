@@ -109,6 +109,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ask a question (main RAG endpoint)
   app.post("/api/ask", async (req: Request, res: Response) => {
     try {
+      console.log("Request body:", req.body);
+      console.log("Request body type:", typeof req.body);
+      console.log("Email value:", req.body?.email);
+      console.log("Email type:", typeof req.body?.email);
+      
       // Decode the email if it's URL encoded
       const rawEmail = req.body?.email;
       const decodedEmail = typeof rawEmail === 'string' ? decodeURIComponent(rawEmail).replace(/^\?email=/, '') : rawEmail;
