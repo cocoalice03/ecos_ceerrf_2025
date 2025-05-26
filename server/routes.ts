@@ -109,42 +109,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ask a question (main RAG endpoint)
   app.post("/api/ask", async (req: Request, res: Response) => {
     try {
-      console.log("Request body:", req.body);
-      console.log("Request body type:", typeof req.body);
-      console.log("Email value:", req.body?.email);
-      console.log("Email type:", typeof req.body?.email);
-      
-      // Decode the email if it's URL encoded
-      const rawEmail = req.body?.email;
-      const decodedEmail = typeof rawEmail === 'string' ? decodeURIComponent(rawEmail).replace(/^\?email=/, '') : rawEmail;
-      
-      // Create the request body with decoded email
-      const requestBody = {
-        ...req.body,
-        email: decodedEmail
-      };
-      
-      console.log("Original email:", rawEmail);
-      console.log("Decoded email:", decodedEmail);
-      console.log("Request body to validate:", requestBody);
-      
       // Validate request
       const askSchema = z.object({
         email: z.string().email(),
         question: z.string().min(1).max(500),
       });
       
-      const validationResult = askSchema.safeParse(requestBody);
-      if (!validationResult.success) {
-        console.log("Validation errors:", validationResult.error.errors);
-        console.log("Failed validation on:", requestBody);
-        return res.status(400).json({ 
-          message: "Invalid request data", 
-          errors: validationResult.error.errors 
-        });
-      }
-      
-      const { email, question } = validationResult.data;
+      const { email, question } = askSchema.parse(req.body);
       
       // Get today's date (UTC+2 timezone)
       const now = new Date();
