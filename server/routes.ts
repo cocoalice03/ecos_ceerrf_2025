@@ -109,10 +109,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ask a question (main RAG endpoint)
   app.post("/api/ask", async (req: Request, res: Response) => {
     try {
-      console.log("Request body:", req.body);
-      console.log("Request body type:", typeof req.body);
-      console.log("Email value:", req.body?.email);
-      console.log("Email type:", typeof req.body?.email);
+      // Decode the email if it's URL encoded
+      const rawEmail = req.body?.email;
+      const decodedEmail = typeof rawEmail === 'string' ? decodeURIComponent(rawEmail).replace(/^\?email=/, '') : rawEmail;
+      
+      // Create the request body with decoded email
+      const requestBody = {
+        ...req.body,
+        email: decodedEmail
+      };
+      
+      console.log("Original email:", rawEmail);
+      console.log("Decoded email:", decodedEmail);
       
       // Validate request
       const askSchema = z.object({
@@ -120,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         question: z.string().min(1).max(500),
       });
       
-      const validationResult = askSchema.safeParse(req.body);
+      const validationResult = askSchema.safeParse(requestBody);
       if (!validationResult.success) {
         console.log("Validation errors:", validationResult.error.errors);
         return res.status(400).json({ 
