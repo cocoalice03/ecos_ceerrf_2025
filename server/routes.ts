@@ -109,6 +109,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ask a question (main RAG endpoint)
   app.post("/api/ask", async (req: Request, res: Response) => {
     try {
+      console.log("Request body:", req.body);
+      
       // Validate request
       const askSchema = z.object({
         email: z.string().email(),
