@@ -21,6 +21,9 @@ function Router({ email }: { email: string | null }) {
       <Route path="/admin">
         <AdminPage />
       </Route>
+      <Route path="/:email">
+        {(params) => <Chat email={params.email} />}
+      </Route>
       <Route path="/*">
         {!email ? (
           <div className="flex items-center justify-center min-h-screen bg-neutral-50 p-4">
@@ -37,9 +40,9 @@ function Router({ email }: { email: string | null }) {
               <div className="bg-blue-50 rounded-lg p-4 mb-6 text-sm">
                 <h4 className="font-medium text-blue-700 mb-2">Instructions d'accès :</h4>
                 <ol className="list-decimal pl-5 text-blue-700 space-y-2">
-                  <li>Si vous êtes un étudiant, accédez au chatbot depuis votre plateforme de cours</li>
-                  <li>Si vous êtes un administrateur, utilisez le code d'intégration fourni dans la documentation</li>
-                  <li>Pour les tests, ajoutez <code className="bg-blue-100 px-1 py-0.5 rounded">?email=votre@email.com</code> à l'URL</li>
+                  <li>Accédez directement avec votre email : <code className="bg-blue-100 px-1 py-0.5 rounded">/votre@email.com</code></li>
+                  <li>Exemple : <code className="bg-blue-100 px-1 py-0.5 rounded">/colombemadoungou@gmail.com</code></li>
+                  <li>Interface d'administration : <code className="bg-blue-100 px-1 py-0.5 rounded">/admin</code></li>
                 </ol>
               </div>
             </div>

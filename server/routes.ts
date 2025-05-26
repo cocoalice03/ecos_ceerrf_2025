@@ -110,16 +110,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Parse and validate the session data
-      const sessionData = insertSessionSchema.parse({ email });
-      
-      // Create or update user session
-      const session = await storage.createSession(sessionData);
+      // Simple email validation - no session storage needed
       
       // Return the session
       return res.status(200).json({ 
         message: "Session created successfully",
-        session: { email: session.email }
+        session: { email }
       });
     } catch (error) {
       console.error("Error processing webhook:", error);
