@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Chat from "@/pages/chat";
 import { apiRequest } from "@/lib/queryClient";
+import { MessageCircle } from "lucide-react";
 
 interface AppProps {
   initialEmail: string | null;
@@ -19,7 +20,7 @@ function Router({ email }: { email: string | null }) {
         <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-card">
           <div className="flex items-center justify-center mb-4">
             <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
-              <span className="material-icons text-primary text-3xl">info_outline</span>
+              <MessageCircle className="text-primary text-3xl h-8 w-8" />
             </div>
           </div>
           <h3 className="text-center font-heading font-semibold text-xl mb-2">Assistant de Cours</h3>
