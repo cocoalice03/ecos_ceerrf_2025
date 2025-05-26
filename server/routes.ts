@@ -110,34 +110,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ask", async (req: Request, res: Response) => {
     try {
       // Validate request
+      // Clean and validate email first
+      let cleanEmail = req.body.email;
+      
+      // Handle URL encoded emails
+      if (typeof cleanEmail === 'string') {
+        if (cleanEmail.includes('%')) {
+          cleanEmail = decodeURIComponent(cleanEmail);
+        }
+        if (cleanEmail.startsWith('?email=')) {
+          cleanEmail = cleanEmail.replace('?email=', '');
+        }
+        if (cleanEmail.includes('email=')) {
+          const emailMatch = cleanEmail.match(/email=([^&]+)/);
+          if (emailMatch) {
+            cleanEmail = emailMatch[1];
+          }
+        }
+      }
+      
       const askSchema = z.object({
         email: z.string().email(),
         question: z.string().min(1).max(500),
       });
       
-      // Debug: log what we receive
-      console.log('Raw request body:', req.body);
-      
-      // Decode the email if it's URL encoded
-      let rawEmail = req.body.email;
-      console.log('Raw email before processing:', rawEmail);
-      
-      if (typeof rawEmail === 'string' && rawEmail.includes('%')) {
-        rawEmail = decodeURIComponent(rawEmail);
-        console.log('Email after decoding:', rawEmail);
-      }
-      
-      // Extract just the email part if it contains extra characters
-      if (typeof rawEmail === 'string' && rawEmail.includes('email=')) {
-        const emailMatch = rawEmail.match(/email=([^&]+)/);
-        if (emailMatch) {
-          rawEmail = emailMatch[1];
-          console.log('Email after extraction:', rawEmail);
-        }
-      }
-      
       const { email, question } = askSchema.parse({ 
-        email: rawEmail, 
+        email: cleanEmail, 
         question: req.body.question 
       });
       
