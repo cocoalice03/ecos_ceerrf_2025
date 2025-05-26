@@ -21,8 +21,10 @@ export class PineconeService {
       this.namespace = process.env.PINECONE_NAMESPACE || 'default';
       
       if (!apiKey) {
-        console.error('Missing Pinecone API key');
-        throw new Error('Missing Pinecone API key. Please set PINECONE_API_KEY environment variable.');
+        console.warn('Missing Pinecone API key - running in fallback mode');
+        this.pinecone = null;
+        this.index = null;
+        return;
       }
       
       // Initialize Pinecone client
@@ -35,7 +37,9 @@ export class PineconeService {
       console.log(`Connected to Pinecone index: ${this.indexName}`);
     } catch (error) {
       console.error('Error initializing Pinecone service:', error);
-      throw new Error('Failed to initialize Pinecone service. Check your API key and index name.');
+      console.warn('Running in fallback mode without Pinecone');
+      this.pinecone = null;
+      this.index = null;
     }
   }
   
@@ -62,6 +66,12 @@ export class PineconeService {
    */
   async searchRelevantContent(question: string, topK: number = 3): Promise<RAGContent[]> {
     try {
+      // Check if Pinecone is available
+      if (!this.pinecone || !this.index) {
+        console.warn('Pinecone not available - returning empty results');
+        return [];
+      }
+
       // Get embedding for the question
       const embedding = await this.getEmbedding(question);
       
@@ -89,7 +99,7 @@ export class PineconeService {
       return results;
     } catch (error) {
       console.error("Error searching Pinecone:", error);
-      throw new Error("Failed to search knowledge base");
+      return [];
     }
   }
 }
