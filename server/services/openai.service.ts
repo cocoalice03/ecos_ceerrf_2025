@@ -82,11 +82,23 @@ Requête SQL :`;
         temperature: 0.1
       });
 
-      const sqlQuery = response.choices[0].message.content?.trim() || '';
+      let sqlQuery = response.choices[0].message.content?.trim() || '';
+      
+      // Extract SQL from response if it's wrapped in markdown or explanations
+      const sqlMatch = sqlQuery.match(/```(?:sql)?\s*(SELECT[\s\S]*?)```/i);
+      if (sqlMatch) {
+        sqlQuery = sqlMatch[1].trim();
+      } else {
+        // Look for SELECT statement anywhere in the response
+        const selectMatch = sqlQuery.match(/(SELECT[\s\S]*?)(?:\n\n|$)/i);
+        if (selectMatch) {
+          sqlQuery = selectMatch[1].trim();
+        }
+      }
       
       // Basic validation
-      if (!sqlQuery.toLowerCase().startsWith('select')) {
-        throw new Error('La requête générée n\'est pas une requête SELECT valide');
+      if (!sqlQuery.toLowerCase().includes('select')) {
+        throw new Error('Aucune requête SELECT valide trouvée dans la réponse');
       }
 
       return sqlQuery;
