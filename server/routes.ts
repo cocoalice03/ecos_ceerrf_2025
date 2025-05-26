@@ -111,7 +111,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate request
       // Clean and validate email first
+      console.log('DEBUG: Original request body:', JSON.stringify(req.body, null, 2));
       let cleanEmail = req.body.email;
+      console.log('DEBUG: Original email:', cleanEmail);
       
       // Handle URL encoded emails
       if (typeof cleanEmail === 'string') {
