@@ -46,7 +46,7 @@ export class PineconeService {
   /**
    * Gets the vector embedding for a text string using OpenAI
    */
-  private async getEmbedding(text: string): Promise<number[]> {
+  public async getEmbedding(text: string): Promise<number[]> {
     try {
       const response = await openai.embeddings.create({
         model: "text-embedding-3-small",
@@ -100,6 +100,87 @@ export class PineconeService {
     } catch (error) {
       console.error("Error searching Pinecone:", error);
       return [];
+    }
+  }
+
+  /**
+   * Bulk upsert vectors to Pinecone
+   */
+  async upsertVectors(vectors: any[]): Promise<void> {
+    try {
+      if (!this.pinecone || !this.index) {
+        console.warn('Pinecone not available - skipping upsert');
+        return;
+      }
+
+      await this.index.upsert(vectors);
+      console.log(`Successfully upserted ${vectors.length} vectors to Pinecone`);
+    } catch (error) {
+      console.error("Error upserting vectors:", error);
+      throw new Error("Failed to store vectors in knowledge base");
+    }
+  }
+
+  /**
+   * Get all document sources from Pinecone
+   */
+  async getAllSources(): Promise<string[]> {
+    try {
+      if (!this.pinecone || !this.index) {
+        console.warn('Pinecone not available - returning empty sources');
+        return [];
+      }
+
+      // Query with empty vector to get random samples and extract sources
+      const dummyVector = new Array(1536).fill(0); // text-embedding-3-small dimension
+      const queryResponse = await this.index.query({
+        vector: dummyVector,
+        topK: 100,
+        includeMetadata: true,
+      });
+
+      const sources = new Set<string>();
+      queryResponse.matches.forEach(match => {
+        if (match.metadata && match.metadata.source) {
+          sources.add(match.metadata.source as string);
+        }
+      });
+
+      return Array.from(sources);
+    } catch (error) {
+      console.error("Error getting sources:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Delete all vectors for a specific document
+   */
+  async deleteDocument(documentTitle: string): Promise<void> {
+    try {
+      if (!this.pinecone || !this.index) {
+        console.warn('Pinecone not available - skipping delete');
+        return;
+      }
+
+      // Find all vector IDs for this document
+      const dummyVector = new Array(1536).fill(0);
+      const queryResponse = await this.index.query({
+        vector: dummyVector,
+        topK: 1000,
+        includeMetadata: true,
+        filter: { source: documentTitle }
+      });
+
+      const idsToDelete = queryResponse.matches.map(match => match.id);
+      
+      if (idsToDelete.length > 0) {
+        await this.index.deleteMany(idsToDelete);
+        console.log(`Deleted ${idsToDelete.length} vectors for document: ${documentTitle}`);
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      throw new Error("Failed to delete document from knowledge base");
     }
   }
 }

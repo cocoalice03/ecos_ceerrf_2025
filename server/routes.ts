@@ -7,9 +7,65 @@ import { learnWorldsService } from "./services/learnworlds.service";
 import { insertExchangeSchema, insertSessionSchema } from "@shared/schema";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
+import { db } from "./db";
 
 // Max questions per day per user
 const MAX_DAILY_QUESTIONS = 20;
+
+// Utility functions for document processing
+function splitIntoChunks(text: string, chunkSize: number = 1000, overlap: number = 200): string[] {
+  const chunks: string[] = [];
+  let start = 0;
+  
+  while (start < text.length) {
+    const end = Math.min(start + chunkSize, text.length);
+    const chunk = text.slice(start, end);
+    chunks.push(chunk);
+    start = end - overlap;
+    
+    if (start >= text.length) break;
+  }
+  
+  return chunks;
+}
+
+// Get database schema for SQL conversion
+async function getDatabaseSchema(): Promise<string> {
+  try {
+    const result = await db.execute(`
+      SELECT table_name, column_name, data_type, is_nullable
+      FROM information_schema.columns 
+      WHERE table_schema = 'public'
+      ORDER BY table_name, ordinal_position
+    `);
+    
+    const schema = result.rows.map(row => 
+      `${row.table_name}.${row.column_name} (${row.data_type})`
+    ).join('\n');
+    
+    return schema || 'Sessions, Exchanges, DailyCounters tables available';
+  } catch (error) {
+    console.error('Error getting schema:', error);
+    return 'Sessions, Exchanges, DailyCounters tables available';
+  }
+}
+
+// Execute SQL query safely (read-only)
+async function executeSQLQuery(sqlQuery: string) {
+  try {
+    // Only allow SELECT queries for safety
+    const normalizedQuery = sqlQuery.trim().toLowerCase();
+    if (!normalizedQuery.startsWith('select')) {
+      throw new Error('Seules les requêtes SELECT sont autorisées');
+    }
+    
+    const result = await db.execute(sqlQuery);
+    return result.rows;
+  } catch (error) {
+    console.error('Error executing SQL:', error);
+    throw new Error('Erreur lors de l\'exécution de la requête SQL');
+  }
+}
 
 // Hash for webhook verification
 function createWebhookSignature(payload: any, secret: string): string {
@@ -204,6 +260,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching chat history:", error);
       return res.status(500).json({ message: "Failed to fetch chat history" });
+    }
+  });
+
+  // Admin: Upload and process documents for Pinecone
+  app.post("/api/admin/documents", async (req: Request, res: Response) => {
+    try {
+      const docSchema = z.object({
+        title: z.string().min(1),
+        content: z.string().min(1),
+        category: z.string().optional().default("general"),
+      });
+      
+      const { title, content, category } = docSchema.parse(req.body);
+      
+      // Split content into chunks for better retrieval
+      const chunks = splitIntoChunks(content, 1000, 200);
+      
+      // Process each chunk and add to Pinecone
+      const results = [];
+      for (let i = 0; i < chunks.length; i++) {
+        const chunkId = `${title.toLowerCase().replace(/\s+/g, '-')}-chunk-${i}`;
+        const embedding = await pineconeService.getEmbedding(chunks[i]);
+        
+        // Store in Pinecone with metadata
+        const vectorData = {
+          id: chunkId,
+          values: embedding,
+          metadata: {
+            text: chunks[i],
+            source: title,
+            category: category,
+            chunk_index: i,
+            timestamp: new Date().toISOString()
+          }
+        };
+        
+        results.push(vectorData);
+      }
+      
+      // Bulk upsert to Pinecone
+      await pineconeService.upsertVectors(results);
+      
+      return res.status(200).json({ 
+        message: "Document traité avec succès",
+        chunks_created: chunks.length,
+        document_title: title
+      });
+    } catch (error) {
+      console.error("Error processing document:", error);
+      return res.status(500).json({ message: "Erreur lors du traitement du document" });
+    }
+  });
+
+  // Admin: Get all documents/sources from Pinecone
+  app.get("/api/admin/documents", async (req: Request, res: Response) => {
+    try {
+      const sources = await pineconeService.getAllSources();
+      return res.status(200).json({ sources });
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des documents" });
+    }
+  });
+
+  // Admin: Delete document from Pinecone
+  app.delete("/api/admin/documents/:documentId", async (req: Request, res: Response) => {
+    try {
+      const { documentId } = req.params;
+      await pineconeService.deleteDocument(documentId);
+      return res.status(200).json({ message: "Document supprimé avec succès" });
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      return res.status(500).json({ message: "Erreur lors de la suppression du document" });
+    }
+  });
+
+  // Natural Language to SQL Query
+  app.post("/api/admin/nl-to-sql", async (req: Request, res: Response) => {
+    try {
+      const nlSchema = z.object({
+        question: z.string().min(1),
+        database_schema: z.string().optional(),
+      });
+      
+      const { question, database_schema } = nlSchema.parse(req.body);
+      
+      // Get database schema if not provided
+      const schema = database_schema || await getDatabaseSchema();
+      
+      // Convert natural language to SQL using OpenAI
+      const sqlQuery = await openaiService.convertToSQL(question, schema);
+      
+      // Execute the query safely (read-only)
+      const results = await executeSQLQuery(sqlQuery);
+      
+      return res.status(200).json({ 
+        question,
+        sql_query: sqlQuery,
+        results,
+        executed_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error processing NL to SQL:", error);
+      return res.status(500).json({ message: "Erreur lors de la conversion en SQL" });
     }
   });
 

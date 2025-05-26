@@ -51,6 +51,50 @@ Do not make up information. Cite sources from the context when relevant.`;
       throw new Error("Impossible de générer une réponse. Service indisponible.");
     }
   }
+
+  /**
+   * Convert natural language question to SQL query
+   */
+  async convertToSQL(question: string, databaseSchema: string): Promise<string> {
+    try {
+      const prompt = `Tu es un expert en SQL. Convertis cette question en langage naturel en requête SQL valide.
+
+Schéma de la base de données :
+${databaseSchema}
+
+Question : ${question}
+
+Instructions :
+- Génère uniquement une requête SELECT (pas d'INSERT, UPDATE, DELETE)
+- Utilise la syntaxe PostgreSQL
+- Inclus les alias de tables si nécessaire
+- Réponds uniquement avec la requête SQL, sans explication
+
+Requête SQL :`;
+
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: "Tu es un expert en conversion de langage naturel vers SQL. Réponds uniquement avec la requête SQL demandée." },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 500,
+        temperature: 0.1
+      });
+
+      const sqlQuery = response.choices[0].message.content?.trim() || '';
+      
+      // Basic validation
+      if (!sqlQuery.toLowerCase().startsWith('select')) {
+        throw new Error('La requête générée n\'est pas une requête SELECT valide');
+      }
+
+      return sqlQuery;
+    } catch (error) {
+      console.error("Error converting to SQL:", error);
+      throw new Error("Impossible de convertir la question en requête SQL");
+    }
+  }
 }
 
 export const openaiService = new OpenAIService();
