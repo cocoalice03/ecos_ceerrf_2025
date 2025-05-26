@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Chat from "@/pages/chat";
+import AdminPage from "@/pages/admin";
 import { apiRequest } from "@/lib/queryClient";
 import { MessageCircle } from "lucide-react";
 
@@ -44,6 +45,9 @@ function Router({ email }: { email: string | null }) {
   // Gérer toutes les routes et sous-routes possibles
   return (
     <Switch>
+      <Route path="/admin">
+        <AdminPage />
+      </Route>
       <Route path="/:path*">
         <Chat email={email} />
       </Route>
