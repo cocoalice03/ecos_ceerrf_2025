@@ -1,17 +1,22 @@
-import { 
-  sessions, type Session, type InsertSession,
-  exchanges, type Exchange, type InsertExchange,
-  dailyCounters, type DailyCounter, type InsertCounter,
-  users, type User, type InsertUser 
+import {
+  users,
+  exchanges,
+  dailyCounters,
+  type User,
+  type UpsertUser,
+  type Exchange,
+  type InsertExchange,
+  type DailyCounter,
+  type InsertCounter,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql, desc, gt } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 
 // Storage interface with all required methods
 export interface IStorage {
-  // Session management
-  getSession(email: string): Promise<Session | undefined>;
-  createSession(session: InsertSession): Promise<Session>;
+  // User operations (required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Chat exchanges
   getExchangesByEmail(email: string, limit?: number): Promise<Exchange[]>;
@@ -21,30 +26,28 @@ export interface IStorage {
   getDailyCounter(email: string, date: Date): Promise<DailyCounter | undefined>;
   createDailyCounter(counter: InsertCounter): Promise<DailyCounter>;
   incrementDailyCounter(email: string, date: Date): Promise<DailyCounter>;
-  
-  // Backwards compatibility (original User methods)
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // Session management
-  async getSession(email: string): Promise<Session | undefined> {
-    const [session] = await db.select().from(sessions).where(eq(sessions.email, email));
-    return session;
+  // User operations (required for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
-  async createSession(insertSession: InsertSession): Promise<Session> {
-    const [session] = await db
-      .insert(sessions)
-      .values({ ...insertSession })
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
       .onConflictDoUpdate({
-        target: sessions.email,
-        set: { lastAccess: new Date() },
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
       })
       .returning();
-    return session;
+    return user;
   }
 
   // Chat exchanges
@@ -58,29 +61,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async saveExchange(exchange: InsertExchange): Promise<Exchange> {
-    const [savedExchange] = await db
+    const [newExchange] = await db
       .insert(exchanges)
       .values(exchange)
       .returning();
-    return savedExchange;
+    return newExchange;
   }
 
   // Daily counters
   async getDailyCounter(email: string, date: Date): Promise<DailyCounter | undefined> {
-    // Format the date to keep only the date part (no time)
-    const formattedDate = new Date(date);
-    formattedDate.setHours(0, 0, 0, 0);
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
     
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
     const [counter] = await db
       .select()
       .from(dailyCounters)
       .where(
         and(
           eq(dailyCounters.email, email),
-          eq(dailyCounters.date, formattedDate)
+          and(
+            sql`${dailyCounters.date} >= ${startOfDay}`,
+            sql`${dailyCounters.date} <= ${endOfDay}`
+          )
         )
       );
-    
     return counter;
   }
 
@@ -89,61 +96,31 @@ export class DatabaseStorage implements IStorage {
       .insert(dailyCounters)
       .values(counter)
       .returning();
-    
     return newCounter;
   }
 
   async incrementDailyCounter(email: string, date: Date): Promise<DailyCounter> {
-    // Format the date to keep only the date part (no time)
-    const formattedDate = new Date(date);
-    formattedDate.setHours(0, 0, 0, 0);
+    const existing = await this.getDailyCounter(email, date);
     
-    // First check if counter exists for this date and user
-    let counter = await this.getDailyCounter(email, formattedDate);
-    
-    if (!counter) {
-      // Create a new counter
-      counter = await this.createDailyCounter({ 
-        email, 
-        date: formattedDate, 
-        count: 1 
-      });
-    } else {
-      // Increment existing counter
+    if (existing) {
       const [updated] = await db
         .update(dailyCounters)
-        .set({ count: counter.count + 1 })
+        .set({ count: existing.count + 1 })
         .where(
           and(
             eq(dailyCounters.email, email),
-            eq(dailyCounters.date, formattedDate)
+            eq(dailyCounters.date, existing.date)
           )
         )
         .returning();
-      
-      counter = updated;
+      return updated;
+    } else {
+      return await this.createDailyCounter({
+        email,
+        date,
+        count: 1,
+      });
     }
-    
-    return counter;
-  }
-  
-  // Backwards compatibility (original User methods)
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
   }
 }
 

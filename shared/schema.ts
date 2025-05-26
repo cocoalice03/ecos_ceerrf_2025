@@ -1,17 +1,40 @@
-import { pgTable, text, serial, integer, boolean, timestamp, primaryKey } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  jsonb,
+  index,
+  serial,
+  integer,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User sessions for authentication
-export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  lastAccess: timestamp("last_access").notNull().defaultNow(),
+// Session storage table (required for Replit Auth)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table (required for Replit Auth)
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertSessionSchema = createInsertSchema(sessions).pick({
-  email: true,
-});
+export type UpsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
 
 // Chat exchanges (question-answer pairs)
 export const exchanges = pgTable("exchanges", {
@@ -42,26 +65,8 @@ export const insertCounterSchema = createInsertSchema(dailyCounters).pick({
 });
 
 // Types for TypeScript
-export type Session = typeof sessions.$inferSelect;
-export type InsertSession = z.infer<typeof insertSessionSchema>;
-
 export type Exchange = typeof exchanges.$inferSelect;
 export type InsertExchange = z.infer<typeof insertExchangeSchema>;
 
 export type DailyCounter = typeof dailyCounters.$inferSelect;
 export type InsertCounter = z.infer<typeof insertCounterSchema>;
-
-// For backwards compatibility (keeping the original User schema)
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
