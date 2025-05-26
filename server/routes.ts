@@ -115,7 +115,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         question: z.string().min(1).max(500),
       });
       
-      const { email, question } = askSchema.parse(req.body);
+      // Decode the email if it's URL encoded
+      let rawEmail = req.body.email;
+      if (typeof rawEmail === 'string' && rawEmail.includes('%')) {
+        rawEmail = decodeURIComponent(rawEmail);
+      }
+      
+      const { email, question } = askSchema.parse({ 
+        email: rawEmail, 
+        question: req.body.question 
+      });
       
       // Get today's date (UTC+2 timezone)
       const now = new Date();
