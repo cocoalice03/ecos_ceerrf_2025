@@ -17,7 +17,7 @@ export class PineconeService {
     try {
       // Get Pinecone credentials from environment variables
       const apiKey = process.env.PINECONE_API_KEY;
-      this.indexName = process.env.PINECONE_INDEX_NAME || 'learnworlds-courses';
+      this.indexName = process.env.PINECONE_INDEX_NAME || 'arthrologie-du-membre-superieur';
       this.namespace = process.env.PINECONE_NAMESPACE || 'default';
       
       if (!apiKey) {
