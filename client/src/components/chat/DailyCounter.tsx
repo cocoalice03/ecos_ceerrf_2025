@@ -45,7 +45,7 @@ export function DailyCounter({ userStatus, isLoading = false }: DailyCounterProp
               ></div>
             </div>
           </div>
-          <p className="mt-2 text-xs text-neutral-500">Réinitialisation à minuit UTC+2</p>
+          <p className="mt-2 text-xs text-neutral-500">Réinitialisation à minuit</p>
         </div>
       )}
     </div>
