@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || ""
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || "",
 });
 
 export interface RAGContent {
@@ -17,45 +17,60 @@ export class OpenAIService {
   private systemPrompt = `You are an educational assistant for a LearnWorlds learning management system.
 Answer questions about the course content based on the context provided.
 Be helpful, precise, and concise. If you don't know the answer based on the provided context, say so clearly.
-Do not make up information. Cite sources from the context when relevant.`;
+Do not make up information, NEVER. Cite sources from the context by giving this url : https://academy.ceerrf.fr/path-player?courseid=osteologie-du-membre-inferieur&unit=67e1258434aaa9492c002a9cUnit .`;
 
   /**
    * Generates a response for the given question based on relevant content
    */
-  async generateResponse(question: string, relevantContent: RAGContent[]): Promise<string> {
+  async generateResponse(
+    question: string,
+    relevantContent: RAGContent[],
+  ): Promise<string> {
     try {
       // Format the context for better prompt understanding
-      let contextText = '';
+      let contextText = "";
       if (relevantContent && relevantContent.length > 0) {
-        contextText = relevantContent.map((item, index) => {
-          const source = item.metadata?.source ? ` (Source: ${item.metadata.source})` : '';
-          return `Context ${index + 1}${source}:\n${item.content}\n`;
-        }).join('\n');
+        contextText = relevantContent
+          .map((item, index) => {
+            const source = item.metadata?.source
+              ? ` (Source: ${item.metadata.source})`
+              : "";
+            return `Context ${index + 1}${source}:\n${item.content}\n`;
+          })
+          .join("\n");
       }
-      
+
       const userPrompt = `Question: ${question}\n\nRelevant Content:\n${contextText}`;
-      
+
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           { role: "system", content: this.systemPrompt },
-          { role: "user", content: userPrompt }
+          { role: "user", content: userPrompt },
         ],
         temperature: 0.5,
         max_tokens: 1000,
       });
-      
-      return response.choices[0].message.content || "Je n'ai pas pu générer une réponse. Veuillez réessayer.";
+
+      return (
+        response.choices[0].message.content ||
+        "Je n'ai pas pu générer une réponse. Veuillez réessayer."
+      );
     } catch (error) {
       console.error("Error generating OpenAI response:", error);
-      throw new Error("Impossible de générer une réponse. Service indisponible.");
+      throw new Error(
+        "Impossible de générer une réponse. Service indisponible.",
+      );
     }
   }
 
   /**
    * Convert natural language question to SQL query
    */
-  async convertToSQL(question: string, databaseSchema: string): Promise<string> {
+  async convertToSQL(
+    question: string,
+    databaseSchema: string,
+  ): Promise<string> {
     try {
       const prompt = `Tu es un expert en SQL. Convertis cette question en langage naturel en requête SQL valide.
 
@@ -78,17 +93,21 @@ Requête SQL :`;
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
-          { role: "system", content: "Tu es un expert en conversion de langage naturel vers SQL. Réponds uniquement avec la requête SQL demandée." },
-          { role: "user", content: prompt }
+          {
+            role: "system",
+            content:
+              "Tu es un expert en conversion de langage naturel vers SQL. Réponds uniquement avec la requête SQL demandée.",
+          },
+          { role: "user", content: prompt },
         ],
         max_tokens: 500,
-        temperature: 0.1
+        temperature: 0.1,
       });
 
-      let sqlQuery = response.choices[0].message.content?.trim() || '';
-      
+      let sqlQuery = response.choices[0].message.content?.trim() || "";
+
       console.log("Réponse OpenAI brute:", sqlQuery);
-      
+
       // Extract SQL from response if it's wrapped in markdown or explanations
       const sqlMatch = sqlQuery.match(/```(?:sql)?\s*(SELECT[\s\S]*?)```/i);
       if (sqlMatch) {
@@ -102,11 +121,11 @@ Requête SQL :`;
           console.log("SQL extrait par pattern:", sqlQuery);
         }
       }
-      
+
       // Basic validation
-      if (!sqlQuery.toLowerCase().includes('select')) {
+      if (!sqlQuery.toLowerCase().includes("select")) {
         console.log("Échec validation - pas de SELECT trouvé dans:", sqlQuery);
-        throw new Error('Aucune requête SELECT valide trouvée dans la réponse');
+        throw new Error("Aucune requête SELECT valide trouvée dans la réponse");
       }
 
       console.log("SQL final validé:", sqlQuery);
