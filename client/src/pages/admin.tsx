@@ -28,6 +28,14 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Get admin email from URL parameters
+  const params = new URLSearchParams(window.location.search);
+  const adminEmail = params.get('email') || '';
+  
+  // Admin authorization check
+  const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+  const isAuthorized = ADMIN_EMAILS.includes(adminEmail.toLowerCase());
+  
   // Document upload state
   const [documentData, setDocumentData] = useState<DocumentData>({
     title: "",
@@ -41,17 +49,18 @@ export default function AdminPage() {
 
   // Get all documents/sources
   const { data: sources, isLoading: sourcesLoading } = useQuery({
-    queryKey: ['/api/admin/documents'],
+    queryKey: ['/api/admin/documents', adminEmail],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/admin/documents");
+      const res = await apiRequest("GET", `/api/admin/documents?email=${encodeURIComponent(adminEmail)}`);
       return await res.json();
-    }
+    },
+    enabled: isAuthorized
   });
 
   // Upload document mutation
   const uploadMutation = useMutation({
     mutationFn: async (data: DocumentData) => {
-      const res = await apiRequest("POST", "/api/admin/documents", data);
+      const res = await apiRequest("POST", "/api/admin/documents", { ...data, email: adminEmail });
       return await res.json();
     },
     onSuccess: (data) => {
@@ -74,7 +83,7 @@ export default function AdminPage() {
   // Delete document mutation
   const deleteMutation = useMutation({
     mutationFn: async (documentId: string) => {
-      const res = await apiRequest("DELETE", `/api/admin/documents/${encodeURIComponent(documentId)}`);
+      const res = await apiRequest("DELETE", `/api/admin/documents/${encodeURIComponent(documentId)}?email=${encodeURIComponent(adminEmail)}`);
       return await res.json();
     },
     onSuccess: () => {
@@ -96,7 +105,7 @@ export default function AdminPage() {
   // Natural Language to SQL mutation
   const sqlMutation = useMutation({
     mutationFn: async (question: string) => {
-      const res = await apiRequest("POST", "/api/admin/nl-to-sql", { question });
+      const res = await apiRequest("POST", "/api/admin/nl-to-sql", { question, email: adminEmail });
       return await res.json();
     },
     onSuccess: (data) => {
@@ -138,6 +147,26 @@ export default function AdminPage() {
     }
     sqlMutation.mutate(nlQuestion);
   };
+
+  // Check authorization
+  if (!isAuthorized) {
+    return (
+      <div className="container mx-auto p-6 max-w-2xl">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <h1 className="text-2xl font-bold text-red-700 mb-2">Accès Non Autorisé</h1>
+          <p className="text-red-600 mb-4">
+            Vous n'avez pas l'autorisation d'accéder à cette page d'administration.
+          </p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">

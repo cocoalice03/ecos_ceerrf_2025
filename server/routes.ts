@@ -12,6 +12,14 @@ import { db } from "./db";
 // Max questions per day per user
 const MAX_DAILY_QUESTIONS = 20;
 
+// Admin emails authorized to access admin features
+const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+
+// Middleware to check admin authorization
+function isAdminAuthorized(email: string): boolean {
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
+
 // Utility functions for document processing
 function splitIntoChunks(text: string, chunkSize: number = 1000, overlap: number = 200): string[] {
   const chunks: string[] = [];
@@ -262,13 +270,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin: Upload and process documents for Pinecone
   app.post("/api/admin/documents", async (req: Request, res: Response) => {
     try {
-      const docSchema = z.object({
+      const adminSchema = z.object({
+        email: z.string().email(),
         title: z.string().min(1),
         content: z.string().min(1),
         category: z.string().optional().default("general"),
       });
       
-      const { title, content, category } = docSchema.parse(req.body);
+      const { email, title, content, category } = adminSchema.parse(req.body);
+      
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
       
       // Split content into chunks for better retrieval
       const chunks = splitIntoChunks(content, 1000, 200);
@@ -312,6 +325,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin: Get all documents/sources from Pinecone
   app.get("/api/admin/documents", async (req: Request, res: Response) => {
     try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
       const sources = await pineconeService.getAllSources();
       return res.status(200).json({ sources });
     } catch (error) {
@@ -324,6 +343,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/documents/:documentId", async (req: Request, res: Response) => {
     try {
       const { documentId } = req.params;
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
       await pineconeService.deleteDocument(documentId);
       return res.status(200).json({ message: "Document supprimé avec succès" });
     } catch (error) {
@@ -336,11 +361,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/nl-to-sql", async (req: Request, res: Response) => {
     try {
       const nlSchema = z.object({
+        email: z.string().email(),
         question: z.string().min(1),
         database_schema: z.string().optional(),
       });
       
-      const { question, database_schema } = nlSchema.parse(req.body);
+      const { email, question, database_schema } = nlSchema.parse(req.body);
+      
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
       
       // Get database schema if not provided
       const schema = database_schema || await getDatabaseSchema();
