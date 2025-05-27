@@ -526,22 +526,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Titre et catégorie sont requis" });
       }
       
-      // Parse PDF content (dynamic import to avoid startup issues)
-      const pdfParse = (await import('pdf-parse')).default;
-      const pdfData = await pdfParse(req.file.buffer);
-      const content = pdfData.text;
+      // Extract text from PDF using pdfjs-dist
+      const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
       
-      if (!content || content.trim().length === 0) {
-        return res.status(400).json({ message: "Le PDF ne contient pas de texte lisible" });
+      // Load the PDF document
+      const pdfDocument = await pdfjsLib.getDocument({ data: req.file.buffer }).promise;
+      let extractedText = '';
+      
+      // Extract text from all pages
+      for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+        const page = await pdfDocument.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(' ');
+        extractedText += pageText + '\n';
+      }
+      
+      if (!extractedText || extractedText.trim().length === 0) {
+        return res.status(400).json({ message: "Le PDF ne contient pas de texte extractible" });
       }
       
       // Process and store in Pinecone
-      await pineconeService.processPDFContent(content, title, category);
+      await pineconeService.processPDFContent(extractedText, title, category);
       
       return res.status(201).json({ 
         message: `Document ${title} traité et ajouté avec succès`,
-        pages: pdfData.numpages,
-        textLength: content.length
+        pages: pdfDocument.numPages,
+        textLength: extractedText.length,
+        preview: extractedText.substring(0, 200) + '...'
       });
     } catch (error) {
       console.error("Error processing PDF:", error);
