@@ -468,9 +468,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await pineconeService.createIndex(name, dimension);
       return res.status(201).json({ message: `Index ${name} créé avec succès` });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating Pinecone index:", error);
-      return res.status(500).json({ message: "Erreur lors de la création de l'index" });
+      const errorMessage = error?.message || "Erreur lors de la création de l'index";
+      return res.status(500).json({ 
+        message: errorMessage,
+        details: error?.response?.data || error?.toString()
+      });
     }
   });
 

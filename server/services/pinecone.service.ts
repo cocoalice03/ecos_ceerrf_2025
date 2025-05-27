@@ -189,11 +189,13 @@ export class PineconeService {
    */
   async createIndex(indexName: string, dimension: number = 1536): Promise<void> {
     if (!this.pinecone) {
-      throw new Error('Pinecone not initialized');
+      throw new Error('Pinecone not initialized - please check your API key');
     }
 
     try {
-      await this.pinecone.createIndex({
+      console.log(`Attempting to create Pinecone index: ${indexName} with dimension: ${dimension}`);
+      
+      const result = await this.pinecone.createIndex({
         name: indexName,
         dimension: dimension,
         metric: 'cosine',
@@ -204,10 +206,27 @@ export class PineconeService {
           }
         }
       });
-      console.log(`Created Pinecone index: ${indexName}`);
-    } catch (error) {
-      console.error('Error creating Pinecone index:', error);
-      throw error;
+      
+      console.log(`Successfully created Pinecone index: ${indexName}`, result);
+    } catch (error: any) {
+      console.error('Detailed error creating Pinecone index:', {
+        message: error.message,
+        status: error.status,
+        response: error.response?.data,
+        indexName,
+        dimension
+      });
+      
+      // Provide more specific error messages
+      if (error.status === 409) {
+        throw new Error(`Index "${indexName}" already exists. Please choose a different name.`);
+      } else if (error.status === 403) {
+        throw new Error('Permission denied. Please check your Pinecone API key.');
+      } else if (error.status === 400) {
+        throw new Error(`Invalid index configuration: ${error.message}`);
+      } else {
+        throw new Error(`Failed to create index: ${error.message || 'Unknown error'}`);
+      }
     }
   }
 
