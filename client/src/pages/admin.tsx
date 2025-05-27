@@ -343,10 +343,21 @@ export default function AdminPage() {
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Administration</h1>
-        <p className="text-muted-foreground">
-          Gérez vos documents et interrogez la base de données en langage naturel
-        </p>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Administration</h1>
+            <p className="text-muted-foreground">
+              Gérez vos documents et interrogez la base de données en langage naturel
+            </p>
+          </div>
+          <Button 
+            onClick={() => window.location.href = `/?email=${encodeURIComponent(adminEmail)}`}
+            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            <Search className="h-4 w-4" />
+            Accéder au Chatbot
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="documents" className="space-y-6">
