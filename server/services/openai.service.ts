@@ -20,7 +20,7 @@ Be helpful, precise, and concise. If you don't know the answer based on the prov
 Do not make up information, NEVER. 
 
 IMPORTANT: At the end of EVERY response, you MUST include this exact link in markdown format:
-[Le pied](https://academy.ceerrf.fr/course/osteologie-du-membre-inferieur)
+[Cours d'arthrologie du membre supérieur](https://academy.ceerrf.fr/course/arthrologie-du-membre-superieur)
 
 This link must appear at the end of the answer when usefull specially for the first answer.`;
 
