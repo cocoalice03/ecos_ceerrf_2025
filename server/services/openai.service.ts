@@ -64,11 +64,14 @@ ${databaseSchema}
 
 Question : ${question}
 
-Instructions :
+Instructions importantes :
 - Génère uniquement une requête SELECT (pas d'INSERT, UPDATE, DELETE)
 - Utilise la syntaxe PostgreSQL
+- Utilise UNIQUEMENT les tables et colonnes listées dans le schéma ci-dessus
+- Si la question fait référence à des utilisateurs, utilise la table 'exchanges' ou 'sessions' avec la colonne 'email'
+- Pour les questions sur l'activité, utilise la table 'exchanges' ou 'daily_counters'
 - Inclus les alias de tables si nécessaire
-- Réponds uniquement avec la requête SQL, sans explication
+- Réponds uniquement avec la requête SQL, sans explication ni markdown
 
 Requête SQL :`;
 

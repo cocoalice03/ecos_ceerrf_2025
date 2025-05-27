@@ -47,14 +47,38 @@ async function getDatabaseSchema(): Promise<string> {
       ORDER BY table_name, ordinal_position
     `);
     
-    const schema = result.rows.map(row => 
-      `${row.table_name}.${row.column_name} (${row.data_type})`
-    ).join('\n');
-    
-    return schema || 'Sessions, Exchanges, DailyCounters tables available';
+    if (result.rows.length > 0) {
+      const schema = result.rows.map(row => 
+        `${row.table_name}.${row.column_name} (${row.data_type})`
+      ).join('\n');
+      return schema;
+    } else {
+      // Return detailed schema based on your actual tables
+      return `
+Tables disponibles:
+- sessions: id (integer), email (text), created_at (timestamp), expires_at (timestamp)
+- exchanges: id (integer), email (text), question (text), response (text), timestamp (timestamp), session_id (integer)
+- daily_counters: id (integer), email (text), date (date), count (integer), created_at (timestamp), updated_at (timestamp)
+
+Exemples de requêtes:
+- SELECT * FROM exchanges WHERE email = 'example@email.com'
+- SELECT COUNT(*) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
+- SELECT email, COUNT(*) as total_questions FROM exchanges GROUP BY email
+- SELECT * FROM daily_counters WHERE date = CURRENT_DATE
+      `.trim();
+    }
   } catch (error) {
     console.error('Error getting schema:', error);
-    return 'Sessions, Exchanges, DailyCounters tables available';
+    return `
+Tables disponibles:
+- sessions: id, email, created_at, expires_at
+- exchanges: id, email, question, response, timestamp, session_id
+- daily_counters: id, email, date, count, created_at, updated_at
+
+Exemples de requêtes:
+- SELECT * FROM exchanges WHERE email = 'example@email.com'
+- SELECT COUNT(*) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
+    `.trim();
   }
 }
 
