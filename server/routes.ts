@@ -469,6 +469,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(201).json({ message: `Index ${name} créé avec succès` });
     } catch (error: any) {
       console.error("Error creating Pinecone index:", error);
+      
+      // Handle Zod validation errors specifically
+      if (error.name === 'ZodError') {
+        const validationErrors = error.errors.map((err: any) => err.message).join(', ');
+        return res.status(400).json({ 
+          message: `Erreur de validation: ${validationErrors}`,
+          details: "Assurez-vous que le nom contient uniquement des lettres minuscules, chiffres et tirets (ex: cours-test, documents-2024)"
+        });
+      }
+      
       const errorMessage = error?.message || "Erreur lors de la création de l'index";
       return res.status(500).json({ 
         message: errorMessage,
