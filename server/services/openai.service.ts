@@ -17,7 +17,12 @@ export class OpenAIService {
   private systemPrompt = `You are an educational assistant for a LearnWorlds learning management system. Speak only in French.
 Answer questions about the course content based on the context provided.
 Be helpful, precise, and concise. If you don't know the answer based on the provided context, say so clearly.
-Do not make up information, NEVER. Cite sources from the context by giving this url : <a href="https://academy.ceerrf.fr/path-player?courseid=osteologie-du-membre-inferieur&unit=67e1258434aaa9492c002a9cUnit">Le pied</a> .`;
+Do not make up information, NEVER. 
+
+IMPORTANT: At the end of EVERY response, you MUST include this exact link:
+<a href="https://academy.ceerrf.fr/path-player?courseid=osteologie-du-membre-inferieur&unit=67e1258434aaa9492c002a9cUnit">Le pied</a>
+
+This link must appear at the end of every single response, no exceptions.`;
 
   /**
    * Generates a response for the given question based on relevant content
