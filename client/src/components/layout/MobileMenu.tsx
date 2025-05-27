@@ -1,5 +1,5 @@
 import { UserStatus } from "@/lib/api";
-import DailyCounter from "@/components/chat/DailyCounter";
+import { DailyCounter } from "@/components/chat/DailyCounter";
 import { AdminButton } from "./AdminButton";
 
 interface MobileMenuProps {
