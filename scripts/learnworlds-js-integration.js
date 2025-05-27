@@ -3,7 +3,7 @@
 
 (function() {
   // Configuration - REMPLACEZ CETTE URL par l'URL de votre application Replit
-  const API_BASE_URL = 'https://your-replit-app.replit.app';
+  const API_BASE_URL = 'https://academy.ceerrf.fr/course/arthrologie-du-membre-superieur';
   
   // Variables globales
   let userEmail = '';

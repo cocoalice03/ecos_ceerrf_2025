@@ -1,6 +1,6 @@
 (function() {
   // Configuration du widget chatbot
-  const CHATBOT_BASE_URL = 'https://260525-pinecone-connexion-backend.replit.app';
+  const CHATBOT_BASE_URL = 'https://academy.ceerrf.fr/course/arthrologie-du-membre-superieur';
   
   // Fonction pour obtenir l'email de l'utilisateur LearnWorlds
   function getUserEmail() {
