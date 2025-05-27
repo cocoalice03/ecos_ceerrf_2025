@@ -25,7 +25,7 @@ export default function Sidebar({
             <span className="material-icons text-white">school</span>
           </div>
           <div>
-            <h1 className="font-heading font-semibold text-lg text-neutral-800">LearnWorlds</h1>
+            <h1 className="font-heading font-semibold text-lg text-neutral-800">CEERRFbot</h1>
             <p className="text-sm text-neutral-500">Assistant de Cours</p>
           </div>
         </div>
