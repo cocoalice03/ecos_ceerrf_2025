@@ -350,10 +350,18 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="documents" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="documents" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Gestion des Documents
+            Documents
+          </TabsTrigger>
+          <TabsTrigger value="indexes" className="flex items-center gap-2">
+            <Server className="h-4 w-4" />
+            Index Pinecone
+          </TabsTrigger>
+          <TabsTrigger value="pdf" className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Upload PDF
           </TabsTrigger>
           <TabsTrigger value="sql" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
@@ -465,6 +473,190 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Index Management Tab */}
+        <TabsContent value="indexes" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Create Index Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Créer un Index Pinecone
+                </CardTitle>
+                <CardDescription>
+                  Créez un nouvel index pour organiser vos documents
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="indexName">Nom de l'index</Label>
+                  <Input
+                    id="indexName"
+                    placeholder="ex: cours-mathematiques"
+                    value={indexData.name}
+                    onChange={(e) => setIndexData(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Lettres minuscules, chiffres et tirets uniquement
+                  </p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="dimension">Dimension (par défaut: 1536)</Label>
+                  <Input
+                    id="dimension"
+                    type="number"
+                    value={indexData.dimension}
+                    onChange={(e) => setIndexData(prev => ({ ...prev, dimension: parseInt(e.target.value) || 1536 }))}
+                  />
+                </div>
+                
+                <Button 
+                  onClick={handleCreateIndex}
+                  disabled={createIndexMutation.isPending}
+                  className="w-full"
+                >
+                  {createIndexMutation.isPending ? "Création..." : "Créer l'Index"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Switch Index Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <RefreshCw className="h-5 w-5" />
+                  Changer d'Index
+                </CardTitle>
+                <CardDescription>
+                  Basculez vers un index existant
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Index disponibles</Label>
+                  {indexesLoading ? (
+                    <div className="text-sm text-muted-foreground">Chargement...</div>
+                  ) : (
+                    <Select value={selectedIndex} onValueChange={setSelectedIndex}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un index" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {indexes?.indexes?.map((index: string) => (
+                          <SelectItem key={index} value={index}>
+                            {index}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+                
+                <Button 
+                  onClick={handleSwitchIndex}
+                  disabled={switchIndexMutation.isPending || !selectedIndex}
+                  className="w-full"
+                >
+                  {switchIndexMutation.isPending ? "Changement..." : "Changer d'Index"}
+                </Button>
+
+                {/* Current indexes list */}
+                <div className="space-y-2">
+                  <Label>Index disponibles :</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {indexes?.indexes?.map((index: string) => (
+                      <Badge key={index} variant="secondary">
+                        {index}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* PDF Upload Tab */}
+        <TabsContent value="pdf" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Upload et Traitement de PDF
+              </CardTitle>
+              <CardDescription>
+                Uploadez un fichier PDF et ajoutez-le automatiquement à votre base de connaissances
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="pdfTitle">Titre du document</Label>
+                  <Input
+                    id="pdfTitle"
+                    placeholder="ex: Cours de Mathématiques - Chapitre 1"
+                    value={pdfUploadData.title}
+                    onChange={(e) => setPdfUploadData(prev => ({ ...prev, title: e.target.value }))}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="pdfCategory">Catégorie</Label>
+                  <Select 
+                    value={pdfUploadData.category} 
+                    onValueChange={(value) => setPdfUploadData(prev => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mathematiques">Mathématiques</SelectItem>
+                      <SelectItem value="physique">Physique</SelectItem>
+                      <SelectItem value="chimie">Chimie</SelectItem>
+                      <SelectItem value="informatique">Informatique</SelectItem>
+                      <SelectItem value="langues">Langues</SelectItem>
+                      <SelectItem value="histoire">Histoire</SelectItem>
+                      <SelectItem value="geographie">Géographie</SelectItem>
+                      <SelectItem value="general">Général</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="pdfFile">Fichier PDF</Label>
+                <Input
+                  id="pdfFile"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className="cursor-pointer"
+                />
+                {pdfUploadData.file && (
+                  <p className="text-sm text-green-600 mt-1">
+                    Fichier sélectionné : {pdfUploadData.file.name}
+                  </p>
+                )}
+              </div>
+              
+              <Button 
+                onClick={handlePDFUpload}
+                disabled={uploadPDFMutation.isPending || !pdfUploadData.file || !pdfUploadData.title}
+                className="w-full"
+              >
+                {uploadPDFMutation.isPending ? "Traitement en cours..." : "Uploader et Traiter le PDF"}
+              </Button>
+
+              <div className="text-sm text-muted-foreground">
+                <p>• Le PDF sera automatiquement divisé en sections pour une recherche optimale</p>
+                <p>• Seuls les fichiers PDF avec du texte extractible sont supportés</p>
+                <p>• Taille maximale : 50MB</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* SQL Queries Tab */}
