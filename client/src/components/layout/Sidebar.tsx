@@ -56,11 +56,6 @@ export default function Sidebar({
             <span className="material-icons">help_outline</span>
             <span>Aide</span>
           </button>
-
-          <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-all">
-            <span className="material-icons">settings</span>
-            <span>Paramètres</span>
-          </button>
         </div>
       </div>
 
