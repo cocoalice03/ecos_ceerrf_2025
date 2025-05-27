@@ -527,7 +527,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Extract text from PDF using pdfjs-dist
-      const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
+      const pdfjsLib = await import('pdfjs-dist');
       
       // Load the PDF document
       const pdfDocument = await pdfjsLib.getDocument({ data: req.file.buffer }).promise;
