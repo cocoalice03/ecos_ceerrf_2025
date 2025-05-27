@@ -5,17 +5,17 @@ interface DailyCounterProps {
   isLoading?: boolean;
 }
 
-export default function DailyCounter({ userStatus, isLoading = false }: DailyCounterProps) {
+export function DailyCounter({ userStatus, isLoading = false }: DailyCounterProps) {
   // Default values
   const questionsUsed = userStatus?.questionsUsed ?? 0;
   const maxDailyQuestions = userStatus?.maxDailyQuestions ?? 20;
   const questionsRemaining = userStatus?.questionsRemaining ?? maxDailyQuestions;
   const percentUsed = (questionsUsed / maxDailyQuestions) * 100;
-  
+
   return (
     <div className="p-5 border-b border-neutral-100">
       <p className="text-sm font-medium text-neutral-700">Questions restantes aujourd'hui</p>
-      
+
       {isLoading ? (
         <div className="flex justify-center mt-4">
           <div className="w-6 h-6 border-t-2 border-primary border-solid rounded-full animate-spin"></div>

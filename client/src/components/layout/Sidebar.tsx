@@ -1,6 +1,6 @@
 import { MessageCircle, User, HelpCircle } from "lucide-react";
 import { UserStatus } from "@/lib/api";
-import { DailyCounter } from "@/components/chat/DailyCounter";
+import DailyCounter from "../chat/DailyCounter";
 import { AdminButton } from "./AdminButton";
 
 interface SidebarProps {
