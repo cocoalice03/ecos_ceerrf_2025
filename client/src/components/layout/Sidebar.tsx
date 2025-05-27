@@ -47,10 +47,6 @@ export default function Sidebar({
 
       <div className="flex-grow p-5">
         <div className="space-y-4">
-          <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-primary-light bg-opacity-10 text-primary hover:bg-opacity-20 transition-all">
-            <span className="material-icons">forum</span>
-            <span className="font-medium">Assistant Chat</span>
-          </button>
         </div>
       </div>
 
