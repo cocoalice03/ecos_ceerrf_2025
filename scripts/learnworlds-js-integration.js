@@ -2,8 +2,8 @@
 // À ajouter dans la section "Code JavaScript personnalisé" dans les paramètres du site
 
 (function() {
-  // Configuration - REMPLACEZ CETTE URL par l'URL de votre application Replit
-  const API_BASE_URL = 'https://academy.ceerrf.fr/course/arthrologie-du-membre-superieur';
+  // Configuration - URL de votre application Replit
+  const API_BASE_URL = 'https://' + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
   
   // Variables globales
   let userEmail = '';

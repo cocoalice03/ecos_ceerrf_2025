@@ -1,6 +1,6 @@
 (function() {
   // Configuration du widget chatbot
-  const CHATBOT_BASE_URL = 'https://academy.ceerrf.fr/course/arthrologie-du-membre-superieur';
+  const CHATBOT_BASE_URL = window.location.origin;
   
   // Fonction pour obtenir l'email de l'utilisateur LearnWorlds
   function getUserEmail() {
