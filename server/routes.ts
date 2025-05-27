@@ -9,7 +9,6 @@ import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { db } from "./db";
 import multer from 'multer';
-import pdfParse from 'pdf-parse';
 
 // Max questions per day per user
 const MAX_DAILY_QUESTIONS = 20;
@@ -517,7 +516,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Titre et catégorie sont requis" });
       }
       
-      // Parse PDF content
+      // Parse PDF content (dynamic import to avoid startup issues)
+      const pdfParse = (await import('pdf-parse')).default;
       const pdfData = await pdfParse(req.file.buffer);
       const content = pdfData.text;
       
