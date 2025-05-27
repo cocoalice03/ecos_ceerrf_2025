@@ -183,6 +183,154 @@ export class PineconeService {
       throw new Error("Failed to delete document from knowledge base");
     }
   }
+
+  /**
+   * Create a new Pinecone index
+   */
+  async createIndex(indexName: string, dimension: number = 1536): Promise<void> {
+    if (!this.pinecone) {
+      throw new Error('Pinecone not initialized');
+    }
+
+    try {
+      await this.pinecone.createIndex({
+        name: indexName,
+        dimension: dimension,
+        metric: 'cosine',
+        spec: {
+          serverless: {
+            cloud: 'aws',
+            region: 'us-east-1'
+          }
+        }
+      });
+      console.log(`Created Pinecone index: ${indexName}`);
+    } catch (error) {
+      console.error('Error creating Pinecone index:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * List all available Pinecone indexes
+   */
+  async listIndexes(): Promise<string[]> {
+    if (!this.pinecone) {
+      throw new Error('Pinecone not initialized');
+    }
+
+    try {
+      const indexesList = await this.pinecone.listIndexes();
+      return indexesList.indexes?.map(index => index.name) || [];
+    } catch (error) {
+      console.error('Error listing Pinecone indexes:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Switch to a different index
+   */
+  async switchIndex(indexName: string): Promise<void> {
+    if (!this.pinecone) {
+      throw new Error('Pinecone not initialized');
+    }
+
+    try {
+      this.indexName = indexName;
+      this.index = this.pinecone.index(indexName);
+      console.log(`Switched to Pinecone index: ${indexName}`);
+    } catch (error) {
+      console.error('Error switching Pinecone index:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process PDF content into chunks and upload to Pinecone
+   */
+  async processPDFContent(
+    content: string, 
+    title: string, 
+    category: string,
+    chunkSize: number = 1000,
+    overlap: number = 200
+  ): Promise<void> {
+    if (!this.index) {
+      throw new Error('Pinecone not available');
+    }
+
+    try {
+      // Split content into chunks
+      const chunks = this.splitIntoChunks(content, chunkSize, overlap);
+      
+      // Create embeddings for all chunks
+      const embeddings = await this.getEmbeddingsForChunks(chunks);
+      
+      // Prepare vectors for upsert
+      const vectors = chunks.map((chunk, index) => ({
+        id: `${title}_chunk_${index}`,
+        values: embeddings[index],
+        metadata: {
+          source: title,
+          text: chunk,
+          category: category,
+          chunk_index: index,
+          total_chunks: chunks.length
+        }
+      }));
+
+      // Upload to Pinecone in batches
+      await this.upsertVectors(vectors);
+      console.log(`Processed PDF: ${title} with ${chunks.length} chunks`);
+    } catch (error) {
+      console.error('Error processing PDF content:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Split text into chunks with overlap
+   */
+  private splitIntoChunks(text: string, chunkSize: number, overlap: number): string[] {
+    const chunks = [];
+    let start = 0;
+    
+    while (start < text.length) {
+      const end = Math.min(start + chunkSize, text.length);
+      const chunk = text.slice(start, end);
+      chunks.push(chunk.trim());
+      
+      if (end === text.length) break;
+      start = end - overlap;
+    }
+    
+    return chunks.filter(chunk => chunk.length > 0);
+  }
+
+  /**
+   * Get embeddings for multiple text chunks
+   */
+  private async getEmbeddingsForChunks(chunks: string[]): Promise<number[][]> {
+    const embeddings = [];
+    
+    // Process in batches to avoid rate limits
+    const batchSize = 10;
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      const batchEmbeddings = await Promise.all(
+        batch.map(chunk => this.getEmbedding(chunk))
+      );
+      embeddings.push(...batchEmbeddings);
+      
+      // Small delay between batches
+      if (i + batchSize < chunks.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
+    return embeddings;
+  }
 }
 
 export const pineconeService = new PineconeService();

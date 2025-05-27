@@ -8,12 +8,29 @@ import { insertExchangeSchema } from "@shared/schema";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { db } from "./db";
+import multer from 'multer';
+import pdfParse from 'pdf-parse';
 
 // Max questions per day per user
 const MAX_DAILY_QUESTIONS = 20;
 
 // Admin emails authorized to access admin features
 const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  }
+});
 
 // Middleware to check admin authorization
 function isAdminAuthorized(email: string): boolean {
