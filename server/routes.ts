@@ -434,6 +434,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: List all Pinecone indexes
+  app.get("/api/admin/indexes", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      const indexes = await pineconeService.listIndexes();
+      return res.status(200).json({ indexes });
+    } catch (error) {
+      console.error("Error listing Pinecone indexes:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des index" });
+    }
+  });
+
+  // Admin: Create a new Pinecone index
+  app.post("/api/admin/indexes", async (req: Request, res: Response) => {
+    try {
+      const indexSchema = z.object({
+        email: z.string().email(),
+        name: z.string().min(1).max(45).regex(/^[a-z0-9-]+$/, "Le nom doit contenir uniquement des lettres minuscules, chiffres et tirets"),
+        dimension: z.number().optional().default(1536),
+      });
+      
+      const { email, name, dimension } = indexSchema.parse(req.body);
+      
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      await pineconeService.createIndex(name, dimension);
+      return res.status(201).json({ message: `Index ${name} créé avec succès` });
+    } catch (error) {
+      console.error("Error creating Pinecone index:", error);
+      return res.status(500).json({ message: "Erreur lors de la création de l'index" });
+    }
+  });
+
+  // Admin: Switch to a different Pinecone index
+  app.post("/api/admin/indexes/switch", async (req: Request, res: Response) => {
+    try {
+      const switchSchema = z.object({
+        email: z.string().email(),
+        indexName: z.string().min(1),
+      });
+      
+      const { email, indexName } = switchSchema.parse(req.body);
+      
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      await pineconeService.switchIndex(indexName);
+      return res.status(200).json({ message: `Changement vers l'index ${indexName} réussi` });
+    } catch (error) {
+      console.error("Error switching Pinecone index:", error);
+      return res.status(500).json({ message: "Erreur lors du changement d'index" });
+    }
+  });
+
+  // Admin: Upload and process PDF documents
+  app.post("/api/admin/upload-pdf", upload.single('pdf'), async (req: Request, res: Response) => {
+    try {
+      const { email, title, category } = req.body;
+      
+      if (!email || !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "Aucun fichier PDF fourni" });
+      }
+      
+      if (!title || !category) {
+        return res.status(400).json({ message: "Titre et catégorie sont requis" });
+      }
+      
+      // Parse PDF content
+      const pdfData = await pdfParse(req.file.buffer);
+      const content = pdfData.text;
+      
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ message: "Le PDF ne contient pas de texte lisible" });
+      }
+      
+      // Process and store in Pinecone
+      await pineconeService.processPDFContent(content, title, category);
+      
+      return res.status(201).json({ 
+        message: `Document ${title} traité et ajouté avec succès`,
+        pages: pdfData.numpages,
+        textLength: content.length
+      });
+    } catch (error) {
+      console.error("Error processing PDF:", error);
+      return res.status(500).json({ message: "Erreur lors du traitement du PDF" });
+    }
+  });
+
   // Special endpoint for LearnWorlds integration
   app.post("/api/learnworlds/chat", async (req: Request, res: Response) => {
     try {

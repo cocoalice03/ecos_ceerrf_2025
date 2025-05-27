@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Upload, Database, FileText, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Upload, Database, FileText, Search, Plus, Server, RefreshCw } from "lucide-react";
 
 interface DocumentData {
   title: string;
@@ -22,6 +23,17 @@ interface SQLQueryResult {
   sql_query: string;
   results: any[];
   executed_at: string;
+}
+
+interface IndexData {
+  name: string;
+  dimension: number;
+}
+
+interface PDFUploadData {
+  title: string;
+  category: string;
+  file: File | null;
 }
 
 export default function AdminPage() {
@@ -47,11 +59,37 @@ export default function AdminPage() {
   const [nlQuestion, setNlQuestion] = useState("");
   const [sqlResult, setSqlResult] = useState<SQLQueryResult | null>(null);
 
+  // Index management state
+  const [indexData, setIndexData] = useState<IndexData>({
+    name: "",
+    dimension: 1536
+  });
+
+  // PDF upload state
+  const [pdfUploadData, setPdfUploadData] = useState<PDFUploadData>({
+    title: "",
+    category: "general",
+    file: null
+  });
+
+  // Current selected index
+  const [selectedIndex, setSelectedIndex] = useState<string>("");
+
   // Get all documents/sources
   const { data: sources, isLoading: sourcesLoading } = useQuery({
     queryKey: ['/api/admin/documents', adminEmail],
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/admin/documents?email=${encodeURIComponent(adminEmail)}`);
+      return await res.json();
+    },
+    enabled: isAuthorized
+  });
+
+  // Get all Pinecone indexes
+  const { data: indexes, isLoading: indexesLoading, refetch: refetchIndexes } = useQuery({
+    queryKey: ['/api/admin/indexes', adminEmail],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/admin/indexes?email=${encodeURIComponent(adminEmail)}`);
       return await res.json();
     },
     enabled: isAuthorized
@@ -124,6 +162,91 @@ export default function AdminPage() {
     }
   });
 
+  // Create Pinecone index mutation
+  const createIndexMutation = useMutation({
+    mutationFn: async (data: IndexData) => {
+      const res = await apiRequest("POST", "/api/admin/indexes", { ...data, email: adminEmail });
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Index créé",
+        description: data.message,
+      });
+      setIndexData({ name: "", dimension: 1536 });
+      refetchIndexes();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'index",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Switch Pinecone index mutation
+  const switchIndexMutation = useMutation({
+    mutationFn: async (indexName: string) => {
+      const res = await apiRequest("POST", "/api/admin/indexes/switch", { indexName, email: adminEmail });
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Index changé",
+        description: data.message,
+      });
+      setSelectedIndex("");
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/documents'] });
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de changer d'index",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Upload PDF mutation
+  const uploadPDFMutation = useMutation({
+    mutationFn: async (data: PDFUploadData) => {
+      const formData = new FormData();
+      formData.append("email", adminEmail);
+      formData.append("title", data.title);
+      formData.append("category", data.category);
+      if (data.file) {
+        formData.append("pdf", data.file);
+      }
+      
+      const res = await fetch("/api/admin/upload-pdf", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+      
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "PDF traité",
+        description: `${data.message} (${data.pages} pages, ${data.textLength} caractères)`,
+      });
+      setPdfUploadData({ title: "", category: "general", file: null });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/documents'] });
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de traiter le PDF",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleUploadDocument = () => {
     if (!documentData.title || !documentData.content) {
       toast({
@@ -146,6 +269,55 @@ export default function AdminPage() {
       return;
     }
     sqlMutation.mutate(nlQuestion);
+  };
+
+  const handleCreateIndex = () => {
+    if (!indexData.name.trim()) {
+      toast({
+        title: "Nom requis",
+        description: "Veuillez saisir un nom pour l'index",
+        variant: "destructive",
+      });
+      return;
+    }
+    createIndexMutation.mutate(indexData);
+  };
+
+  const handleSwitchIndex = () => {
+    if (!selectedIndex.trim()) {
+      toast({
+        title: "Index requis",
+        description: "Veuillez sélectionner un index",
+        variant: "destructive",
+      });
+      return;
+    }
+    switchIndexMutation.mutate(selectedIndex);
+  };
+
+  const handlePDFUpload = () => {
+    if (!pdfUploadData.title.trim() || !pdfUploadData.file) {
+      toast({
+        title: "Champs requis",
+        description: "Veuillez fournir un titre et sélectionner un fichier PDF",
+        variant: "destructive",
+      });
+      return;
+    }
+    uploadPDFMutation.mutate(pdfUploadData);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfUploadData(prev => ({ ...prev, file }));
+    } else {
+      toast({
+        title: "Type de fichier invalide",
+        description: "Veuillez sélectionner un fichier PDF",
+        variant: "destructive",
+      });
+    }
   };
 
   // Check authorization
