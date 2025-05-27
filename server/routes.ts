@@ -526,20 +526,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Titre et catégorie sont requis" });
       }
       
-      // Extract text from PDF using pdfjs-dist
-      const pdfjsLib = await import('pdfjs-dist');
-      
-      // Load the PDF document
-      const pdfDocument = await pdfjsLib.getDocument({ data: req.file.buffer }).promise;
-      let extractedText = '';
-      
-      // Extract text from all pages
-      for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-        const page = await pdfDocument.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item: any) => item.str).join(' ');
-        extractedText += pageText + '\n';
-      }
+      // Extract text from PDF using pdf-parse
+      const pdfParse = await import('pdf-parse');
+      const pdfData = await pdfParse.default(req.file.buffer);
+      const extractedText = pdfData.text;
       
       if (!extractedText || extractedText.trim().length === 0) {
         return res.status(400).json({ message: "Le PDF ne contient pas de texte extractible" });
@@ -550,7 +540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       return res.status(201).json({ 
         message: `Document ${title} traité et ajouté avec succès`,
-        pages: pdfDocument.numPages,
+        pages: pdfData.numpages,
         textLength: extractedText.length,
         preview: extractedText.substring(0, 200) + '...'
       });
