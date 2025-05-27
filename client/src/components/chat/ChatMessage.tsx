@@ -27,6 +27,13 @@ export default function ChatMessage({ question, response, timestamp }: ChatMessa
 
   const formattedTime = formatTime(timestamp);
 
+  // Function to render markdown links
+  const renderMarkdownLinks = (text: string): string => {
+    // Basic markdown link regex
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    return text.replace(linkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  };
+
   return (
     <>
       {/* User message */}
@@ -41,15 +48,18 @@ export default function ChatMessage({ question, response, timestamp }: ChatMessa
         </div>
       </div>
 
-      {/* Assistant response */}
-      <div>
-        <div className="chat-bubble bg-white rounded-xl p-4 shadow-card">
+      {/* Bot response */}
+      <div className="flex justify-start">
+        <div className="chat-bubble bg-white rounded-xl p-4 shadow-card border border-neutral-100">
           <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
+            <div className="w-6 h-6 bg-primary flex items-center justify-center rounded-full flex-shrink-0 mt-0.5">
               <span className="material-icons text-white text-sm">smart_toy</span>
             </div>
             <div>
-              <p className="text-neutral-600 whitespace-pre-line">{response}</p>
+              <div 
+                className="text-neutral-800 whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: renderMarkdownLinks(response) }}
+              />
               <p className="mt-1 text-neutral-400 text-xs">{formattedTime}</p>
             </div>
           </div>
