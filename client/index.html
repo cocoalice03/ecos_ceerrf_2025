@@ -18,6 +18,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Custom element conflict prevention -->
+    <script>
+      // Prevent custom element redefinition errors
+      window.addEventListener('error', function(e) {
+        if (e.message && e.message.includes('already been defined')) {
+          console.warn('Custom element redefinition prevented:', e.message);
+          e.preventDefault();
+        }
+      });
+    </script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>

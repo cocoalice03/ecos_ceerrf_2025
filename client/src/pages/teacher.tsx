@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Users, BookOpen, TrendingUp, Clock } from "lucide-react";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
 import DiagnosticPanel from "@/components/debug/DiagnosticPanel";
 import { apiRequest } from "@/lib/queryClient";
+import React from "react";
 
 interface TeacherPageProps {
   email: string;
@@ -21,18 +21,18 @@ export default function TeacherPage({ email }: TeacherPageProps) {
       if (!email) {
         throw new Error('Email is required');
       }
-      
+
       console.log('Fetching dashboard data for email:', email);
-      
+
       try {
         const [scenarios, sessions] = await Promise.all([
           apiRequest('GET', `/api/ecos/scenarios?email=${email}`),
           apiRequest('GET', `/api/ecos/sessions?email=${email}`)
         ]);
-        
+
         console.log('Dashboard scenarios:', scenarios);
         console.log('Dashboard sessions:', sessions);
-        
+
         return {
           scenarios: scenarios.scenarios || [],
           sessions: sessions.sessions || []
@@ -49,29 +49,38 @@ export default function TeacherPage({ email }: TeacherPageProps) {
     refetchOnWindowFocus: false
   });
 
-  // Ensure we have data before calculating stats with memoization and validation
-  const scenarios = useMemo(() => {
-    const data = dashboardData?.scenarios;
-    return Array.isArray(data) ? data : [];
-  }, [dashboardData?.scenarios]);
-  
-  const sessions = useMemo(() => {
-    const data = dashboardData?.sessions;
-    return Array.isArray(data) ? data : [];
-  }, [dashboardData?.sessions]);
+  // Debug: Log the actual data structure
+  console.log('Dashboard data:', dashboardData);
+  console.log('Dashboard scenarios:', dashboardData?.scenarios);
+  console.log('Dashboard sessions:', dashboardData?.sessions);
 
-  const stats = useMemo(() => {
-    // Ensure we have valid arrays before processing
-    const validScenarios = Array.isArray(scenarios) ? scenarios : [];
-    const validSessions = Array.isArray(sessions) ? sessions : [];
-    
-    return {
-      totalScenarios: validScenarios.length,
-      activeSessions: validSessions.filter((s: any) => s && s.status === 'in_progress').length,
-      completedSessions: validSessions.filter((s: any) => s && s.status === 'completed').length,
-      totalStudents: new Set(validSessions.filter((s: any) => s && s.studentEmail).map((s: any) => s.studentEmail)).size
-    };
-  }, [scenarios, sessions]);
+  // Ensure we have data before calculating stats - handle Response objects
+  let scenarios = [];
+  let sessions = [];
+
+  try {
+    scenarios = Array.isArray(dashboardData?.scenarios) ? dashboardData.scenarios : [];
+    sessions = Array.isArray(dashboardData?.sessions) ? dashboardData.sessions : [];
+
+    // If data is a Response object, we need to extract the actual data
+    if (dashboardData?.scenarios && typeof dashboardData.scenarios === 'object' && 'json' in dashboardData.scenarios) {
+      console.warn('Scenarios data appears to be a Response object, not parsed data');
+    }
+    if (dashboardData?.sessions && typeof dashboardData.sessions === 'object' && 'json' in dashboardData.sessions) {
+      console.warn('Sessions data appears to be a Response object, not parsed data');
+    }
+  } catch (error) {
+    console.error('Error processing dashboard data:', error);
+  }
+
+  const stats = {
+    totalScenarios: scenarios.length,
+    activeSessions: sessions.filter((s: any) => s.status === 'in_progress').length,
+    completedSessions: sessions.filter((s: any) => s.status === 'completed').length,
+    uniqueStudents: new Set(sessions.map((s: any) => s.student_email)).size,
+  };
+
+  console.log('Calculated stats:', stats);
 
   if (dashboardLoading) {
     return (
@@ -83,6 +92,13 @@ export default function TeacherPage({ email }: TeacherPageProps) {
       </div>
     );
   }
+
+  // Add debugging for authentication issues
+  React.useEffect(() => {
+    if (!email) {
+      console.warn('No email detected for teacher dashboard');
+    }
+  }, [email]);
 
   // Show error state but still render dashboard with fallback data
   if (dashboardError && !dashboardData) {
@@ -120,7 +136,7 @@ export default function TeacherPage({ email }: TeacherPageProps) {
             <p className="text-red-700">Erreur lors du chargement des données: {dashboardError.message}</p>
           </div>
         )}
-        
+
         {/* Show loading skeleton for stats cards */}
         {dashboardLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -187,7 +203,7 @@ export default function TeacherPage({ email }: TeacherPageProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Étudiants Uniques</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.uniqueStudents}</p>
                 </div>
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                   <Users className="w-6 h-6 text-orange-600" />

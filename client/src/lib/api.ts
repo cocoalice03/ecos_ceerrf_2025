@@ -60,3 +60,15 @@ export const api = {
     return await res.json();
   }
 };
+
+export const teacherApi = {
+  getDashboard: async (email: string) => {
+    const response = await fetch(`/api/teacher/dashboard?email=${encodeURIComponent(email)}`);
+    if (!response.ok) {
+      throw new Error('Échec de récupération des données du dashboard');
+    }
+    const data = await response.json();
+    console.log('API response data:', data);
+    return data;
+  },
+};
