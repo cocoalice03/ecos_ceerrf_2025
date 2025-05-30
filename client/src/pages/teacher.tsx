@@ -29,7 +29,8 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
     description: editingScenario?.description || "",
     patientPrompt: editingScenario?.patientPrompt || "",
     evaluationCriteria: editingScenario?.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : "",
-    pineconeIndex: editingScenario?.pineconeIndex || ""
+    pineconeIndex: editingScenario?.pineconeIndex || "",
+    criteriaText: editingScenario?.criteriaText || ""
   });
 
   // Update form data when editing scenario changes
@@ -40,7 +41,8 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
         description: editingScenario.description || "",
         patientPrompt: editingScenario.patientPrompt || "",
         evaluationCriteria: editingScenario.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : "",
-        pineconeIndex: editingScenario.pineconeIndex || ""
+        pineconeIndex: editingScenario.pineconeIndex || "",
+        criteriaText: editingScenario?.criteriaText || ""
       });
     }
   }, [editingScenario]);
@@ -67,7 +69,7 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
     onSuccess: (response) => {
       console.log(`Scenario ${editingScenario ? 'updated' : 'created'} successfully:`, response);
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
-      setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "" });
+      setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "", criteriaText: "" });
       if (onCancelEdit) onCancelEdit();
       onSuccess();
       alert(`Scénario ${editingScenario ? 'modifié' : 'créé'} avec succès !`);
@@ -91,6 +93,33 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
       setFormData(prev => ({ ...prev, patientPrompt: data.prompt }));
     }
   });
+
+  const generateCriteriaMutation = useMutation({
+    mutationFn: async () => {
+      if (!formData.criteriaText) {
+        throw new Error('Veuillez décrire les critères d\'évaluation');
+      }
+
+      return apiRequest('POST', '/api/ecos/generate-criteria', {
+        email,
+        description: formData.criteriaText,
+      });
+    },
+    onSuccess: (data) => {
+      setFormData(prev => ({
+        ...prev,
+        evaluationCriteria: JSON.stringify(data.criteria, null, 2)
+      }));
+    },
+    onError: (error) => {
+      console.error('Error generating criteria:', error);
+      alert('Erreur lors de la génération des critères: ' + error.message);
+    }
+  });
+
+  const handleGenerateCriteria = () => {
+    generateCriteriaMutation.mutate();
+  };
 
   const handleCreateScenario = () => {
     if (!formData.title || !formData.description) {
@@ -119,7 +148,7 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
   };
 
   const handleCancel = () => {
-    setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "" });
+    setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "", criteriaText: "" });
     if (onCancelEdit) onCancelEdit();
   };
 
@@ -205,23 +234,45 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
       </div>
 
       <div>
-        <Label htmlFor="evaluationCriteria">Critères d'Évaluation (Format JSON)</Label>
+        <Label htmlFor="criteriaText">Décrivez les Critères d'Évaluation</Label>
         <Textarea
-          id="evaluationCriteria"
-          value={formData.evaluationCriteria}
-          onChange={(e) => setFormData(prev => ({ ...prev, evaluationCriteria: e.target.value }))}
-          placeholder={`{
+          id="criteriaText"
+          value={formData.criteriaText || ''}
+          onChange={(e) => setFormData(prev => ({ ...prev, criteriaText: e.target.value }))}
+          placeholder="Décrivez les critères que vous souhaitez évaluer. Par exemple: L'étudiant doit être capable de mener une anamnèse complète, réaliser un examen physique systématique, poser des questions pertinentes sur les antécédents, établir un diagnostic différentiel..."
+          rows={3}
+          className="mt-1"
+        />
+
+        <Button
+          onClick={handleGenerateCriteria}
+          disabled={!formData.criteriaText || generateCriteriaMutation.isPending}
+          variant="outline"
+          className="mt-2"
+        >
+          {generateCriteriaMutation.isPending ? "Génération..." : "Générer les Critères JSON"}
+        </Button>
+
+        <div className="mt-4">
+          <Label htmlFor="evaluationCriteria">Critères d'Évaluation (JSON généré)</Label>
+          <Textarea
+            id="evaluationCriteria"
+            value={formData.evaluationCriteria}
+            onChange={(e) => setFormData(prev => ({ ...prev, evaluationCriteria: e.target.value }))}
+            placeholder={`{
   "communication": 20,
   "anamnese": 25,
   "examen_physique": 25,
   "raisonnement_clinique": 30
 }`}
-          rows={6}
-          className="mt-1 font-mono text-sm"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Format JSON requis. Chaque critère avec sa pondération (total libre). Si laissé vide, des critères par défaut seront appliqués.
-        </p>
+            rows={6}
+            className="mt-1 font-mono text-sm"
+            readOnly={generateCriteriaMutation.isPending}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Critères générés automatiquement ou modifiés manuellement
+          </p>
+        </div>
       </div>
 
       <div className="flex gap-3 pt-4">

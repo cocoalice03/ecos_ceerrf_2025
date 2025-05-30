@@ -298,6 +298,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+// Generate evaluation criteria from text description
+app.post('/api/ecos/generate-criteria', async (req, res) => {
+  try {
+    const { description, email } = req.body;
+    
+    if (!description || !email) {
+      return res.status(400).json({ message: 'Description et email requis' });
+    }
+
+    // Check authorization
+    if (!isAdminAuthorized(email)) {
+      return res.status(403).json({ message: 'Accès non autorisé' });
+    }
+
+    const criteria = await promptGenService.generateEvaluationCriteria(description);
+    
+    res.json({ criteria });
+  } catch (error) {
+    console.error('Error generating criteria:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la génération des critères',
+      error: error.message 
+    });
+  }
+});
+
+
   // Get user chat history
   app.get("/api/history", async (req: Request, res: Response) => {
     try {
