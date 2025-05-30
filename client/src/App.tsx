@@ -33,6 +33,16 @@ function Router({ email }: { email: string | null }) {
       <Route path="/student/:email">
         {(params) => <StudentPage email={params.email} />}
       </Route>
+      <Route path="/student">
+        {() => {
+          // Extract scenario from URL params
+          const urlParams = new URLSearchParams(window.location.search);
+          const scenario = urlParams.get('scenario');
+          // Use the admin email for testing since authentication is working
+          const email = 'cherubindavid@gmail.com';
+          return <StudentPage email={email} />;
+        }}
+      </Route>
       <Route path="/chat/:email">
         {(params) => (
           <div className="flex h-screen bg-neutral-50">
