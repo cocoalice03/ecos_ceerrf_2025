@@ -234,29 +234,44 @@ export class PineconeService {
    * List all available Pinecone indexes
    */
   async listIndexes(): Promise<Array<{name: string, status?: string, dimension?: number}>> {
+    console.log('🔍 Starting listIndexes operation...');
+    
     if (!this.pinecone) {
+      console.error('❌ Pinecone not initialized');
       throw new Error('Pinecone not initialized');
     }
 
     try {
+      console.log('📡 Calling Pinecone listIndexes API...');
       const indexesList = await this.pinecone.listIndexes();
-      console.log('Pinecone indexes response:', indexesList);
+      console.log('✅ Pinecone API response received:', JSON.stringify(indexesList, null, 2));
       
-      if (!indexesList.indexes) {
-        console.log('No indexes found in response');
+      if (!indexesList || !indexesList.indexes) {
+        console.log('⚠️ No indexes found in response or empty response');
         return [];
       }
       
-      const indexes = indexesList.indexes.map(index => ({
-        name: index.name,
-        status: index.status?.ready ? 'ready' : 'not ready',
-        dimension: index.dimension
-      }));
+      console.log('📝 Processing indexes data...');
+      const indexes = indexesList.indexes.map((index, idx) => {
+        console.log(`Processing index ${idx}:`, JSON.stringify(index, null, 2));
+        return {
+          name: index.name,
+          status: index.status?.ready ? 'ready' : 'not ready',
+          dimension: index.dimension
+        };
+      });
       
-      console.log('Processed indexes:', indexes);
+      console.log('✅ Successfully processed indexes:', JSON.stringify(indexes, null, 2));
       return indexes;
     } catch (error) {
-      console.error('Error listing Pinecone indexes:', error);
+      console.error('❌ Error in listIndexes:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        code: (error as any)?.code,
+        status: (error as any)?.status
+      });
       throw error;
     }
   }

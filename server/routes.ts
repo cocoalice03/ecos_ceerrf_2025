@@ -446,23 +446,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin: List all Pinecone indexes
   app.get("/api/admin/indexes", async (req: Request, res: Response) => {
+    console.log('🚀 Admin indexes endpoint called');
+    console.log('Request query:', req.query);
+    console.log('Request headers:', req.headers);
+    
     try {
       const { email } = req.query;
+      console.log('📧 Email from query:', email);
 
-      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+      if (!email || typeof email !== "string") {
+        console.log('❌ Email validation failed - missing or invalid email');
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      console.log('🔐 Checking admin authorization for:', email);
+      const isAuthorized = isAdminAuthorized(email);
+      console.log('✅ Authorization result:', isAuthorized);
+
+      if (!isAuthorized) {
+        console.log('❌ Access denied for email:', email);
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
-      console.log('Fetching Pinecone indexes for admin:', email);
-      const indexes = await pineconeService.listIndexes();
-      console.log('Retrieved indexes:', indexes);
+      console.log('🔍 Fetching Pinecone indexes for admin:', email);
       
-      return res.status(200).json({ indexes });
+      // Check if pineconeService is available
+      if (!pineconeService) {
+        console.error('❌ pineconeService is not available');
+        return res.status(503).json({ 
+          message: "Service Pinecone non disponible",
+          details: "Le service Pinecone n'est pas initialisé"
+        });
+      }
+
+      const indexes = await pineconeService.listIndexes();
+      console.log('✅ Successfully retrieved indexes:', indexes);
+      
+      return res.status(200).json({ 
+        indexes,
+        timestamp: new Date().toISOString(),
+        email 
+      });
     } catch (error) {
-      console.error("Error listing Pinecone indexes:", error);
+      console.error("❌ Critical error in admin indexes endpoint:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error instanceof Error:", error instanceof Error);
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorDetails = {
+        message: errorMessage,
+        type: error instanceof Error ? error.constructor.name : typeof error,
+        timestamp: new Date().toISOString()
+      };
+
       return res.status(500).json({ 
         message: "Erreur lors de la récupération des index",
-        details: error.message 
+        details: errorMessage,
+        debug: errorDetails
       });
     }
   });
@@ -1095,6 +1136,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       return res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord" });
+    }
+  });
+
+  // Admin health check endpoint
+  app.get("/api/admin/health", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      
+      const healthCheck = {
+        timestamp: new Date().toISOString(),
+        server: {
+          status: 'running',
+          uptime: process.uptime(),
+          memory: process.memoryUsage()
+        },
+        pinecone: {
+          serviceAvailable: !!pineconeService,
+          initialized: pineconeService ? 'yes' : 'no'
+        },
+        authorization: {
+          emailProvided: !!email,
+          emailType: typeof email,
+          isAuthorized: email ? isAdminAuthorized(email as string) : false,
+          adminEmails: ADMIN_EMAILS
+        },
+        environment: {
+          nodeEnv: process.env.NODE_ENV,
+          hasPineconeKey: !!process.env.PINECONE_API_KEY,
+          hasOpenAIKey: !!process.env.OPENAI_API_KEY
+        }
+      };
+
+      return res.status(200).json(healthCheck);
+    } catch (error) {
+      console.error("Health check error:", error);
+      return res.status(500).json({ 
+        error: "Health check failed", 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 
