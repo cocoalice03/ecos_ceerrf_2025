@@ -466,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const indexSchema = z.object({
         email: z.string().email(),
-        name: z.string().min(1).max(45).regex(/^[a-z0-9-]+$/, "Le nom doit contenir uniquement des lettres minuscules, chiffres et tirets"),
+        name: z.string().min(1).max(45).regex(/^[a-z0-9._-]+$/, "Le nom doit contenir uniquement des lettres minuscules, chiffres, tirets, points et underscores"),
         dimension: z.number().optional().default(1536),
       });
 
