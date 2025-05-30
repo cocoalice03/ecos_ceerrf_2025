@@ -68,10 +68,8 @@ Chaque critère doit avoir:
 
 Retourne le résultat en format JSON structuré.`;
 
-      const criteriaText = await openaiService.generateResponse(
-        `Crée des critères d'évaluation pour ce scénario ECOS:\n\n${scenarioDescription}`,
-        systemPrompt
-      );
+      const prompt = `${systemPrompt}\n\nCrée des critères d'évaluation pour ce scénario ECOS:\n\n${scenarioDescription}`;
+      const criteriaText = await openaiService.generateResponse(prompt, "");
 
       // Try to parse as JSON, fallback to structured text if it fails
       try {

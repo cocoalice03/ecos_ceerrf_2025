@@ -48,17 +48,24 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
   // Create scenario mutation
   const createScenarioMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log("Sending scenario creation request:", { email, ...data });
       return apiRequest('POST', '/api/ecos/scenarios', {
         email,
         ...data
       });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log("Scenario created successfully:", response);
       refetchScenarios();
       setIsCreating(false);
       setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" });
       // Switch to scenarios tab to show the new scenario
       setActiveTab("scenarios");
+      alert("Scénario créé avec succès !");
+    },
+    onError: (error) => {
+      console.error("Error creating scenario:", error);
+      alert("Erreur lors de la création du scénario. Veuillez réessayer.");
     }
   });
 
@@ -88,6 +95,8 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
   });
 
   const handleCreateScenario = () => {
+    console.log("Creating scenario with email:", email);
+    
     let criteria = undefined;
     
     if (formData.evaluationCriteria && formData.evaluationCriteria.trim()) {
