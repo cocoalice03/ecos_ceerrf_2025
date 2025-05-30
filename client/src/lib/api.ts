@@ -129,9 +129,6 @@ export const useDashboardData = (email: string) => {
           error: error instanceof Error ? error.message : 'Unknown error',
           partial: true
         };
-      }r) {
-        console.error('Error fetching dashboard data:', error);
-        throw error;
       }
     },
     enabled: !!email,
