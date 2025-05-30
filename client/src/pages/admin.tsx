@@ -352,7 +352,7 @@ export default function AdminPage() {
           </div>
           <div className="flex gap-3">
             <Button 
-              onClick={() => window.location.href = `/teacher/${encodeURIComponent(adminEmail)}`}
+              onClick={() => window.location.href = `/teacher/${adminEmail}`}
               variant="outline"
               className="flex items-center gap-2"
             >
