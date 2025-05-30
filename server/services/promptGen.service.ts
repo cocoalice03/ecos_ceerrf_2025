@@ -1,4 +1,3 @@
-
 import { openaiService } from './openai.service';
 import { pineconeService } from './pinecone.service';
 
@@ -38,23 +37,12 @@ ${allContext ? `Utilise également ces informations contextuelles pour enrichir 
 
 Assure-toi que le prompt soit suffisamment détaillé pour permettre une interaction réaliste et pédagogique de 15-20 minutes.`;
 
-      const response = await openaiService.createCompletion({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: userPrompt
-          }
-        ],
-        temperature: 0.8,
-        max_tokens: 1500
-      });
+      const response = await openaiService.generateResponse(
+        `Génère un prompt détaillé pour un patient virtuel basé sur cette description de scénario ECOS:\n\n${scenarioDescription}\n\nDocuments de référence:\n${contextDocs.join('\n\n')}`,
+        contextDocs.length > 0 ? contextDocs.join('\n\n') : ""
+      );
 
-      return response.choices[0].message.content;
+      const patientPrompt = response;
     } catch (error) {
       console.error('Error generating patient prompt:', error);
       throw new Error('Failed to generate patient prompt');
@@ -97,7 +85,7 @@ Retourne le résultat en format JSON structuré.`;
       });
 
       const criteriaText = response.choices[0].message.content;
-      
+
       // Try to parse as JSON, fallback to structured text if it fails
       try {
         return JSON.parse(criteriaText);

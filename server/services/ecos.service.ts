@@ -50,15 +50,12 @@ export class EcosService {
         }
       ];
 
-      // Generate patient response
-      const response = await openaiService.createCompletion({
-        model: "gpt-4",
-        messages,
-        temperature: 0.7,
-        max_tokens: 500
-      });
-
-      const patientResponse = response.choices[0].message.content;
+      // Generate patient response using the existing generateResponse method
+      const systemMessage = messages[0].content;
+      const userQuery = studentQuery;
+      const context = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+      
+      const patientResponse = await openaiService.generateResponse(userQuery, context + '\n\nSystem: ' + systemMessage);
 
       // Save the interaction
       await this.saveInteraction(sessionId, studentQuery, patientResponse);
