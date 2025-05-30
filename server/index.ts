@@ -3,7 +3,6 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
 import { insertLog } from "./storage";
-import { registerRoutes } from "./routes";
 import { addDiagnosticRoutes } from "./diagnostic-endpoint";
 
 const app = express();
@@ -41,6 +40,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Setup diagnostic routes first
+  addDiagnosticRoutes(app);
+
+  // Setup routes
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -60,10 +63,10 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  
+
 
   // Add diagnostic routes
-  addDiagnosticRoutes(app);
+  // addDiagnosticRoutes(app);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.

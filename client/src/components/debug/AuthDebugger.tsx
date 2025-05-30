@@ -31,14 +31,21 @@ export default function AuthDebugger({ email }: AuthDebuggerProps) {
             },
           });
           
-          const data = await response.text();
+          let data;
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+          } else {
+            data = await response.text();
+          }
           
           results.push({
             test: test.name,
             url: test.url,
             status: response.status,
             statusText: response.statusText,
-            response: data,
+            response: typeof data === 'object' ? JSON.stringify(data, null, 2) : data,
+            isJson: typeof data === 'object'
           });
         } catch (error) {
           results.push({
