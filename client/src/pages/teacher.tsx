@@ -166,7 +166,6 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
             <SelectValue placeholder="Sélectionner un index Pinecone" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Aucun index (par défaut)</SelectItem>
             {availableIndexes?.map((index: any) => (
               <SelectItem key={index.name} value={index.name}>
                 {index.name} ({index.status})
