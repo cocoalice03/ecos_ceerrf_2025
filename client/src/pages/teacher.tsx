@@ -209,14 +209,13 @@ function TeacherPage({ email }: TeacherPageProps) {
 
   console.log('TeacherPage rendering with email:', email);
 
-  const { 
-    data: dashboardData, 
-    isLoading: dashboardLoading, 
-    error: dashboardError 
-  } = useDashboardData(email || '');
+  const { data: dashboardData, error: dashboardError, isLoading: isDashboardLoading } = useDashboardData(email || '');
+
+  // Check if we have actual errors vs just partial data
+  const hasRealError = dashboardError || (dashboardData?.partial && dashboardData?.scenarios?.length === 0);
 
   console.log('Dashboard data:', dashboardData);
-  console.log('Dashboard loading:', dashboardLoading);
+  console.log('Dashboard loading:', isDashboardLoading);
   console.log('Dashboard error:', dashboardError);
 
   // Provide fallback data structure
@@ -235,7 +234,7 @@ function TeacherPage({ email }: TeacherPageProps) {
 
   console.log('Calculated stats:', stats);
 
-  if (dashboardLoading) {
+  if (isDashboardLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -260,11 +259,11 @@ function TeacherPage({ email }: TeacherPageProps) {
               <h1 className="text-3xl font-bold text-gray-900">Tableau de bord Enseignant</h1>
               <p className="text-gray-600 mt-2">Gérez vos scénarios ECOS et suivez les progrès de vos étudiants</p>
               {email && <p className="text-sm text-blue-600 mt-1">Connecté en tant que: {email}</p>}
-              {dashboardError && (
-                <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 text-sm">
-                  ⚠️ Données partiellement disponibles (mode dégradé)
-                </div>
-              )}
+          {hasRealError && (
+            <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 text-sm">
+              ⚠️ Données partiellement disponibles (mode dégradé)
+            </div>
+          )}
             </div>
             <div className="flex gap-3">
               <AdminButton email={email || ''} />

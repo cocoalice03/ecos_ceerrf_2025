@@ -118,6 +118,18 @@ export const useDashboardData = (email: string) => {
         console.log('Dashboard data processed:', result);
         return result;
       } catch (error) {
+        console.error('Dashboard data error:', error);
+        
+        // Return partial data instead of throwing an error
+        return {
+          scenarios: [],
+          sessions: [],
+          timestamp: new Date().toISOString(),
+          email,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          partial: true
+        };
+      }r) {
         console.error('Error fetching dashboard data:', error);
         throw error;
       }
