@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Upload, Database, FileText, Search, Plus, Server, RefreshCw } from "lucide-react";
+import { Trash2, Upload, Database, FileText, Search, Plus, Server, RefreshCw, Users } from "lucide-react";
 
 interface DocumentData {
   title: string;
@@ -350,13 +350,23 @@ export default function AdminPage() {
               Gérez vos documents et interrogez la base de données en langage naturel
             </p>
           </div>
-          <Button 
-            onClick={() => window.location.href = `/?email=${encodeURIComponent(adminEmail)}`}
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-          >
-            <Search className="h-4 w-4" />
-            Accéder au Chatbot
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => window.location.href = `/teacher/${encodeURIComponent(adminEmail)}`}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Users className="h-4 w-4" />
+              Page Enseignant
+            </Button>
+            <Button 
+              onClick={() => window.location.href = `/?email=${encodeURIComponent(adminEmail)}`}
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              <Search className="h-4 w-4" />
+              Accéder au Chatbot
+            </Button>
+          </div>
         </div>
       </div>
 
