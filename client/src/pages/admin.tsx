@@ -398,20 +398,27 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  Ajouter un Document
+                  Ajouter du Texte dans l'Index
                 </CardTitle>
                 <CardDescription>
-                  Enrichissez la base de connaissances avec de nouveaux documents
+                  Saisissez du texte directement dans l'index Pinecone actuellement actif
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Index actuel :</strong> Ce contenu sera ajouté à l'index Pinecone actuellement sélectionné. 
+                    Vous pouvez coller du texte depuis Word, des sites web, ou saisir directement.
+                  </p>
+                </div>
+
                 <div>
                   <Label htmlFor="title">Titre du document</Label>
                   <Input
                     id="title"
                     value={documentData.title}
                     onChange={(e) => setDocumentData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Ex: Guide d'utilisation..."
+                    placeholder="Ex: Protocole de soins pédiatriques..."
                   />
                 </div>
                 
@@ -439,14 +446,17 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="content">Contenu</Label>
+                  <Label htmlFor="content">Contenu du document</Label>
                   <Textarea
                     id="content"
                     value={documentData.content}
                     onChange={(e) => setDocumentData(prev => ({ ...prev, content: e.target.value }))}
-                    placeholder="Collez ici le contenu de votre document..."
+                    placeholder="Collez ici le contenu de votre document (copié depuis Word, un site web, etc.) ou saisissez directement..."
                     className="min-h-32"
                   />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    💡 Astuce : Vous pouvez copier-coller depuis n'importe quelle source (Word, PDF, web, etc.)
+                  </p>
                 </div>
 
                 <Button 
@@ -454,7 +464,7 @@ export default function AdminPage() {
                   disabled={uploadMutation.isPending}
                   className="w-full"
                 >
-                  {uploadMutation.isPending ? "Traitement..." : "Ajouter à la base de connaissances"}
+                  {uploadMutation.isPending ? "📤 Traitement..." : "📤 Ajouter dans l'Index Actif"}
                 </Button>
               </CardContent>
             </Card>
@@ -503,6 +513,39 @@ export default function AdminPage() {
 
         {/* Index Management Tab */}
         <TabsContent value="indexes" className="space-y-6">
+          {/* Rules and Instructions */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-800">
+                <Server className="h-5 w-5" />
+                Règles pour les Index Pinecone
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <h4 className="font-semibold text-blue-800 mb-2">📝 Règles de nommage :</h4>
+                  <ul className="text-sm space-y-1 text-blue-700">
+                    <li>• Lettres minuscules uniquement (a-z)</li>
+                    <li>• Chiffres autorisés (0-9)</li>
+                    <li>• Tirets (-), points (.) et underscores (_)</li>
+                    <li>• Maximum 45 caractères</li>
+                    <li>• Exemples valides: cours-pediatrie, ecos_scenarios, documents.medicaux</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-blue-800 mb-2">📚 Utilisation :</h4>
+                  <ul className="text-sm space-y-1 text-blue-700">
+                    <li>• Un index = une base de connaissances spécialisée</li>
+                    <li>• Changez d'index pour cibler différents domaines</li>
+                    <li>• Uploadez des PDF ou saisissez du texte dans l'index actif</li>
+                    <li>• Les documents sont automatiquement découpés en sections</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid gap-6 md:grid-cols-2">
             {/* Create Index Card */}
             <Card>
@@ -512,7 +555,7 @@ export default function AdminPage() {
                   Créer un Index Pinecone
                 </CardTitle>
                 <CardDescription>
-                  Créez un nouvel index pour organiser vos documents
+                  Créez un nouvel index pour organiser vos documents par thématique
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -520,23 +563,27 @@ export default function AdminPage() {
                   <Label htmlFor="indexName">Nom de l'index</Label>
                   <Input
                     id="indexName"
-                    placeholder="ex: cours-mathematiques"
+                    placeholder="ex: cours-pediatrie, ecos_scenarios, documents.medicaux"
                     value={indexData.name}
                     onChange={(e) => setIndexData(prev => ({ ...prev, name: e.target.value }))}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    Lettres minuscules, chiffres et tirets uniquement
+                    Respectez les règles de nommage ci-dessus
                   </p>
                 </div>
                 
                 <div>
-                  <Label htmlFor="dimension">Dimension (par défaut: 1536)</Label>
+                  <Label htmlFor="dimension">Dimension des vecteurs</Label>
                   <Input
                     id="dimension"
                     type="number"
                     value={indexData.dimension}
                     onChange={(e) => setIndexData(prev => ({ ...prev, dimension: parseInt(e.target.value) || 1536 }))}
+                    disabled
                   />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Valeur optimale pour OpenAI text-embedding-3-small
+                  </p>
                 </div>
                 
                 <Button 
@@ -557,23 +604,35 @@ export default function AdminPage() {
                   Changer d'Index
                 </CardTitle>
                 <CardDescription>
-                  Basculez vers un index existant
+                  Basculez vers un index existant pour charger/gérer ses documents
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Important :</strong> Après avoir changé d'index, vous pourrez :
+                  </p>
+                  <ul className="text-sm text-yellow-700 mt-1 ml-4">
+                    <li>• Voir les documents de cet index dans l'onglet "Documents"</li>
+                    <li>• Uploader de nouveaux PDF dans cet index</li>
+                    <li>• Ajouter du texte directement dans cet index</li>
+                    <li>• Le chatbot utilisera uniquement cet index pour répondre</li>
+                  </ul>
+                </div>
+
                 <div>
-                  <Label>Index disponibles</Label>
+                  <Label>Sélectionner un index</Label>
                   {indexesLoading ? (
                     <div className="text-sm text-muted-foreground">Chargement...</div>
                   ) : (
                     <Select value={selectedIndex} onValueChange={setSelectedIndex}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un index" />
+                        <SelectValue placeholder="Choisir un index pour charger ses documents" />
                       </SelectTrigger>
                       <SelectContent>
                         {indexes?.indexes?.map((index: string) => (
                           <SelectItem key={index} value={index}>
-                            {index}
+                            📁 {index}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -586,19 +645,22 @@ export default function AdminPage() {
                   disabled={switchIndexMutation.isPending || !selectedIndex}
                   className="w-full"
                 >
-                  {switchIndexMutation.isPending ? "Changement..." : "Changer d'Index"}
+                  {switchIndexMutation.isPending ? "Changement..." : "Activer cet Index"}
                 </Button>
 
                 {/* Current indexes list */}
                 <div className="space-y-2">
-                  <Label>Index disponibles :</Label>
+                  <Label>Tous vos index :</Label>
                   <div className="flex flex-wrap gap-2">
                     {indexes?.indexes?.map((index: string) => (
-                      <Badge key={index} variant="secondary">
-                        {index}
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        📁 {index}
                       </Badge>
                     ))}
                   </div>
+                  {indexes?.indexes?.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Aucun index trouvé. Créez-en un d'abord.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -607,6 +669,37 @@ export default function AdminPage() {
 
         {/* PDF Upload Tab */}
         <TabsContent value="pdf" className="space-y-6">
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-800">
+                <Upload className="h-5 w-5" />
+                Comment charger des documents dans un index ?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <h4 className="font-semibold text-green-800 mb-2">📄 Upload de PDF :</h4>
+                  <ul className="text-sm space-y-1 text-green-700">
+                    <li>• Sélectionnez l'index de destination dans l'onglet "Index Pinecone"</li>
+                    <li>• Uploadez votre PDF ici avec un titre et une catégorie</li>
+                    <li>• Le contenu sera automatiquement découpé et indexé</li>
+                    <li>• Formats supportés : PDF avec texte extractible</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-green-800 mb-2">✏️ Saisie de texte :</h4>
+                  <ul className="text-sm space-y-1 text-green-700">
+                    <li>• Utilisez l'onglet "Documents" pour saisir du texte directement</li>
+                    <li>• Collez du contenu depuis Word, sites web, etc.</li>
+                    <li>• Le texte sera traité comme un PDF</li>
+                    <li>• Idéal pour du contenu court ou formaté</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -614,16 +707,23 @@ export default function AdminPage() {
                 Upload et Traitement de PDF
               </CardTitle>
               <CardDescription>
-                Uploadez un fichier PDF et ajoutez-le automatiquement à votre base de connaissances
+                Uploadez un fichier PDF dans l'index Pinecone actuellement actif
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Index actuel :</strong> Ce PDF sera ajouté à l'index Pinecone actuellement sélectionné. 
+                  Changez d'index dans l'onglet "Index Pinecone" si nécessaire.
+                </p>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <Label htmlFor="pdfTitle">Titre du document</Label>
                   <Input
                     id="pdfTitle"
-                    placeholder="ex: Cours de Mathématiques - Chapitre 1"
+                    placeholder="ex: Cours de Pédiatrie - Chapitre 1"
                     value={pdfUploadData.title}
                     onChange={(e) => setPdfUploadData(prev => ({ ...prev, title: e.target.value }))}
                   />
@@ -664,7 +764,7 @@ export default function AdminPage() {
                 />
                 {pdfUploadData.file && (
                   <p className="text-sm text-green-600 mt-1">
-                    Fichier sélectionné : {pdfUploadData.file.name}
+                    📁 Fichier sélectionné : {pdfUploadData.file.name}
                   </p>
                 )}
               </div>
@@ -674,13 +774,17 @@ export default function AdminPage() {
                 disabled={uploadPDFMutation.isPending || !pdfUploadData.file || !pdfUploadData.title}
                 className="w-full"
               >
-                {uploadPDFMutation.isPending ? "Traitement en cours..." : "Uploader et Traiter le PDF"}
+                {uploadPDFMutation.isPending ? "📤 Traitement en cours..." : "📤 Uploader dans l'Index Actif"}
               </Button>
 
-              <div className="text-sm text-muted-foreground">
-                <p>• Le PDF sera automatiquement divisé en sections pour une recherche optimale</p>
-                <p>• Seuls les fichiers PDF avec du texte extractible sont supportés</p>
-                <p>• Taille maximale : 50MB</p>
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Spécifications techniques :</div>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>• 📝 Le PDF sera automatiquement divisé en sections pour une recherche optimale</p>
+                  <p>• 🔍 Seuls les fichiers PDF avec du texte extractible sont supportés</p>
+                  <p>• 📏 Taille maximale : 50MB</p>
+                  <p>• 🧩 Chaque section deviendra un "chunk" recherchable dans l'index</p>
+                </div>
               </div>
             </CardContent>
           </Card>
