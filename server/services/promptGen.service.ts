@@ -38,11 +38,11 @@ ${allContext ? `Utilise également ces informations contextuelles pour enrichir 
 Assure-toi que le prompt soit suffisamment détaillé pour permettre une interaction réaliste et pédagogique de 15-20 minutes.`;
 
       const response = await openaiService.generateResponse(
-        `Génère un prompt détaillé pour un patient virtuel basé sur cette description de scénario ECOS:\n\n${scenarioDescription}\n\nDocuments de référence:\n${contextDocs.join('\n\n')}`,
-        contextDocs.length > 0 ? contextDocs.join('\n\n') : ""
+        `Génère un prompt détaillé pour un patient virtuel basé sur cette description de scénario ECOS:\n\n${teacherInput}\n\nDocuments de référence:\n${contextDocs.join('\n\n')}`,
+        allContext
       );
 
-      const patientPrompt = response;
+      return response;
     } catch (error) {
       console.error('Error generating patient prompt:', error);
       throw new Error('Failed to generate patient prompt');
@@ -68,23 +68,10 @@ Chaque critère doit avoir:
 
 Retourne le résultat en format JSON structuré.`;
 
-      const response = await openaiService.createCompletion({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: `Crée des critères d'évaluation pour ce scénario ECOS:\n\n${scenarioDescription}`
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 1200
-      });
-
-      const criteriaText = response.choices[0].message.content;
+      const criteriaText = await openaiService.generateResponse(
+        `Crée des critères d'évaluation pour ce scénario ECOS:\n\n${scenarioDescription}`,
+        systemPrompt
+      );
 
       // Try to parse as JSON, fallback to structured text if it fails
       try {

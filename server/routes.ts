@@ -620,13 +620,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate patient prompt if not provided
       let finalPatientPrompt = patientPrompt;
       if (!finalPatientPrompt) {
-        finalPatientPrompt = await promptGenService.generatePatientPrompt(description);
+        try {
+          finalPatientPrompt = await promptGenService.generatePatientPrompt(description);
+        } catch (error) {
+          console.log('Auto-generation failed, using default prompt');
+          finalPatientPrompt = `Tu es un patient présentant les symptômes suivants: ${description}. Réponds aux questions de l'étudiant en médecine de manière réaliste et cohérente avec ton état.`;
+        }
       }
 
       // Generate evaluation criteria if not provided
       let finalCriteria = evaluationCriteria;
       if (!finalCriteria) {
-        finalCriteria = await promptGenService.generateEvaluationCriteria(description);
+        try {
+          finalCriteria = await promptGenService.generateEvaluationCriteria(description);
+        } catch (error) {
+          console.log('Auto-generation failed, using default criteria');
+          finalCriteria = {
+            "communication": 20,
+            "anamnese": 25,
+            "examen_physique": 25,
+            "raisonnement_clinique": 30
+          };
+        }
       }
 
       const result = await db.insert(ecosScenarios).values({
