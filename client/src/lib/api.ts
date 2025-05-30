@@ -73,6 +73,31 @@ export const teacherApi = {
     console.log('API response data:', data);
     return data;
   },
+
+  getIndexes: async (email: string) => {
+    console.log('API: Fetching indexes for email:', email);
+    const url = `/api/admin/indexes?email=${encodeURIComponent(email)}`;
+    console.log('API: Request URL:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('API: Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API: Error response:', errorText);
+      throw new Error(`Failed to fetch indexes: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('API: Indexes response data:', data);
+    return data;
+  },
 };
 
 // Hook for dashboard data
@@ -83,29 +108,29 @@ export const useDashboardData = (email: string) => {
       if (!email) {
         throw new Error('Email is required');
       }
-      
+
       try {
         console.log('Fetching dashboard data for email:', email);
-        
+
         const [scenariosResponse, sessionsResponse] = await Promise.all([
           fetch(`/api/ecos/scenarios?email=${encodeURIComponent(email)}`),
           fetch(`/api/ecos/sessions?email=${encodeURIComponent(email)}`)
         ]);
-        
+
         if (!scenariosResponse.ok) {
           throw new Error(`Scenarios API error: ${scenariosResponse.status}`);
         }
-        
+
         if (!sessionsResponse.ok) {
           throw new Error(`Sessions API error: ${sessionsResponse.status}`);
         }
-        
+
         const scenariosData = await scenariosResponse.json();
         const sessionsData = await sessionsResponse.json();
-        
+
         console.log('Dashboard scenarios:', scenariosData);
         console.log('Dashboard sessions:', sessionsData);
-        
+
         const result = {
           scenarios: scenariosData.scenarios || [],
           sessions: sessionsData.sessions || [],
@@ -114,12 +139,12 @@ export const useDashboardData = (email: string) => {
           scenariosRaw: scenariosData,
           sessionsRaw: sessionsData
         };
-        
+
         console.log('Dashboard data processed:', result);
         return result;
       } catch (error) {
         console.error('Dashboard data error:', error);
-        
+
         // Return partial data instead of throwing an error
         return {
           scenarios: [],

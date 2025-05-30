@@ -86,15 +86,23 @@ export default function AdminPage() {
   });
 
   // Fetch available indexes
-  const { data: indexesData, isLoading: indexesLoading, error: indexesError, refetch: refetchIndexes } = useQuery({
-    queryKey: ['/api/admin/indexes'],
+  const {
+    data: indexesData,
+    isLoading: indexesLoading,
+    error: indexesError,
+    refetch: refetchIndexes,
+  } = useQuery({
+    queryKey: ['pinecone-indexes', adminEmail],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/admin/indexes?email=${encodeURIComponent(adminEmail)}`);
-      const data = await res.json();
-      console.log('Frontend - Index data received:', data);
-      return data;
+      if (!adminEmail) throw new Error('Email required');
+      console.log('Fetching indexes for email:', adminEmail);
+      const result = await apiRequest("GET", `/api/admin/indexes?email=${encodeURIComponent(adminEmail)}`);
+      console.log('Indexes API response:', result);
+      return await result.json();
     },
     enabled: !!adminEmail,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
   });
 
   // Upload document mutation
@@ -653,16 +661,33 @@ export default function AdminPage() {
                 {/* Current indexes list */}
                 <div className="space-y-2">
                   <Label>Tous vos index :</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {indexesData?.indexes?.map((index: any) => (
-                      <Badge key={index.name} variant="secondary" className="text-xs">
-                        📁 {index.name}
-                      </Badge>
-                    ))}
-                  </div>
-                  {indexesData?.indexes?.length === 0 && (
-                    <p className="text-sm text-muted-foreground">Aucun index trouvé. Créez-en un d'abord.</p>
+                  
+                  {indexesError && (
+                    <div className="bg-red-50 border border-red-200 rounded p-3 mb-4">
+                      <p className="text-red-600 text-sm">
+                        Erreur lors du chargement des index: {indexesError.message}
+                      </p>
+                    </div>
                   )}
+
+                  {indexesLoading && (
+                    <div className="text-center py-4">
+                      <p className="text-gray-500">Chargement des index...</p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    {indexesData?.indexes?.length > 0 ? (
+                        indexesData.indexes.map((index: any) => (
+                          <Badge key={index.name} variant="secondary" className="text-xs">
+                            📁 {index.name}
+                          </Badge>
+                        ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Aucun index trouvé. Créez-en un d'abord.</p>
+                    )}
+                    
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -849,7 +874,7 @@ export default function AdminPage() {
                         </pre>
                       ) : (
                         <div className="text-muted-foreground">Aucun résultat</div>
-                      )}
+                                            )}
                     </div>
                   </div>
                 </div>
