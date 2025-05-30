@@ -45,10 +45,10 @@ export default function TeacherPage({ email }: TeacherPageProps) {
   });
 
   const stats = {
-    totalScenarios: dashboardData?.scenarios.length || 0,
-    activeSessions: dashboardData?.sessions.filter((s: any) => s.status === 'in_progress').length || 0,
-    completedSessions: dashboardData?.sessions.filter((s: any) => s.status === 'completed').length || 0,
-    totalStudents: new Set(dashboardData?.sessions.map((s: any) => s.studentEmail)).size || 0
+    totalScenarios: scenarios.length,
+    activeSessions: sessions.filter((s: any) => s.status === 'in_progress').length,
+    completedSessions: sessions.filter((s: any) => s.status === 'completed').length,
+    totalStudents: new Set(sessions.map((s: any) => s.studentEmail)).size
   };
 
   if (dashboardLoading) {
@@ -61,6 +61,10 @@ export default function TeacherPage({ email }: TeacherPageProps) {
       </div>
     );
   }
+
+  // Ensure we have data before rendering stats
+  const scenarios = dashboardData?.scenarios || [];
+  const sessions = dashboardData?.sessions || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -163,11 +167,11 @@ export default function TeacherPage({ email }: TeacherPageProps) {
                 <CardTitle>Sessions en Cours</CardTitle>
               </CardHeader>
               <CardContent>
-                {dashboardData?.sessions.filter((s: any) => s.status === 'in_progress').length === 0 ? (
+                {sessions.filter((s: any) => s.status === 'in_progress').length === 0 ? (
                   <p className="text-gray-500 text-center py-8">Aucune session active</p>
                 ) : (
                   <div className="space-y-4">
-                    {dashboardData?.sessions
+                    {sessions
                       .filter((s: any) => s.status === 'in_progress')
                       .map((session: any) => (
                         <div key={session.id} className="border border-gray-200 rounded-lg p-4">
@@ -197,11 +201,11 @@ export default function TeacherPage({ email }: TeacherPageProps) {
                 <CardTitle>Rapports d'Évaluation</CardTitle>
               </CardHeader>
               <CardContent>
-                {dashboardData?.sessions.filter((s: any) => s.status === 'completed').length === 0 ? (
+                {sessions.filter((s: any) => s.status === 'completed').length === 0 ? (
                   <p className="text-gray-500 text-center py-8">Aucune session terminée</p>
                 ) : (
                   <div className="space-y-4">
-                    {dashboardData?.sessions
+                    {sessions
                       .filter((s: any) => s.status === 'completed')
                       .map((session: any) => (
                         <div key={session.id} className="border border-gray-200 rounded-lg p-4">
