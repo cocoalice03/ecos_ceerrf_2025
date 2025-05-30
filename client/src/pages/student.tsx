@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Clock, CheckCircle, BookOpen, TrendingUp } from "lucide-react";
 import PatientSimulator from "@/components/ecos/PatientSimulator";
 import EvaluationReport from "@/components/ecos/EvaluationReport";
+import StudentDiagnostic from "@/components/debug/StudentDiagnostic";
 import { apiRequest } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 
@@ -18,6 +19,7 @@ interface StudentPageProps {
 export default function StudentPage({ email }: StudentPageProps) {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
 
   // Fetch available scenarios
   const { data: scenarios, isLoading: scenariosLoading } = useQuery({
@@ -68,6 +70,25 @@ export default function StudentPage({ email }: StudentPageProps) {
     setViewingReport(sessionId);
   };
 
+  // If viewing diagnostic
+  if (showDiagnostic) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200 mb-6">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">Diagnostic Étudiant</h1>
+              <Button variant="outline" onClick={() => setShowDiagnostic(false)}>
+                Retour au Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+        <StudentDiagnostic email={email} />
+      </div>
+    );
+  }
+
   // If viewing report
   if (viewingReport) {
     return (
@@ -116,9 +137,19 @@ export default function StudentPage({ email }: StudentPageProps) {
               <h1 className="text-2xl font-bold text-gray-900">Dashboard Étudiant ECOS</h1>
               <p className="text-gray-600">Bienvenue, {email}</p>
             </div>
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              Mode Étudiant
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowDiagnostic(true)}
+                className="text-orange-600 border-orange-200 hover:bg-orange-50"
+              >
+                🔧 Diagnostic
+              </Button>
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                Mode Étudiant
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
@@ -195,7 +226,16 @@ export default function StudentPage({ email }: StudentPageProps) {
                     ))}
                   </div>
                 ) : scenarios?.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">Aucun scénario disponible</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-4">Aucun scénario disponible</p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowDiagnostic(true)}
+                      className="text-orange-600 border-orange-200 hover:bg-orange-50"
+                    >
+                      🔧 Lancer le Diagnostic
+                    </Button>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {scenarios?.map((scenario: any) => (
