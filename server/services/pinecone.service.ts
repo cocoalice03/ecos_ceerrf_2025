@@ -233,14 +233,28 @@ export class PineconeService {
   /**
    * List all available Pinecone indexes
    */
-  async listIndexes(): Promise<string[]> {
+  async listIndexes(): Promise<Array<{name: string, status?: string, dimension?: number}>> {
     if (!this.pinecone) {
       throw new Error('Pinecone not initialized');
     }
 
     try {
       const indexesList = await this.pinecone.listIndexes();
-      return indexesList.indexes?.map(index => index.name) || [];
+      console.log('Pinecone indexes response:', indexesList);
+      
+      if (!indexesList.indexes) {
+        console.log('No indexes found in response');
+        return [];
+      }
+      
+      const indexes = indexesList.indexes.map(index => ({
+        name: index.name,
+        status: index.status?.ready ? 'ready' : 'not ready',
+        dimension: index.dimension
+      }));
+      
+      console.log('Processed indexes:', indexes);
+      return indexes;
     } catch (error) {
       console.error('Error listing Pinecone indexes:', error);
       throw error;

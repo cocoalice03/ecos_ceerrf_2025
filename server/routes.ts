@@ -453,11 +453,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
+      console.log('Fetching Pinecone indexes for admin:', email);
       const indexes = await pineconeService.listIndexes();
+      console.log('Retrieved indexes:', indexes);
+      
       return res.status(200).json({ indexes });
     } catch (error) {
       console.error("Error listing Pinecone indexes:", error);
-      return res.status(500).json({ message: "Erreur lors de la récupération des index" });
+      return res.status(500).json({ 
+        message: "Erreur lors de la récupération des index",
+        details: error.message 
+      });
     }
   });
 
