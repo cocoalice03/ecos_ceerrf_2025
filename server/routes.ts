@@ -672,8 +672,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email } = req.query;
       
+      // Debug logging
+      console.log('ECOS Scenarios - Full query:', req.query);
+      console.log('ECOS Scenarios - Email received:', email);
+      console.log('ECOS Scenarios - Email type:', typeof email);
+      console.log('ECOS Scenarios - Is admin authorized:', isAdminAuthorized(email as string));
+      
       if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
-        return res.status(403).json({ message: "Accès non autorisé" });
+        console.log('ECOS Scenarios - Authorization failed for:', email);
+        return res.status(403).json({ 
+          message: "Accès non autorisé",
+          debug: {
+            receivedEmail: email,
+            emailType: typeof email,
+            isAuthorized: isAdminAuthorized(email as string)
+          }
+        });
       }
       
       const scenarios = await db.select().from(ecosScenarios).orderBy(ecosScenarios.createdAt);

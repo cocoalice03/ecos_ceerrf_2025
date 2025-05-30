@@ -30,6 +30,41 @@ export function addDiagnosticRoutes(app: any) {
     }
   });
 
+  // Simple auth test endpoint
+  app.get("/api/diagnostic/auth-test", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+      
+      function testIsAdminAuthorized(email: string): boolean {
+        if (!email || typeof email !== 'string') {
+          return false;
+        }
+        const normalizedEmail = email.toLowerCase().trim();
+        const normalizedAdminEmails = ADMIN_EMAILS.map(adminEmail => adminEmail.toLowerCase().trim());
+        return normalizedAdminEmails.includes(normalizedEmail);
+      }
+      
+      const result = {
+        inputEmail: email,
+        emailType: typeof email,
+        isString: typeof email === 'string',
+        normalizedEmail: typeof email === 'string' ? email.toLowerCase().trim() : null,
+        adminEmails: ADMIN_EMAILS,
+        normalizedAdminEmails: ADMIN_EMAILS.map(e => e.toLowerCase().trim()),
+        isAuthorized: testIsAdminAuthorized(email as string),
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   app.get("/api/diagnostic/health", async (req: Request, res: Response) => {
     try {
       const health = {

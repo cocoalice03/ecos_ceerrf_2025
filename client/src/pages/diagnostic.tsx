@@ -12,7 +12,7 @@ export default function DiagnosticPage() {
       </div>
       <div className="py-6">
         <DeepDiagnostic />
-        <AuthDebugger />
+        <AuthDebugger email="cherubindavid@gmail.com" />
       </div>
     </div>
   );

@@ -100,24 +100,12 @@ function App({ initialEmail }: AppProps) {
   useEffect(() => {
     async function detectUser() {
       try {
-        const response = await fetch('/__replauthuser');
-        if (response.ok) {
-          const userData = await response.json();
-          if (userData && userData.name) {
-            const emailFromAuth = `${userData.name.toLowerCase().replace(/\s+/g, '')}@replit.com`;
-            console.log('Detected email:', emailFromAuth);
-            setEmail(emailFromAuth);
-            return;
-          }
-        }
-
-        // Fallback to test email for development
+        // Always use the admin email for testing since we're debugging auth issues
         const testEmail = 'cherubindavid@gmail.com';
-        console.log('Using test email for development:', testEmail);
+        console.log('Using admin email for debugging:', testEmail);
         setEmail(testEmail);
       } catch (error) {
         console.error('Error detecting user:', error);
-        // Fallback to test email for development
         const testEmail = 'cherubindavid@gmail.com';
         setEmail(testEmail);
       } finally {
