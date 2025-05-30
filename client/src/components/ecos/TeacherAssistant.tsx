@@ -28,6 +28,7 @@ interface TeacherAssistantProps {
 export default function TeacherAssistant({ email }: TeacherAssistantProps) {
   const [selectedScenario, setSelectedScenario] = useState<EcosScenario | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState("scenarios");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -36,7 +37,7 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
   });
 
   // Fetch scenarios
-  const { data: scenarios, isLoading, refetch } = useQuery({
+  const { data: scenarios, isLoading, refetch: refetchScenarios } = useQuery({
     queryKey: ['ecos-scenarios', email],
     queryFn: async () => {
       const response = await apiRequest('GET', `/api/ecos/scenarios?email=${email}`);
@@ -53,9 +54,11 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
       });
     },
     onSuccess: () => {
-      refetch();
+      refetchScenarios();
       setIsCreating(false);
       setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" });
+      // Switch to scenarios tab to show the new scenario
+      setActiveTab("scenarios");
     }
   });
 
@@ -65,7 +68,7 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
       return apiRequest('DELETE', `/api/ecos/scenarios/${scenarioId}?email=${email}`);
     },
     onSuccess: () => {
-      refetch();
+      refetchScenarios();
       setSelectedScenario(null);
     }
   });
@@ -117,7 +120,7 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
         <p className="text-gray-600">Créez et gérez vos scénarios d'examen clinique</p>
       </div>
 
-      <Tabs defaultValue="scenarios" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="scenarios">Mes Scénarios</TabsTrigger>
           <TabsTrigger value="create">Créer un Scénario</TabsTrigger>
