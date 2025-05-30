@@ -3,9 +3,193 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw } from "lucide-react";
+import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2 } from "lucide-react";
 import { useDashboardData } from '@/lib/api';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from '@/lib/queryClient';
+
+interface ScenarioCreationFormProps {
+  email: string;
+  onSuccess: () => void;
+}
+
+function ScenarioCreationForm({ email, onSuccess }: ScenarioCreationFormProps) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    patientPrompt: "",
+    evaluationCriteria: ""
+  });
+
+  const queryClient = useQueryClient();
+
+  // Create scenario mutation
+  const createScenarioMutation = useMutation({
+    mutationFn: async (data: any) => {
+      console.log("Creating scenario:", { email, ...data });
+      return apiRequest('POST', '/api/ecos/scenarios', {
+        email,
+        ...data
+      });
+    },
+    onSuccess: (response) => {
+      console.log("Scenario created successfully:", response);
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
+      setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" });
+      onSuccess();
+      alert("Scénario créé avec succès !");
+    },
+    onError: (error) => {
+      console.error("Error creating scenario:", error);
+      alert("Erreur lors de la création du scénario. Veuillez réessayer.");
+    }
+  });
+
+  // Generate prompt mutation
+  const generatePromptMutation = useMutation({
+    mutationFn: async (input: string) => {
+      return apiRequest('POST', '/api/ecos/prompt-assistant', {
+        email,
+        input,
+        contextDocs: []
+      });
+    },
+    onSuccess: (data) => {
+      setFormData(prev => ({ ...prev, patientPrompt: data.prompt }));
+    }
+  });
+
+  const handleCreateScenario = () => {
+    if (!formData.title || !formData.description) {
+      alert("Veuillez remplir au moins le titre et la description du scénario.");
+      return;
+    }
+
+    let criteria = undefined;
+    
+    if (formData.evaluationCriteria && formData.evaluationCriteria.trim()) {
+      try {
+        criteria = JSON.parse(formData.evaluationCriteria);
+      } catch (error) {
+        alert("Erreur : Les critères d'évaluation doivent être au format JSON valide. Exemple : {\"anamnese\": 20, \"examen_physique\": 30}");
+        return;
+      }
+    }
+    
+    createScenarioMutation.mutate({
+      title: formData.title,
+      description: formData.description,
+      patientPrompt: formData.patientPrompt || undefined,
+      evaluationCriteria: criteria
+    });
+  };
+
+  const handleGeneratePrompt = () => {
+    if (formData.description) {
+      generatePromptMutation.mutate(formData.description);
+    } else {
+      alert("Veuillez d'abord saisir une description du scénario.");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Label htmlFor="title">Titre du Scénario *</Label>
+        <Input
+          id="title"
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          placeholder="Ex: Consultation cardiologique - Douleur thoracique"
+          className="mt-1"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description du Scénario *</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          placeholder="Décrivez le contexte clinique : patient, symptômes, antécédents, situation d'urgence, etc."
+          rows={4}
+          className="mt-1"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Décrivez précisément la situation clinique que l'étudiant devra gérer.
+        </p>
+      </div>
+
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <Label htmlFor="patientPrompt">Prompt du Patient Virtuel</Label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGeneratePrompt}
+            disabled={!formData.description || generatePromptMutation.isPending}
+          >
+            <Wand2 className="w-4 h-4 mr-1" />
+            {generatePromptMutation.isPending ? "Génération..." : "Générer avec IA"}
+          </Button>
+        </div>
+        <Textarea
+          id="patientPrompt"
+          value={formData.patientPrompt}
+          onChange={(e) => setFormData(prev => ({ ...prev, patientPrompt: e.target.value }))}
+          placeholder="Instructions détaillées pour l'IA qui jouera le rôle du patient. Incluez la personnalité, les réponses aux questions, l'état émotionnel, etc."
+          rows={8}
+          className="mt-1"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Si laissé vide, un prompt sera généré automatiquement basé sur la description.
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="evaluationCriteria">Critères d'Évaluation (Format JSON)</Label>
+        <Textarea
+          id="evaluationCriteria"
+          value={formData.evaluationCriteria}
+          onChange={(e) => setFormData(prev => ({ ...prev, evaluationCriteria: e.target.value }))}
+          placeholder={`{
+  "communication": 20,
+  "anamnese": 25,
+  "examen_physique": 25,
+  "raisonnement_clinique": 30
+}`}
+          rows={6}
+          className="mt-1 font-mono text-sm"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Format JSON requis. Chaque critère avec sa pondération (total libre). Si laissé vide, des critères par défaut seront appliqués.
+        </p>
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <Button
+          onClick={handleCreateScenario}
+          disabled={!formData.title || !formData.description || createScenarioMutation.isPending}
+          className="flex-1"
+        >
+          {createScenarioMutation.isPending ? "Création en cours..." : "Créer le Scénario"}
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={() => setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" })}
+          disabled={createScenarioMutation.isPending}
+        >
+          Réinitialiser
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 interface TeacherPageProps {
   email?: string;
@@ -243,23 +427,17 @@ function TeacherPage({ email }: TeacherPageProps) {
           </TabsContent>
 
           <TabsContent value="create">
-            <Card>
-              <CardHeader>
-                <CardTitle>Créer un Nouveau Scénario</CardTitle>
-                <CardDescription>Définissez un nouveau scénario ECOS pour vos étudiants</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Créateur de Scénarios ECOS</h3>
-                  <p className="text-gray-600 mb-4">Utilisez l'assistant enseignant pour créer des scénarios détaillés</p>
-                  <Button onClick={() => window.open('/teacher-assistant', '_blank')}>
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Ouvrir l'Assistant Enseignant
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Créer un Nouveau Scénario ECOS</CardTitle>
+                  <CardDescription>Définissez un nouveau scénario d'examen clinique structuré</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ScenarioCreationForm email={email || ''} onSuccess={() => setActiveTab('scenarios')} />
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="sessions">
