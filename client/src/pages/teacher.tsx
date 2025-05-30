@@ -128,9 +128,10 @@ function TeacherPage({ email }: TeacherPageProps) {
 
         {/* Tabs for different sections */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="scenarios">Scénarios</TabsTrigger>
+            <TabsTrigger value="create">Créer</TabsTrigger>
             <TabsTrigger value="sessions">Sessions</TabsTrigger>
           </TabsList>
 
@@ -193,9 +194,15 @@ function TeacherPage({ email }: TeacherPageProps) {
 
           <TabsContent value="scenarios">
             <Card>
-              <CardHeader>
-                <CardTitle>Gestion des Scénarios</CardTitle>
-                <CardDescription>Créez et gérez vos scénarios ECOS</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>Gestion des Scénarios</CardTitle>
+                  <CardDescription>Créez et gérez vos scénarios ECOS</CardDescription>
+                </div>
+                <Button onClick={() => setActiveTab('create')}>
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Nouveau Scénario
+                </Button>
               </CardHeader>
               <CardContent>
                 {scenarios.length > 0 ? (
@@ -231,6 +238,26 @@ function TeacherPage({ email }: TeacherPageProps) {
                     </Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="create">
+            <Card>
+              <CardHeader>
+                <CardTitle>Créer un Nouveau Scénario</CardTitle>
+                <CardDescription>Définissez un nouveau scénario ECOS pour vos étudiants</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Créateur de Scénarios ECOS</h3>
+                  <p className="text-gray-600 mb-4">Utilisez l'assistant enseignant pour créer des scénarios détaillés</p>
+                  <Button onClick={() => window.open('/teacher-assistant', '_blank')}>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Ouvrir l'Assistant Enseignant
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
