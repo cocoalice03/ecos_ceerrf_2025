@@ -52,7 +52,7 @@ export default function AdminPage() {
   const [documentData, setDocumentData] = useState<DocumentData>({
     title: "",
     content: "",
-    category: "general"
+    category: "pediatrie"
   });
 
   // SQL query state
@@ -68,7 +68,7 @@ export default function AdminPage() {
   // PDF upload state
   const [pdfUploadData, setPdfUploadData] = useState<PDFUploadData>({
     title: "",
-    category: "general",
+    category: "pediatrie",
     file: null
   });
 
@@ -106,7 +106,7 @@ export default function AdminPage() {
         title: "Document ajouté",
         description: `${data.chunks_created} morceaux créés pour "${data.document_title}"`,
       });
-      setDocumentData({ title: "", content: "", category: "general" });
+      setDocumentData({ title: "", content: "", category: "pediatrie" });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/documents'] });
     },
     onError: (error: any) => {
@@ -235,7 +235,7 @@ export default function AdminPage() {
         title: "PDF traité",
         description: `${data.message} (${data.pages} pages, ${data.textLength} caractères)`,
       });
-      setPdfUploadData({ title: "", category: "general", file: null });
+      setPdfUploadData({ title: "", category: "pediatrie", file: null });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/documents'] });
     },
     onError: () => {
@@ -415,10 +415,15 @@ export default function AdminPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="general">Général</SelectItem>
-                      <SelectItem value="tutorial">Tutoriel</SelectItem>
-                      <SelectItem value="faq">FAQ</SelectItem>
-                      <SelectItem value="documentation">Documentation</SelectItem>
+                      <SelectItem value="pediatrie">Pédiatrie</SelectItem>
+                      <SelectItem value="kinesitherapie-respiratoire">Kinésithérapie respiratoire</SelectItem>
+                      <SelectItem value="musculo-squelettique">Musculo-squelettique / Orthopédie</SelectItem>
+                      <SelectItem value="neurologie">Neurologie</SelectItem>
+                      <SelectItem value="geriatrie">Gériatrie</SelectItem>
+                      <SelectItem value="perineologie">Périnéologie & Obstétrique</SelectItem>
+                      <SelectItem value="oncologie">Oncologie</SelectItem>
+                      <SelectItem value="ergonomie">Ergonomie</SelectItem>
+                      <SelectItem value="transversaux">Domaines transversaux et émergents</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -624,14 +629,15 @@ export default function AdminPage() {
                       <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mathematiques">Mathématiques</SelectItem>
-                      <SelectItem value="physique">Physique</SelectItem>
-                      <SelectItem value="chimie">Chimie</SelectItem>
-                      <SelectItem value="informatique">Informatique</SelectItem>
-                      <SelectItem value="langues">Langues</SelectItem>
-                      <SelectItem value="histoire">Histoire</SelectItem>
-                      <SelectItem value="geographie">Géographie</SelectItem>
-                      <SelectItem value="general">Général</SelectItem>
+                      <SelectItem value="pediatrie">Pédiatrie</SelectItem>
+                      <SelectItem value="kinesitherapie-respiratoire">Kinésithérapie respiratoire</SelectItem>
+                      <SelectItem value="musculo-squelettique">Musculo-squelettique / Orthopédie</SelectItem>
+                      <SelectItem value="neurologie">Neurologie</SelectItem>
+                      <SelectItem value="geriatrie">Gériatrie</SelectItem>
+                      <SelectItem value="perineologie">Périnéologie & Obstétrique</SelectItem>
+                      <SelectItem value="oncologie">Oncologie</SelectItem>
+                      <SelectItem value="ergonomie">Ergonomie</SelectItem>
+                      <SelectItem value="transversaux">Domaines transversaux et émergents</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
