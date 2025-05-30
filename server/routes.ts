@@ -51,16 +51,16 @@ function isAdminAuthorized(email: string): boolean {
 function splitIntoChunks(text: string, chunkSize: number = 1000, overlap: number = 200): string[] {
   const chunks: string[] = [];
   let start = 0;
-  
+
   while (start < text.length) {
     const end = Math.min(start + chunkSize, text.length);
     const chunk = text.slice(start, end);
     chunks.push(chunk);
     start = end - overlap;
-    
+
     if (start >= text.length) break;
   }
-  
+
   return chunks;
 }
 
@@ -73,7 +73,7 @@ async function getDatabaseSchema(): Promise<string> {
       WHERE table_schema = 'public'
       ORDER BY table_name, ordinal_position
     `);
-    
+
     if (result.rows.length > 0) {
       const schema = result.rows.map(row => 
         `${row.table_name}.${row.column_name} (${row.data_type})`
@@ -117,7 +117,7 @@ async function executeSQLQuery(sqlQuery: string) {
     if (!normalizedQuery.startsWith('select')) {
       throw new Error('Seules les requêtes SELECT sont autorisées');
     }
-    
+
     const result = await db.execute(sqlQuery);
     return result.rows;
   } catch (error) {
@@ -154,23 +154,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Check for required fields
       const { email } = req.body;
-      
+
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
       }
-      
+
       // Optional: Verify webhook signature if Zapier provides it
       const signature = req.headers["x-webhook-signature"] as string;
       const webhookSecret = process.env.WEBHOOK_SECRET || "";
-      
+
       if (signature && webhookSecret) {
         if (!verifyWebhookSignature(req.body, signature, webhookSecret)) {
           return res.status(401).json({ message: "Invalid webhook signature" });
         }
       }
-      
+
       // Simple email validation - no session storage needed
-      
+
       // Return the session
       return res.status(200).json({ 
         message: "Session created successfully",
@@ -187,23 +187,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get user email from query params
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string") {
         return res.status(400).json({ message: "Valid email is required" });
       }
-      
+
       // Get today's date (UTC+2 timezone)
       const now = new Date();
       // Adjust to UTC+2 (2 hours ahead of UTC)
       now.setHours(now.getHours() + 2);
-      
+
       // Get user's daily counter
       const counter = await storage.getDailyCounter(email, now);
-      
+
       // Calculate questions used/remaining
       const questionsUsed = counter?.count || 0;
       const questionsRemaining = MAX_DAILY_QUESTIONS - questionsUsed;
-      
+
       return res.status(200).json({
         email,
         questionsUsed,
@@ -239,39 +239,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: [{ field: "email", message: "Email valide requis" }]
         });
       }
-      
+
       // Get today's date (UTC+2 timezone)
       const now = new Date();
       // Adjust to UTC+2 (2 hours ahead of UTC)
       now.setHours(now.getHours() + 2);
-      
+
       // Check if user has reached daily limit
       const counter = await storage.getDailyCounter(email, now);
       const questionsUsed = counter?.count || 0;
-      
+
       if (questionsUsed >= MAX_DAILY_QUESTIONS) {
         return res.status(429).json({ 
           message: "Daily question limit reached. Try again tomorrow.",
           limitReached: true
         });
       }
-      
+
       // 1. Use Pinecone to find relevant content
       const relevantContent = await pineconeService.searchRelevantContent(question);
-      
+
       // 2. Generate response using OpenAI and the relevant content
       const response = await openaiService.generateResponse(question, relevantContent);
-      
+
       // 3. Save the exchange
       const exchange = await storage.saveExchange({
         email,
         question,
         response
       });
-      
+
       // 4. Increment user's daily counter
       const updatedCounter = await storage.incrementDailyCounter(email, now);
-      
+
       // 5. Return the answer and updated status
       return res.status(200).json({
         id: exchange.id,
@@ -284,14 +284,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error processing question:", error);
-      
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           message: "Invalid request data", 
           errors: error.errors 
         });
       }
-      
+
       return res.status(500).json({ 
         message: "Failed to process your question. Please try again later." 
       });
@@ -303,14 +303,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get user email from query params
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string") {
         return res.status(400).json({ message: "Valid email is required" });
       }
-      
+
       // Get the chat history
       const exchanges = await storage.getExchangesByEmail(email, 50);
-      
+
       return res.status(200).json({ exchanges });
     } catch (error) {
       console.error("Error fetching chat history:", error);
@@ -327,22 +327,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: z.string().min(1),
         category: z.string().optional().default("general"),
       });
-      
+
       const { email, title, content, category } = adminSchema.parse(req.body);
-      
+
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       // Split content into chunks for better retrieval
       const chunks = splitIntoChunks(content, 1000, 200);
-      
+
       // Process each chunk and add to Pinecone
       const results = [];
       for (let i = 0; i < chunks.length; i++) {
         const chunkId = `${title.toLowerCase().replace(/\s+/g, '-')}-chunk-${i}`;
         const embedding = await pineconeService.getEmbedding(chunks[i]);
-        
+
         // Store in Pinecone with metadata
         const vectorData = {
           id: chunkId,
@@ -355,13 +355,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             timestamp: new Date().toISOString()
           }
         };
-        
+
         results.push(vectorData);
       }
-      
+
       // Bulk upsert to Pinecone
       await pineconeService.upsertVectors(results);
-      
+
       return res.status(200).json({ 
         message: "Document traité avec succès",
         chunks_created: chunks.length,
@@ -377,11 +377,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/documents", async (req: Request, res: Response) => {
     try {
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       const sources = await pineconeService.getAllSources();
       return res.status(200).json({ sources });
     } catch (error) {
@@ -395,11 +395,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { documentId } = req.params;
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       await pineconeService.deleteDocument(documentId);
       return res.status(200).json({ message: "Document supprimé avec succès" });
     } catch (error) {
@@ -416,22 +416,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         question: z.string().min(1),
         database_schema: z.string().optional(),
       });
-      
+
       const { email, question, database_schema } = nlSchema.parse(req.body);
-      
+
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       // Get database schema if not provided
       const schema = database_schema || await getDatabaseSchema();
-      
+
       // Convert natural language to SQL using OpenAI
       const sqlQuery = await openaiService.convertToSQL(question, schema);
-      
+
       // Execute the query safely (read-only)
       const results = await executeSQLQuery(sqlQuery);
-      
+
       return res.status(200).json({ 
         question,
         sql_query: sqlQuery,
@@ -448,11 +448,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/indexes", async (req: Request, res: Response) => {
     try {
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       const indexes = await pineconeService.listIndexes();
       return res.status(200).json({ indexes });
     } catch (error) {
@@ -469,18 +469,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: z.string().min(1).max(45).regex(/^[a-z0-9-]+$/, "Le nom doit contenir uniquement des lettres minuscules, chiffres et tirets"),
         dimension: z.number().optional().default(1536),
       });
-      
+
       const { email, name, dimension } = indexSchema.parse(req.body);
-      
+
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       await pineconeService.createIndex(name, dimension);
       return res.status(201).json({ message: `Index ${name} créé avec succès` });
     } catch (error: any) {
       console.error("Error creating Pinecone index:", error);
-      
+
       // Handle Zod validation errors specifically
       if (error.name === 'ZodError') {
         const validationErrors = error.errors.map((err: any) => err.message).join(', ');
@@ -489,7 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: "Assurez-vous que le nom contient uniquement des lettres minuscules, chiffres et tirets (ex: cours-test, documents-2024)"
         });
       }
-      
+
       const errorMessage = error?.message || "Erreur lors de la création de l'index";
       return res.status(500).json({ 
         message: errorMessage,
@@ -505,13 +505,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         indexName: z.string().min(1),
       });
-      
+
       const { email, indexName } = switchSchema.parse(req.body);
-      
+
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       await pineconeService.switchIndex(indexName);
       return res.status(200).json({ message: `Changement vers l'index ${indexName} réussi` });
     } catch (error) {
@@ -524,31 +524,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/upload-pdf", upload.single('pdf'), async (req: Request, res: Response) => {
     try {
       const { email, title, category } = req.body;
-      
+
       if (!email || !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       if (!req.file) {
         return res.status(400).json({ message: "Aucun fichier PDF fourni" });
       }
-      
+
       if (!title || !category) {
         return res.status(400).json({ message: "Titre et catégorie sont requis" });
       }
-      
+
       // Extract text from PDF using pdf-parse
       const pdfParse = await import('pdf-parse');
       const pdfData = await pdfParse.default(req.file.buffer);
       const extractedText = pdfData.text;
-      
+
       if (!extractedText || extractedText.trim().length === 0) {
         return res.status(400).json({ message: "Le PDF ne contient pas de texte extractible" });
       }
-      
+
       // Process and store in Pinecone
       await pineconeService.processPDFContent(extractedText, title, category);
-      
+
       return res.status(201).json({ 
         message: `Document ${title} traité et ajouté avec succès`,
         pages: pdfData.numpages,
@@ -569,26 +569,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         query: z.string().min(1).max(500),
       });
-      
+
       // Set CORS headers for LearnWorlds
       res.header("Access-Control-Allow-Origin", "*");
       res.header("Access-Control-Allow-Methods", "POST, OPTIONS");
       res.header("Access-Control-Allow-Headers", "Content-Type");
-      
+
       // Handle preflight requests
       if (req.method === "OPTIONS") {
         return res.status(200).send();
       }
-      
+
       const { email, query } = chatSchema.parse(req.body);
-      
+
       // Process the query through the LearnWorlds service
       const result = await learnWorldsService.processQuery(email, query);
-      
+
       return res.status(200).json(result);
     } catch (error) {
       console.error("Error processing LearnWorlds chat:", error);
-      
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           status: 'error',
@@ -596,7 +596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: error.errors 
         });
       }
-      
+
       return res.status(500).json({ 
         status: 'error',
         message: "Une erreur est survenue lors du traitement de votre question. Veuillez réessayer plus tard."
@@ -616,9 +616,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         patientPrompt: z.string().optional(),
         evaluationCriteria: z.any().optional(),
       });
-      
+
       const { email, title, description, patientPrompt, evaluationCriteria } = scenarioSchema.parse(req.body);
-      
+
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
@@ -668,30 +668,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get scenarios for a teacher (admin only)
   app.get("/api/ecos/scenarios", async (req: Request, res: Response) => {
     try {
       const { email } = req.query;
-      
-      // Debug logging
+
       console.log('ECOS Scenarios - Full query:', req.query);
       console.log('ECOS Scenarios - Email received:', email);
       console.log('ECOS Scenarios - Email type:', typeof email);
-      console.log('ECOS Scenarios - Is admin authorized:', isAdminAuthorized(email as string));
-      
-      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
-        console.log('ECOS Scenarios - Authorization failed for:', email);
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      // Decode the email if it's URL encoded
+      const decodedEmail = decodeURIComponent(email);
+      console.log('ECOS Scenarios - Decoded email:', decodedEmail);
+      console.log('ECOS Scenarios - Is admin authorized:', isAdminAuthorized(decodedEmail));
+
+      if (!isAdminAuthorized(decodedEmail)) {
+        console.log('ECOS Scenarios - Authorization failed for:', decodedEmail);
         return res.status(403).json({ 
           message: "Accès non autorisé",
           debug: {
-            receivedEmail: email,
-            emailType: typeof email,
-            isAuthorized: isAdminAuthorized(email as string)
+            originalEmail: email,
+            decodedEmail,
+            isAdmin: isAdminAuthorized(decodedEmail),
+            adminEmails: ADMIN_EMAILS
           }
         });
       }
-      
+
       const scenarios = await db.select().from(ecosScenarios).orderBy(ecosScenarios.createdAt);
-      
+
       return res.status(200).json({ scenarios });
     } catch (error) {
       console.error("Error fetching scenarios:", error);
@@ -703,17 +712,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       const scenario = await db.select().from(ecosScenarios).where(eq(ecosScenarios.id, parseInt(id))).limit(1);
-      
+
       if (!scenario.length) {
         return res.status(404).json({ message: "Scénario non trouvé" });
       }
-      
+
       return res.status(200).json({ scenario: scenario[0] });
     } catch (error) {
       console.error("Error fetching scenario:", error);
@@ -731,22 +740,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         patientPrompt: z.string().optional(),
         evaluationCriteria: z.any().optional(),
       });
-      
+
       const { email, ...updateData } = updateSchema.parse(req.body);
-      
+
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       const result = await db.update(ecosScenarios)
         .set(updateData)
         .where(eq(ecosScenarios.id, parseInt(id)))
         .returning();
-      
+
       if (!result.length) {
         return res.status(404).json({ message: "Scénario non trouvé" });
       }
-      
+
       return res.status(200).json({ 
         message: "Scénario mis à jour avec succès",
         scenario: result[0]
@@ -761,17 +770,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       const result = await db.delete(ecosScenarios).where(eq(ecosScenarios.id, parseInt(id))).returning();
-      
+
       if (!result.length) {
         return res.status(404).json({ message: "Scénario non trouvé" });
       }
-      
+
       return res.status(200).json({ message: "Scénario supprimé avec succès" });
     } catch (error) {
       console.error("Error deleting scenario:", error);
@@ -783,13 +792,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ecos/sessions", async (req: Request, res: Response) => {
     try {
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string") {
         return res.status(400).json({ message: "Email requis" });
       }
-      
+
       const sessions = await ecosService.getStudentSessions(email);
-      
+
       return res.status(200).json({ sessions });
     } catch (error) {
       console.error("Error fetching sessions:", error);
@@ -803,11 +812,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         scenarioId: z.number(),
       });
-      
+
       const { email, scenarioId } = sessionSchema.parse(req.body);
-      
+
       const sessionId = await ecosService.startSession(scenarioId, email);
-      
+
       return res.status(201).json({ 
         message: "Session créée avec succès",
         sessionId 
@@ -822,22 +831,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string") {
         return res.status(400).json({ message: "Email requis" });
       }
-      
+
       const session = await ecosService.getSession(parseInt(id));
-      
+
       if (!session) {
         return res.status(404).json({ message: "Session non trouvée" });
       }
-      
+
       // Verify student access or admin access
       if (session.studentEmail !== email && !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       return res.status(200).json({ session });
     } catch (error) {
       console.error("Error fetching session:", error);
@@ -852,23 +861,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         status: z.string().optional(),
       });
-      
+
       const { email, status } = updateSchema.parse(req.body);
-      
+
       const session = await ecosService.getSession(parseInt(id));
-      
+
       if (!session) {
         return res.status(404).json({ message: "Session non trouvée" });
       }
-      
+
       // Verify student access or admin access
       if (session.studentEmail !== email && !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       if (status === 'completed') {
         await ecosService.endSession(parseInt(id));
-        
+
         // Auto-generate evaluation when session is completed
         try {
           await evaluationService.evaluateSession(parseInt(id));
@@ -877,7 +886,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Continue even if evaluation fails
         }
       }
-      
+
       return res.status(200).json({ message: "Session mise à jour avec succès" });
     } catch (error) {
       console.error("Error updating session:", error);
@@ -889,34 +898,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { email } = req.query;
-      
+
       if (!email || typeof email !== "string") {
         return res.status(400).json({ message: "Email requis" });
       }
-      
+
       const session = await ecosService.getSession(parseInt(id));
-      
+
       if (!session) {
         return res.status(404).json({ message: "Session non trouvée" });
       }
-      
+
       // Verify student access or admin access
       if (session.studentEmail !== email && !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       let report = await evaluationService.getSessionReport(parseInt(id));
-      
+
       // Generate report if it doesn't exist and session is completed
       if (!report && session.status === 'completed') {
         const evaluation = await evaluationService.evaluateSession(parseInt(id));
         report = evaluation.report;
       }
-      
+
       if (!report) {
         return res.status(404).json({ message: "Rapport non disponible - session non terminée" });
       }
-      
+
       return res.status(200).json({ report });
     } catch (error) {
       console.error("Error fetching session report:", error);
@@ -932,15 +941,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         input: z.string().min(1),
         contextDocs: z.array(z.string()).optional().default([]),
       });
-      
+
       const { email, input, contextDocs } = promptSchema.parse(req.body);
-      
+
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       const prompt = await promptGenService.generatePatientPrompt(input, contextDocs);
-      
+
       return res.status(200).json({ prompt });
     } catch (error) {
       console.error("Error generating prompt:", error);
@@ -955,23 +964,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: z.number(),
         query: z.string().min(1),
       });
-      
+
       const { email, sessionId, query } = simulatorSchema.parse(req.body);
-      
+
       // Verify session access if email provided
       if (email) {
         const session = await ecosService.getSession(sessionId);
         if (!session) {
           return res.status(404).json({ message: "Session non trouvée" });
         }
-        
+
         if (session.studentEmail !== email && !isAdminAuthorized(email)) {
           return res.status(403).json({ message: "Accès non autorisé" });
         }
       }
-      
+
       const response = await ecosService.simulatePatient(sessionId, query);
-      
+
       return res.status(200).json({ response });
     } catch (error) {
       console.error("Error simulating patient:", error);
@@ -985,22 +994,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: z.string().email(),
         sessionId: z.number(),
       });
-      
+
       const { email, sessionId } = evaluationSchema.parse(req.body);
-      
+
       const session = await ecosService.getSession(sessionId);
-      
+
       if (!session) {
         return res.status(404).json({ message: "Session non trouvée" });
       }
-      
+
       // Verify access (student can evaluate their own session, admin can evaluate any)
       if (session.studentEmail !== email && !isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
-      
+
       const evaluation = await evaluationService.evaluateSession(sessionId);
-      
+
       return res.status(200).json(evaluation);
     } catch (error) {
       console.error("Error evaluating session:", error);
@@ -1012,15 +1021,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ecos/available-scenarios", async (req: Request, res: Response) => {
     try {
       const { email } = req.query;
-      
+
       console.log('Available Scenarios - Full query:', req.query);
       console.log('Available Scenarios - Email received:', email);
-      
+
       if (!email || typeof email !== "string") {
         console.log('Available Scenarios - Email validation failed:', email);
         return res.status(400).json({ message: "Email requis" });
       }
-      
+
       // Get only basic scenario info for students (not the patient prompt)
       const scenarios = await db
         .select({
@@ -1031,14 +1040,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .from(ecosScenarios)
         .orderBy(ecosScenarios.createdAt);
-      
+
       console.log('Available Scenarios - Query result:', scenarios);
       console.log('Available Scenarios - Number of scenarios found:', scenarios.length);
-      
+
       return res.status(200).json({ scenarios });
     } catch (error) {
       console.error("Error fetching available scenarios:", error);
       return res.status(500).json({ message: "Erreur lors de la récupération des scénarios" });
+    }
+  });
+
+  // Get dashboard data for teacher
+  app.get("/api/teacher/dashboard", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      // Decode the email if it's URL encoded
+      const decodedEmail = decodeURIComponent(email);
+
+      if (!isAdminAuthorized(decodedEmail)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      // Implement your dashboard data retrieval logic here
+      // For example:
+      const totalScenarios = await db.select().from(ecosScenarios).count();
+      const totalSessions = await db.select().from(ecosSessions).count();
+
+      return res.status(200).json({
+        totalScenarios: totalScenarios[0].count,
+        totalSessions: totalSessions[0].count,
+        // ... other dashboard data
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord" });
     }
   });
 
