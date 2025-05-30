@@ -191,21 +191,42 @@ export default function AdminPage() {
   // Create Pinecone index mutation
   const createIndexMutation = useMutation({
     mutationFn: async (data: IndexData) => {
-      const res = await apiRequest("POST", "/api/admin/indexes", { ...data, email: adminEmail });
-      return await res.json();
+      console.log('Creating index:', data);
+      
+      const response = await fetch("/api/admin/indexes", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...data, email: adminEmail }),
+      });
+      
+      console.log('Create index response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Create index error:', errorText);
+        throw new Error(`Failed to create index: ${response.status} ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Create index response data:', result);
+      return result;
     },
     onSuccess: (data) => {
+      console.log('Index creation successful:', data);
       toast({
         title: "Index créé",
-        description: data.message,
+        description: data.message || `Index "${indexData.name}" créé avec succès`,
       });
       setIndexData({ name: "", dimension: 1536 });
       refetchIndexes();
     },
     onError: (error: any) => {
+      console.error('Index creation error:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer l'index",
+        description: error.message || "Impossible de créer l'index",
         variant: "destructive",
       });
     }
@@ -214,21 +235,44 @@ export default function AdminPage() {
   // Switch Pinecone index mutation
   const switchIndexMutation = useMutation({
     mutationFn: async (indexName: string) => {
-      const res = await apiRequest("POST", "/api/admin/indexes/switch", { indexName, email: adminEmail });
-      return await res.json();
+      console.log('Switching to index:', indexName);
+      
+      const response = await fetch("/api/admin/indexes/switch", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ indexName, email: adminEmail }),
+      });
+      
+      console.log('Switch index response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Switch index error:', errorText);
+        throw new Error(`Failed to switch index: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Switch index response data:', data);
+      return data;
     },
     onSuccess: (data) => {
+      console.log('Index switch successful:', data);
       toast({
         title: "Index changé",
-        description: data.message,
+        description: data.message || `Index changé vers: ${selectedIndex}`,
       });
       setSelectedIndex("");
+      // Invalidate both queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['/api/admin/documents'] });
+      queryClient.invalidateQueries({ queryKey: ['pinecone-indexes'] });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Index switch error:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de changer d'index",
+        description: error.message || "Impossible de changer d'index",
         variant: "destructive",
       });
     }
@@ -676,13 +720,33 @@ export default function AdminPage() {
 
                 {/* Current indexes list */}
                 <div className="space-y-2">
-                  <Label>Tous vos index :</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Tous vos index :</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => refetchIndexes()}
+                      disabled={indexesLoading}
+                      className="flex items-center gap-1"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      Actualiser
+                    </Button>
+                  </div>
                   
                   {indexesError && (
                     <div className="bg-red-50 border border-red-200 rounded p-3 mb-4">
                       <p className="text-red-600 text-sm">
                         Erreur lors du chargement des index: {indexesError.message}
                       </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refetchIndexes()}
+                        className="mt-2"
+                      >
+                        Réessayer
+                      </Button>
                     </div>
                   )}
 
@@ -696,11 +760,13 @@ export default function AdminPage() {
                     {indexesData?.indexes?.length > 0 ? (
                         indexesData.indexes.map((index: any) => (
                           <Badge key={index.name} variant="secondary" className="text-xs">
-                            📁 {index.name}
+                            📁 {index.name} ({index.status})
                           </Badge>
                         ))
                     ) : (
-                      <p className="text-sm text-muted-foreground">Aucun index trouvé. Créez-en un d'abord.</p>
+                      !indexesLoading && (
+                        <p className="text-sm text-muted-foreground">Aucun index trouvé. Créez-en un d'abord.</p>
+                      )
                     )}
                     
                   </div>
