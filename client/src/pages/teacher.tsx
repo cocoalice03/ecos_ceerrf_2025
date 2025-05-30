@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Users, BookOpen, TrendingUp, Clock } from "lucide-react";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
+import DiagnosticPanel from "@/components/debug/DiagnosticPanel";
 import { apiRequest } from "@/lib/queryClient";
 
 interface TeacherPageProps {
@@ -199,10 +200,11 @@ export default function TeacherPage({ email }: TeacherPageProps) {
 
         {/* Main Content */}
         <Tabs defaultValue="scenarios" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="scenarios">Gestion des Scénarios</TabsTrigger>
             <TabsTrigger value="sessions">Sessions en Cours</TabsTrigger>
             <TabsTrigger value="reports">Rapports</TabsTrigger>
+            <TabsTrigger value="diagnostic">🔍 Diagnostic</TabsTrigger>
           </TabsList>
 
           <TabsContent value="scenarios" className="mt-6">
@@ -275,6 +277,10 @@ export default function TeacherPage({ email }: TeacherPageProps) {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="diagnostic" className="mt-6">
+            <DiagnosticPanel email={email} />
           </TabsContent>
         </Tabs>
       </div>
