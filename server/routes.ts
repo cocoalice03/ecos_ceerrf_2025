@@ -490,6 +490,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Handle Pinecone quota limits
+      if (error.message && error.message.includes('max serverless indexes allowed')) {
+        return res.status(400).json({
+          message: "Limite d'index atteinte",
+          details: "Vous avez atteint la limite maximale d'index Pinecone (5). Supprimez un index inutilisé ou mettez à niveau votre plan Pinecone.",
+          type: "quota_exceeded"
+        });
+      }
+
       const errorMessage = error?.message || "Erreur lors de la création de l'index";
       return res.status(500).json({ 
         message: errorMessage,
