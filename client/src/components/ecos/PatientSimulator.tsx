@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,7 +135,7 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
             <span>Simulation Patient</span>
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="flex-1 flex flex-col">
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto space-y-4 mb-4 p-4 bg-gray-50 rounded-lg">
@@ -147,7 +146,7 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
                 <p className="text-sm">Commencez votre consultation en me posant des questions.</p>
               </div>
             )}
-            
+
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -174,7 +173,7 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
                 </div>
               </div>
             ))}
-            
+
             {sendMessageMutation.isPending && (
               <div className="flex justify-start">
                 <div className="bg-white border border-gray-200 p-3 rounded-lg max-w-[70%]">
