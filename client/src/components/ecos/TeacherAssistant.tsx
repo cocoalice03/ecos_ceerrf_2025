@@ -41,15 +41,14 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
     queryKey: ['ecos-scenarios', email],
     queryFn: async () => {
       try {
-        console.log('Fetching scenarios for email:', email);
         const response = await apiRequest('GET', `/api/ecos/scenarios?email=${email}`);
-        console.log('Scenarios response:', response);
         return response.scenarios || [];
       } catch (error) {
         console.error('Error fetching scenarios:', error);
         return [];
       }
-    }
+    },
+    enabled: !!email,
   });
 
   // Create scenario mutation
@@ -170,7 +169,6 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {console.log('Rendering scenarios:', scenarios)}
               {scenarios?.map((scenario: EcosScenario) => (
                 <Card key={scenario.id} className="cursor-pointer hover:shadow-md transition-shadow">
                   <CardHeader>

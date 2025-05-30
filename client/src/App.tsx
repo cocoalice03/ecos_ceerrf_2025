@@ -67,6 +67,7 @@ function Router({ email }: { email: string | null }) {
 function App({ initialEmail }: AppProps) {
   const [email, setEmail] = useState<string | null>(initialEmail);
   const [authenticating, setAuthenticating] = useState<boolean>(!!initialEmail);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userEmail, setUserEmail] = useState<string>('cherubindavid@gmail.com');
 
   useEffect(() => {
@@ -89,32 +90,35 @@ function App({ initialEmail }: AppProps) {
     authenticateUser();
   }, [initialEmail]);
 
-  // Get user info from Repl Auth
   useEffect(() => {
-    const getUserInfo = async () => {
+    async function detectUser() {
       try {
         const response = await fetch('/__replauthuser');
         if (response.ok) {
           const userData = await response.json();
-          // Check for email field first, then fallback to name
-          const email = userData?.email || userData?.name || '';
-          console.log("Detected user data:", userData);
-          console.log("Detected email:", email);
-          setUserEmail(email);
-        } else {
-          console.log("No user authenticated - response not ok");
-          // For development, use a test email if no auth is available
-          const testEmail = 'cherubindavid@gmail.com';
-          console.log("Using test email for development:", testEmail);
-          setUserEmail(testEmail);
+          if (userData && userData.name) {
+            const emailFromAuth = `${userData.name.toLowerCase().replace(/\s+/g, '')}@replit.com`;
+            console.log('Detected email:', emailFromAuth);
+            setEmail(emailFromAuth);
+            return;
+          }
         }
-      } catch (error) {
-        console.error("Auth error:", error);
-        setUserEmail('');
-      }
-    };
 
-    getUserInfo();
+        // Fallback to test email for development
+        const testEmail = 'cherubindavid@gmail.com';
+        console.log('Using test email for development:', testEmail);
+        setEmail(testEmail);
+      } catch (error) {
+        console.error('Error detecting user:', error);
+        // Fallback to test email for development
+        const testEmail = 'cherubindavid@gmail.com';
+        setEmail(testEmail);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    detectUser();
   }, []);
 
   if (authenticating) {
@@ -123,6 +127,17 @@ function App({ initialEmail }: AppProps) {
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-t-4 border-primary border-solid rounded-full animate-spin"></div>
           <p className="mt-4 text-neutral-600">Authentification en cours...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || !email) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement de l'application...</p>
         </div>
       </div>
     );

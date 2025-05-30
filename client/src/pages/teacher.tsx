@@ -14,19 +14,34 @@ interface TeacherPageProps {
 
 export default function TeacherPage({ email }: TeacherPageProps) {
   // Fetch teacher dashboard data
-  const { data: dashboardData } = useQuery({
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery({
     queryKey: ['teacher-dashboard', email],
     queryFn: async () => {
-      const [scenarios, sessions] = await Promise.all([
-        apiRequest('GET', `/api/ecos/scenarios?email=${email}`),
-        apiRequest('GET', `/api/ecos/sessions?email=${email}`)
-      ]);
+      if (!email) {
+        throw new Error('Email is required');
+      }
       
-      return {
-        scenarios: scenarios.scenarios || [],
-        sessions: sessions.sessions || []
-      };
-    }
+      console.log('Fetching dashboard data for email:', email);
+      
+      try {
+        const [scenarios, sessions] = await Promise.all([
+          apiRequest('GET', `/api/ecos/scenarios?email=${email}`),
+          apiRequest('GET', `/api/ecos/sessions?email=${email}`)
+        ]);
+        
+        console.log('Dashboard scenarios:', scenarios);
+        console.log('Dashboard sessions:', sessions);
+        
+        return {
+          scenarios: scenarios.scenarios || [],
+          sessions: sessions.sessions || []
+        };
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        throw error;
+      }
+    },
+    enabled: !!email, // Only run query when email is available
   });
 
   const stats = {
@@ -35,6 +50,17 @@ export default function TeacherPage({ email }: TeacherPageProps) {
     completedSessions: dashboardData?.sessions.filter((s: any) => s.status === 'completed').length || 0,
     totalStudents: new Set(dashboardData?.sessions.map((s: any) => s.studentEmail)).size || 0
   };
+
+  if (dashboardLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement du dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -55,7 +81,13 @@ export default function TeacherPage({ email }: TeacherPageProps) {
 
       {/* Stats Cards */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {dashboardError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-700">Erreur lors du chargement des données: {dashboardError.message}</p>
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"></div>
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
