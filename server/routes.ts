@@ -449,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('🚀 Admin indexes endpoint called');
     console.log('Request query:', req.query);
     console.log('Request headers:', req.headers);
-    
+
     try {
       const { email } = req.query;
       console.log('📧 Email from query:', email);
@@ -469,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('🔍 Fetching Pinecone indexes for admin:', email);
-      
+
       // Check if pineconeService is available
       if (!pineconeService) {
         console.error('❌ pineconeService is not available');
@@ -481,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const indexes = await pineconeService.listIndexes();
       console.log('✅ Successfully retrieved indexes:', indexes);
-      
+
       return res.status(200).json({ 
         indexes,
         timestamp: new Date().toISOString(),
@@ -492,7 +492,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error type:", typeof error);
       console.error("Error instanceof Error:", error instanceof Error);
       console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const errorDetails = {
         message: errorMessage,
@@ -665,15 +665,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Teacher Routes - Scenario Management
   app.post("/api/ecos/scenarios", async (req: Request, res: Response) => {
     try {
-      const scenarioSchema = z.object({
+      const createSchema = z.object({
         email: z.string().email(),
         title: z.string().min(1),
         description: z.string().min(1),
         patientPrompt: z.string().optional(),
         evaluationCriteria: z.any().optional(),
+        pineconeIndex: z.string().optional(),
       });
 
-      const { email, title, description, patientPrompt, evaluationCriteria } = scenarioSchema.parse(req.body);
+      const { email, title, description, patientPrompt, evaluationCriteria, pineconeIndex } = createSchema.parse(req.body);
 
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
@@ -1143,7 +1144,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/health", async (req: Request, res: Response) => {
     try {
       const { email } = req.query;
-      
+
       const healthCheck = {
         timestamp: new Date().toISOString(),
         server: {

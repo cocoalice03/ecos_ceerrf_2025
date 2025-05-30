@@ -12,26 +12,26 @@ export class PineconeService {
   private index;
   private indexName: string = '';
   private namespace: string = '';
-  
+
   constructor() {
     try {
       // Get Pinecone credentials from environment variables
       const apiKey = process.env.PINECONE_API_KEY;
       this.indexName = process.env.PINECONE_INDEX_NAME || 'arthrologie-du-membre-superieur';
       this.namespace = process.env.PINECONE_NAMESPACE || 'default';
-      
+
       if (!apiKey) {
         console.warn('Missing Pinecone API key - running in fallback mode');
         this.pinecone = null;
         this.index = null;
         return;
       }
-      
+
       // Initialize Pinecone client
       this.pinecone = new Pinecone({
         apiKey,
       });
-      
+
       // Get the index
       this.index = this.pinecone.index(this.indexName);
       console.log(`Connected to Pinecone index: ${this.indexName}`);
@@ -42,7 +42,7 @@ export class PineconeService {
       this.index = null;
     }
   }
-  
+
   /**
    * Gets the vector embedding for a text string using OpenAI
    */
@@ -53,14 +53,14 @@ export class PineconeService {
         input: text,
         encoding_format: "float",
       });
-      
+
       return response.data[0].embedding;
     } catch (error) {
       console.error("Error getting embedding:", error);
       throw new Error("Failed to generate embedding for query");
     }
   }
-  
+
   /**
    * Search for relevant content based on the question
    */
@@ -74,17 +74,17 @@ export class PineconeService {
 
       // Get embedding for the question
       const embedding = await this.getEmbedding(question);
-      
+
       // Query Pinecone
       const queryResponse = await this.index.query({
         vector: embedding,
         topK,
         includeMetadata: true,
       });
-      
+
       // Process and return the results
       const results: RAGContent[] = [];
-      
+
       for (const match of queryResponse.matches) {
         if (match.metadata && typeof match.metadata.text === 'string') {
           results.push({
@@ -95,7 +95,7 @@ export class PineconeService {
           });
         }
       }
-      
+
       return results;
     } catch (error) {
       console.error("Error searching Pinecone:", error);
@@ -173,7 +173,7 @@ export class PineconeService {
       });
 
       const idsToDelete = queryResponse.matches.map(match => match.id);
-      
+
       if (idsToDelete.length > 0) {
         await this.index.deleteMany(idsToDelete);
         console.log(`Deleted ${idsToDelete.length} vectors for document: ${documentTitle}`);
@@ -194,7 +194,7 @@ export class PineconeService {
 
     try {
       console.log(`Attempting to create Pinecone index: ${indexName} with dimension: ${dimension}`);
-      
+
       const result = await this.pinecone.createIndex({
         name: indexName,
         dimension: dimension,
@@ -206,7 +206,7 @@ export class PineconeService {
           }
         }
       });
-      
+
       console.log(`Successfully created Pinecone index: ${indexName}`, result);
     } catch (error: any) {
       console.error('Detailed error creating Pinecone index:', {
@@ -216,7 +216,7 @@ export class PineconeService {
         indexName,
         dimension
       });
-      
+
       // Provide more specific error messages
       if (error.message && error.message.includes('ALREADY_EXISTS')) {
         throw new Error(`L'index "${indexName}" existe déjà. Veuillez choisir un nom différent ou attendre quelques minutes si vous venez de le supprimer.`);
@@ -235,7 +235,7 @@ export class PineconeService {
    */
   async listIndexes(): Promise<Array<{name: string, status?: string, dimension?: number}>> {
     console.log('🔍 Starting listIndexes operation...');
-    
+
     if (!this.pinecone) {
       console.error('❌ Pinecone not initialized');
       throw new Error('Pinecone not initialized');
@@ -245,12 +245,12 @@ export class PineconeService {
       console.log('📡 Calling Pinecone listIndexes API...');
       const indexesList = await this.pinecone.listIndexes();
       console.log('✅ Pinecone API response received:', JSON.stringify(indexesList, null, 2));
-      
+
       if (!indexesList || !indexesList.indexes) {
         console.log('⚠️ No indexes found in response or empty response');
         return [];
       }
-      
+
       console.log('📝 Processing indexes data...');
       const indexes = indexesList.indexes.map((index, idx) => {
         console.log(`Processing index ${idx}:`, JSON.stringify(index, null, 2));
@@ -260,7 +260,7 @@ export class PineconeService {
           dimension: index.dimension
         };
       });
-      
+
       console.log('✅ Successfully processed indexes:', JSON.stringify(indexes, null, 2));
       return indexes;
     } catch (error) {
@@ -311,10 +311,10 @@ export class PineconeService {
     try {
       // Split content into chunks
       const chunks = this.splitIntoChunks(content, chunkSize, overlap);
-      
+
       // Create embeddings for all chunks
       const embeddings = await this.getEmbeddingsForChunks(chunks);
-      
+
       // Prepare vectors for upsert
       const vectors = chunks.map((chunk, index) => ({
         id: `${title}_chunk_${index}`,
@@ -343,16 +343,16 @@ export class PineconeService {
   private splitIntoChunks(text: string, chunkSize: number, overlap: number): string[] {
     const chunks = [];
     let start = 0;
-    
+
     while (start < text.length) {
       const end = Math.min(start + chunkSize, text.length);
       const chunk = text.slice(start, end);
       chunks.push(chunk.trim());
-      
+
       if (end === text.length) break;
       start = end - overlap;
     }
-    
+
     return chunks.filter(chunk => chunk.length > 0);
   }
 
@@ -361,7 +361,7 @@ export class PineconeService {
    */
   private async getEmbeddingsForChunks(chunks: string[]): Promise<number[][]> {
     const embeddings = [];
-    
+
     // Process in batches to avoid rate limits
     const batchSize = 10;
     for (let i = 0; i < chunks.length; i += batchSize) {
@@ -370,14 +370,49 @@ export class PineconeService {
         batch.map(chunk => this.getEmbedding(chunk))
       );
       embeddings.push(...batchEmbeddings);
-      
+
       // Small delay between batches
       if (i + batchSize < chunks.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
-    
+
     return embeddings;
+  }
+
+  async queryVectors(query: string, indexName: string, topK: number = 5): Promise<RAGContent[]> {
+    try {
+      // Get embedding for the question
+      const embedding = await this.getEmbedding(query);
+
+      // Get specific index
+      const targetIndex = this.pinecone.index(indexName);
+
+      const queryResponse = await targetIndex.query({
+        vector: embedding,
+        topK,
+        includeMetadata: true,
+      });
+
+      // Process and return the results
+      const results: RAGContent[] = [];
+
+      for (const match of queryResponse.matches) {
+        if (match.metadata && typeof match.metadata.text === 'string') {
+          results.push({
+            content: match.metadata.text,
+            metadata: {
+              source: typeof match.metadata.source === 'string' ? match.metadata.source : undefined,
+            }
+          });
+        }
+      }
+
+      return results;
+    } catch (error) {
+      console.error(`Error querying Pinecone index ${indexName}:`, error);
+      return [];
+    }
   }
 }
 

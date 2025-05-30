@@ -100,64 +100,62 @@ export const teacherApi = {
   },
 };
 
-// Hook for dashboard data
 export const useDashboardData = (email: string) => {
   return useQuery({
-    queryKey: ['dashboard', email],
+    queryKey: ['dashboard-data', email],
     queryFn: async () => {
-      if (!email) {
-        throw new Error('Email is required');
-      }
+      console.log('🔄 Fetching dashboard data for:', email);
 
       try {
-        console.log('Fetching dashboard data for email:', email);
-
-        const [scenariosResponse, sessionsResponse] = await Promise.all([
-          fetch(`/api/ecos/scenarios?email=${encodeURIComponent(email)}`),
-          fetch(`/api/ecos/sessions?email=${encodeURIComponent(email)}`)
+        const [scenariosResponse, sessionsResponse] = await Promise.allSettled([
+          apiRequest('GET', `/api/ecos/scenarios?email=${encodeURIComponent(email)}`),
+          apiRequest('GET', `/api/ecos/sessions?email=${encodeURIComponent(email)}`)
         ]);
 
-        if (!scenariosResponse.ok) {
-          throw new Error(`Scenarios API error: ${scenariosResponse.status}`);
-        }
+        const scenarios = scenariosResponse.status === 'fulfilled' ? 
+          scenariosResponse.value.scenarios : [];
 
-        if (!sessionsResponse.ok) {
-          throw new Error(`Sessions API error: ${sessionsResponse.status}`);
-        }
+        const sessions = sessionsResponse.status === 'fulfilled' ? 
+          sessionsResponse.value.sessions : [];
 
-        const scenariosData = await scenariosResponse.json();
-        const sessionsData = await sessionsResponse.json();
+        console.log('📊 Dashboard data loaded:', { scenarios: scenarios.length, sessions: sessions.length });
 
-        console.log('Dashboard scenarios:', scenariosData);
-        console.log('Dashboard sessions:', sessionsData);
+        const hasErrors = scenariosResponse.status === 'rejected' || sessionsResponse.status === 'rejected';
 
-        const result = {
-          scenarios: scenariosData.scenarios || [],
-          sessions: sessionsData.sessions || [],
-          timestamp: new Date().toISOString(),
-          email,
-          scenariosRaw: scenariosData,
-          sessionsRaw: sessionsData
-        };
-
-        console.log('Dashboard data processed:', result);
-        return result;
-      } catch (error) {
-        console.error('Dashboard data error:', error);
-
-        // Return partial data instead of throwing an error
         return {
-          scenarios: [],
-          sessions: [],
-          timestamp: new Date().toISOString(),
-          email,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          partial: true
+          scenarios,
+          sessions,
+          partial: hasErrors
         };
+      } catch (error) {
+        console.error('❌ Dashboard data error:', error);
+        throw error;
       }
     },
     enabled: !!email,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false
+    retry: 1
+  });
+};
+
+export const useAvailableIndexes = (email: string) => {
+  return useQuery({
+    queryKey: ['available-indexes', email],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/indexes?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch indexes');
+      }
+
+      const data = await response.json();
+      return data.indexes || [];
+    },
+    enabled: !!email,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 };

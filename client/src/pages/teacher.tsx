@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2 } from "lucide-react";
-import { useDashboardData } from '@/lib/api';
+import { useDashboardData, useAvailableIndexes } from '@/lib/api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
 import EcosDebugger from "@/components/debug/EcosDebugger";
@@ -22,11 +23,13 @@ interface ScenarioCreationFormProps {
 }
 
 function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit }: ScenarioCreationFormProps) {
+  const { data: availableIndexes } = useAvailableIndexes(email);
   const [formData, setFormData] = useState({
     title: editingScenario?.title || "",
     description: editingScenario?.description || "",
     patientPrompt: editingScenario?.patientPrompt || "",
-    evaluationCriteria: editingScenario?.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : ""
+    evaluationCriteria: editingScenario?.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : "",
+    pineconeIndex: editingScenario?.pineconeIndex || ""
   });
 
   // Update form data when editing scenario changes
@@ -36,7 +39,8 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
         title: editingScenario.title || "",
         description: editingScenario.description || "",
         patientPrompt: editingScenario.patientPrompt || "",
-        evaluationCriteria: editingScenario.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : ""
+        evaluationCriteria: editingScenario.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : "",
+        pineconeIndex: editingScenario.pineconeIndex || ""
       });
     }
   }, [editingScenario]);
@@ -63,7 +67,7 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
     onSuccess: (response) => {
       console.log(`Scenario ${editingScenario ? 'updated' : 'created'} successfully:`, response);
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
-      setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" });
+      setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "" });
       if (onCancelEdit) onCancelEdit();
       onSuccess();
       alert(`Scénario ${editingScenario ? 'modifié' : 'créé'} avec succès !`);
@@ -109,12 +113,13 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
       title: formData.title,
       description: formData.description,
       patientPrompt: formData.patientPrompt || undefined,
-      evaluationCriteria: criteria
+      evaluationCriteria: criteria,
+      pineconeIndex: formData.pineconeIndex || undefined
     });
   };
 
   const handleCancel = () => {
-    setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" });
+    setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "" });
     if (onCancelEdit) onCancelEdit();
   };
 
@@ -151,6 +156,26 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
         />
         <p className="text-xs text-gray-500 mt-1">
           Décrivez précisément la situation clinique que l'étudiant devra gérer.
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="pineconeIndex">Index de Connaissances (Optionnel)</Label>
+        <Select value={formData.pineconeIndex} onValueChange={(value) => setFormData(prev => ({ ...prev, pineconeIndex: value }))}>
+          <SelectTrigger className="mt-1">
+            <SelectValue placeholder="Sélectionner un index Pinecone" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Aucun index (par défaut)</SelectItem>
+            {availableIndexes?.map((index: any) => (
+              <SelectItem key={index.name} value={index.name}>
+                {index.name} ({index.status})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-gray-500 mt-1">
+          Choisissez l'index Pinecone contenant les connaissances spécifiques pour ce scénario.
         </p>
       </div>
 
@@ -471,6 +496,11 @@ function TeacherPage({ email }: TeacherPageProps) {
                         <CardHeader>
                           <CardTitle className="text-lg">{scenario.title || `Scénario ${scenario.id}`}</CardTitle>
                           <CardDescription>{scenario.description || 'Description non disponible'}</CardDescription>
+                          {scenario.pineconeIndex && (
+                            <Badge variant="outline" className="w-fit mt-2">
+                              Index: {scenario.pineconeIndex}
+                            </Badge>
+                          )}
                         </CardHeader>
                         <CardContent>
                           <div className="flex gap-2">

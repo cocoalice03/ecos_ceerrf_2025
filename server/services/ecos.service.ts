@@ -13,6 +13,7 @@ export class EcosService {
         .select({
           patientPrompt: ecosScenarios.patientPrompt,
           title: ecosScenarios.title,
+          pineconeIndex: ecosScenarios.pineconeIndex,
         })
         .from(ecosSessions)
         .innerJoin(ecosScenarios, eq(ecosSessions.scenarioId, ecosScenarios.id))
@@ -23,7 +24,7 @@ export class EcosService {
         throw new Error('Session not found');
       }
 
-      const { patientPrompt, title } = sessionResult[0];
+      const { patientPrompt, title, pineconeIndex } = sessionResult[0];
 
       // Get conversation history
       const history = await this.getSessionHistory(sessionId);
@@ -50,12 +51,29 @@ export class EcosService {
         }
       ];
 
+      // Get relevant context from the scenario's specific index if available
+      let contextDocs = '';
+      if (pineconeIndex) {
+        try {
+          const relevantDocs = await pineconeService.queryVectors(studentQuery, pineconeIndex);
+          contextDocs = relevantDocs.map(doc => doc.text).join('\n\n');
+        } catch (error) {
+          console.log(`Warning: Could not retrieve context from index ${pineconeIndex}:`, error);
+        }
+      }
+
       // Generate patient response using the existing generateResponse method
       const systemMessage = messages[0].content;
       const userQuery = studentQuery;
-      const context = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+      const history_context = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
       
-      const patientResponse = await openaiService.generateResponse(userQuery, context + '\n\nSystem: ' + systemMessage);
+      const fullContext = [
+        contextDocs ? `Contexte médical disponible:\n${contextDocs}\n` : '',
+        history_context,
+        `\nSystem: ${systemMessage}`
+      ].filter(Boolean).join('\n');
+      
+      const patientResponse = await openaiService.generateResponse(userQuery, fullContext);
 
       // Save the interaction
       await this.saveInteraction(sessionId, studentQuery, patientResponse);
