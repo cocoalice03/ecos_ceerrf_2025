@@ -27,10 +27,18 @@ function Router({ email }: { email: string | null }) {
         {(params) => <TeacherPage email={params.email} />}
       </Route>
       <Route path="/student/:email">
-        {(params) => <StudentPage email={params.email} />}
+        {(params) => (
+          <div className="min-h-screen bg-gray-50">
+            <StudentPage email={params.email} />
+          </div>
+        )}
       </Route>
       <Route path="/chat/:email">
-        {(params) => <Chat email={params.email} />}
+        {(params) => (
+          <div className="flex h-screen bg-neutral-50">
+            <Chat email={params.email} />
+          </div>
+        )}
       </Route>
       <Route path="/*">
         {!email ? (
