@@ -27,11 +27,7 @@ function Router({ email }: { email: string | null }) {
         {(params) => <TeacherPage email={params.email} />}
       </Route>
       <Route path="/student/:email">
-        {(params) => (
-          <div className="min-h-screen bg-gray-50">
-            <StudentPage email={params.email} />
-          </div>
-        )}
+        {(params) => <StudentPage email={params.email} />}
       </Route>
       <Route path="/chat/:email">
         {(params) => (
@@ -40,33 +36,32 @@ function Router({ email }: { email: string | null }) {
           </div>
         )}
       </Route>
-      <Route path="/*">
-        {!email ? (
-          <div className="flex items-center justify-center min-h-screen bg-neutral-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-card">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
-                  <MessageCircle className="text-primary text-3xl h-8 w-8" />
-                </div>
-              </div>
-              <h3 className="text-center font-heading font-semibold text-xl mb-2">Assistant de Cours</h3>
-              <p className="text-center text-neutral-600 mb-6">
-                Ce chatbot est conçu pour vous accompagner dans votre apprentissage.
-              </p>
-              <div className="bg-blue-50 rounded-lg p-4 mb-6 text-sm">
-                <h4 className="font-medium text-blue-700 mb-2">Instructions d'accès :</h4>
-                <ol className="list-decimal pl-5 text-blue-700 space-y-2">
-                  <li>Chat RAG : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/votre@email.com</code></li>
-                  <li>Mode Enseignant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/teacher/votre@email.com</code></li>
-                  <li>Mode Étudiant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/student/votre@email.com</code></li>
-                  <li>Administration : <code className="bg-blue-100 px-1 py-0.5 rounded">/admin</code></li>
-                </ol>
+      <Route path="/">
+        <div className="flex items-center justify-center min-h-screen bg-neutral-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-card">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
+                <MessageCircle className="text-primary text-3xl h-8 w-8" />
               </div>
             </div>
+            <h3 className="text-center font-heading font-semibold text-xl mb-2">Assistant de Cours</h3>
+            <p className="text-center text-neutral-600 mb-6">
+              Ce chatbot est conçu pour vous accompagner dans votre apprentissage.
+            </p>
+            <div className="bg-blue-50 rounded-lg p-4 mb-6 text-sm">
+              <h4 className="font-medium text-blue-700 mb-2">Instructions d'accès :</h4>
+              <ol className="list-decimal pl-5 text-blue-700 space-y-2">
+                <li>Chat RAG : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/votre@email.com</code></li>
+                <li>Mode Enseignant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/teacher/votre@email.com</code></li>
+                <li>Mode Étudiant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/student/votre@email.com</code></li>
+                <li>Administration : <code className="bg-blue-100 px-1 py-0.5 rounded">/admin</code></li>
+              </ol>
+            </div>
           </div>
-        ) : (
-          <Chat email={email} />
-        )}
+        </div>
+      </Route>
+      <Route>
+        <NotFound />
       </Route>
     </Switch>
   );
