@@ -42,18 +42,35 @@ export default function TeacherPage({ email }: TeacherPageProps) {
       }
     },
     enabled: !!email, // Only run query when email is available
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false
   });
 
-  // Ensure we have data before calculating stats with memoization
-  const scenarios = useMemo(() => dashboardData?.scenarios || [], [dashboardData?.scenarios]);
-  const sessions = useMemo(() => dashboardData?.sessions || [], [dashboardData?.sessions]);
+  // Ensure we have data before calculating stats with memoization and validation
+  const scenarios = useMemo(() => {
+    const data = dashboardData?.scenarios;
+    return Array.isArray(data) ? data : [];
+  }, [dashboardData?.scenarios]);
+  
+  const sessions = useMemo(() => {
+    const data = dashboardData?.sessions;
+    return Array.isArray(data) ? data : [];
+  }, [dashboardData?.sessions]);
 
-  const stats = useMemo(() => ({
-    totalScenarios: scenarios.length,
-    activeSessions: sessions.filter((s: any) => s.status === 'in_progress').length,
-    completedSessions: sessions.filter((s: any) => s.status === 'completed').length,
-    totalStudents: new Set(sessions.map((s: any) => s.studentEmail)).size
-  }), [scenarios, sessions]);
+  const stats = useMemo(() => {
+    // Ensure we have valid arrays before processing
+    const validScenarios = Array.isArray(scenarios) ? scenarios : [];
+    const validSessions = Array.isArray(sessions) ? sessions : [];
+    
+    return {
+      totalScenarios: validScenarios.length,
+      activeSessions: validSessions.filter((s: any) => s && s.status === 'in_progress').length,
+      completedSessions: validSessions.filter((s: any) => s && s.status === 'completed').length,
+      totalStudents: new Set(validSessions.filter((s: any) => s && s.studentEmail).map((s: any) => s.studentEmail)).size
+    };
+  }, [scenarios, sessions]);
 
   if (dashboardLoading) {
     return (
@@ -103,7 +120,25 @@ export default function TeacherPage({ email }: TeacherPageProps) {
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Show loading skeleton for stats cards */}
+        {dashboardLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                      <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -159,7 +194,8 @@ export default function TeacherPage({ email }: TeacherPageProps) {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <Tabs defaultValue="scenarios" className="w-full">
