@@ -21,7 +21,7 @@ function Router({ email }: { email: string | null }) {
       <Route path="/admin">
         <AdminPage />
       </Route>
-      <Route path="/:email">
+      <Route path="/chat/:email">
         {(params) => <Chat email={params.email} />}
       </Route>
       <Route path="/*">
@@ -40,8 +40,8 @@ function Router({ email }: { email: string | null }) {
               <div className="bg-blue-50 rounded-lg p-4 mb-6 text-sm">
                 <h4 className="font-medium text-blue-700 mb-2">Instructions d'accès :</h4>
                 <ol className="list-decimal pl-5 text-blue-700 space-y-2">
-                  <li>Accédez directement avec votre email : <code className="bg-blue-100 px-1 py-0.5 rounded">/votre@email.com</code></li>
-                  <li>Exemple : <code className="bg-blue-100 px-1 py-0.5 rounded">/colombemadoungou@gmail.com</code></li>
+                  <li>Accédez directement avec votre email : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/votre@email.com</code></li>
+                  <li>Exemple : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/colombemadoungou@gmail.com</code></li>
                   <li>Interface d'administration : <code className="bg-blue-100 px-1 py-0.5 rounded">/admin</code></li>
                 </ol>
               </div>

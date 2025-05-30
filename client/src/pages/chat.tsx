@@ -9,10 +9,16 @@ import LimitReachedModal from "@/components/modals/LimitReachedModal";
 import ErrorModal from "@/components/modals/ErrorModal";
 
 interface ChatPageProps {
-  email: string;
+  email?: string;
 }
 
-export default function Chat({ email }: ChatPageProps) {
+export default function Chat({ email: propEmail }: ChatPageProps) {
+  // Get email from URL params or props
+  const urlParams = new URLSearchParams(window.location.search);
+  const emailFromUrl = urlParams.get('email');
+  const email = propEmail || emailFromUrl || '';
+  
+  console.log('Detected email:', email);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLimitReachedModalOpen, setIsLimitReachedModalOpen] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
