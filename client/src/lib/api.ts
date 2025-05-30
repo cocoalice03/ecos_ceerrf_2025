@@ -85,19 +85,37 @@ export const useDashboardData = (email: string) => {
       }
       
       try {
-        const [scenarios, sessions] = await Promise.all([
-          apiRequest('GET', `/api/ecos/scenarios?email=${email}`),
-          apiRequest('GET', `/api/ecos/sessions?email=${email}`)
+        console.log('Fetching dashboard data for email:', email);
+        
+        const [scenariosResponse, sessionsResponse] = await Promise.all([
+          fetch(`/api/ecos/scenarios?email=${encodeURIComponent(email)}`),
+          fetch(`/api/ecos/sessions?email=${encodeURIComponent(email)}`)
         ]);
         
+        if (!scenariosResponse.ok) {
+          throw new Error(`Scenarios API error: ${scenariosResponse.status}`);
+        }
+        
+        if (!sessionsResponse.ok) {
+          throw new Error(`Sessions API error: ${sessionsResponse.status}`);
+        }
+        
+        const scenariosData = await scenariosResponse.json();
+        const sessionsData = await sessionsResponse.json();
+        
+        console.log('Dashboard scenarios:', scenariosData);
+        console.log('Dashboard sessions:', sessionsData);
+        
         const result = {
-          scenarios: scenarios.scenarios || [],
-          sessions: sessions.sessions || [],
+          scenarios: scenariosData.scenarios || [],
+          sessions: sessionsData.sessions || [],
           timestamp: new Date().toISOString(),
-          email
+          email,
+          scenariosRaw: scenariosData,
+          sessionsRaw: sessionsData
         };
         
-        console.log('Dashboard data fetched:', result);
+        console.log('Dashboard data processed:', result);
         return result;
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
