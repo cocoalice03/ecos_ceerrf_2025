@@ -61,6 +61,8 @@ export const api = {
   }
 };
 
+import { useQuery } from '@tanstack/react-query';
+
 export const teacherApi = {
   getDashboard: async (email: string) => {
     const response = await fetch(`/api/teacher/dashboard?email=${encodeURIComponent(email)}`);
@@ -71,4 +73,39 @@ export const teacherApi = {
     console.log('API response data:', data);
     return data;
   },
+};
+
+// Hook for dashboard data
+export const useDashboardData = (email: string) => {
+  return useQuery({
+    queryKey: ['dashboard', email],
+    queryFn: async () => {
+      if (!email) {
+        throw new Error('Email is required');
+      }
+      
+      try {
+        const [scenarios, sessions] = await Promise.all([
+          apiRequest('GET', `/api/ecos/scenarios?email=${email}`),
+          apiRequest('GET', `/api/ecos/sessions?email=${email}`)
+        ]);
+        
+        const result = {
+          scenarios: scenarios.scenarios || [],
+          sessions: sessions.sessions || [],
+          timestamp: new Date().toISOString(),
+          email
+        };
+        
+        console.log('Dashboard data fetched:', result);
+        return result;
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        throw error;
+      }
+    },
+    enabled: !!email,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false
+  });
 };
