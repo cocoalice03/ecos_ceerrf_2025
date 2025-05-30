@@ -17,37 +17,60 @@ import { apiRequest } from "@/lib/queryClient";
 interface ScenarioCreationFormProps {
   email: string;
   onSuccess: () => void;
+  editingScenario?: any;
+  onCancelEdit?: () => void;
 }
 
-function ScenarioCreationForm({ email, onSuccess }: ScenarioCreationFormProps) {
+function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit }: ScenarioCreationFormProps) {
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    patientPrompt: "",
-    evaluationCriteria: ""
+    title: editingScenario?.title || "",
+    description: editingScenario?.description || "",
+    patientPrompt: editingScenario?.patientPrompt || "",
+    evaluationCriteria: editingScenario?.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : ""
   });
+
+  // Update form data when editing scenario changes
+  useEffect(() => {
+    if (editingScenario) {
+      setFormData({
+        title: editingScenario.title || "",
+        description: editingScenario.description || "",
+        patientPrompt: editingScenario.patientPrompt || "",
+        evaluationCriteria: editingScenario.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : ""
+      });
+    }
+  }, [editingScenario]);
 
   const queryClient = useQueryClient();
 
-  // Create scenario mutation
+  // Create/Update scenario mutation
   const createScenarioMutation = useMutation({
     mutationFn: async (data: any) => {
-      console.log("Creating scenario:", { email, ...data });
-      return apiRequest('POST', '/api/ecos/scenarios', {
-        email,
-        ...data
-      });
+      if (editingScenario) {
+        console.log("Updating scenario:", { email, id: editingScenario.id, ...data });
+        return apiRequest('PUT', `/api/ecos/scenarios/${editingScenario.id}`, {
+          email,
+          ...data
+        });
+      } else {
+        console.log("Creating scenario:", { email, ...data });
+        return apiRequest('POST', '/api/ecos/scenarios', {
+          email,
+          ...data
+        });
+      }
     },
     onSuccess: (response) => {
-      console.log("Scenario created successfully:", response);
+      console.log(`Scenario ${editingScenario ? 'updated' : 'created'} successfully:`, response);
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
       setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" });
+      if (onCancelEdit) onCancelEdit();
       onSuccess();
-      alert("Scénario créé avec succès !");
+      alert(`Scénario ${editingScenario ? 'modifié' : 'créé'} avec succès !`);
     },
     onError: (error) => {
-      console.error("Error creating scenario:", error);
-      alert("Erreur lors de la création du scénario. Veuillez réessayer.");
+      console.error(`Error ${editingScenario ? 'updating' : 'creating'} scenario:`, error);
+      alert(`Erreur lors de la ${editingScenario ? 'modification' : 'création'} du scénario. Veuillez réessayer.`);
     }
   });
 
@@ -88,6 +111,11 @@ function ScenarioCreationForm({ email, onSuccess }: ScenarioCreationFormProps) {
       patientPrompt: formData.patientPrompt || undefined,
       evaluationCriteria: criteria
     });
+  };
+
+  const handleCancel = () => {
+    setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" });
+    if (onCancelEdit) onCancelEdit();
   };
 
   const handleGeneratePrompt = () => {
@@ -178,15 +206,18 @@ function ScenarioCreationForm({ email, onSuccess }: ScenarioCreationFormProps) {
           disabled={!formData.title || !formData.description || createScenarioMutation.isPending}
           className="flex-1"
         >
-          {createScenarioMutation.isPending ? "Création en cours..." : "Créer le Scénario"}
+          {createScenarioMutation.isPending 
+            ? (editingScenario ? "Modification en cours..." : "Création en cours...") 
+            : (editingScenario ? "Modifier le Scénario" : "Créer le Scénario")
+          }
         </Button>
 
         <Button
           variant="outline"
-          onClick={() => setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" })}
+          onClick={handleCancel}
           disabled={createScenarioMutation.isPending}
         >
-          Réinitialiser
+          {editingScenario ? "Annuler" : "Réinitialiser"}
         </Button>
       </div>
     </div>
@@ -199,6 +230,8 @@ interface TeacherPageProps {
 
 function TeacherPage({ email }: TeacherPageProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [editingScenario, setEditingScenario] = useState<any>(null);
+  const [deletingScenario, setDeletingScenario] = useState<any>(null);
 
   // Add debugging for authentication issues - MUST be before any conditional returns
   React.useEffect(() => {
@@ -233,6 +266,39 @@ function TeacherPage({ email }: TeacherPageProps) {
   };
 
   console.log('Calculated stats:', stats);
+
+  const queryClient = useQueryClient();
+
+  // Delete scenario mutation
+  const deleteScenarioMutation = useMutation({
+    mutationFn: async (scenarioId: number) => {
+      return apiRequest('DELETE', `/api/ecos/scenarios/${scenarioId}`, { email });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
+      setDeletingScenario(null);
+      alert("Scénario supprimé avec succès !");
+    },
+    onError: (error) => {
+      console.error("Error deleting scenario:", error);
+      alert("Erreur lors de la suppression du scénario.");
+    }
+  });
+
+  const handleDeleteScenario = (scenario: any) => {
+    setDeletingScenario(scenario);
+  };
+
+  const confirmDelete = () => {
+    if (deletingScenario) {
+      deleteScenarioMutation.mutate(deletingScenario.id);
+    }
+  };
+
+  const handleEditScenario = (scenario: any) => {
+    setEditingScenario(scenario);
+    setActiveTab('create');
+  };
 
   if (isDashboardLoading) {
     return (
@@ -416,8 +482,19 @@ function TeacherPage({ email }: TeacherPageProps) {
                               <Play className="h-4 w-4 mr-1" />
                               Lancer
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleEditScenario(scenario)}
+                            >
                               Modifier
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => handleDeleteScenario(scenario)}
+                            >
+                              Supprimer
                             </Button>
                           </div>
                         </CardContent>
@@ -443,11 +520,29 @@ function TeacherPage({ email }: TeacherPageProps) {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Créer un Nouveau Scénario ECOS</CardTitle>
-                  <CardDescription>Définissez un nouveau scénario d'examen clinique structuré</CardDescription>
+                  <CardTitle>
+                    {editingScenario ? "Modifier le Scénario ECOS" : "Créer un Nouveau Scénario ECOS"}
+                  </CardTitle>
+                  <CardDescription>
+                    {editingScenario 
+                      ? "Modifiez les détails de votre scénario d'examen clinique structuré"
+                      : "Définissez un nouveau scénario d'examen clinique structuré"
+                    }
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <ScenarioCreationForm email={email || ''} onSuccess={() => setActiveTab('scenarios')} />
+                  <ScenarioCreationForm 
+                    email={email || ''} 
+                    onSuccess={() => {
+                      setEditingScenario(null);
+                      setActiveTab('scenarios');
+                    }}
+                    editingScenario={editingScenario}
+                    onCancelEdit={() => {
+                      setEditingScenario(null);
+                      setActiveTab('scenarios');
+                    }}
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -510,6 +605,35 @@ function TeacherPage({ email }: TeacherPageProps) {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Delete Confirmation Dialog */}
+        {deletingScenario && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Confirmer la suppression</h3>
+              <p className="text-gray-600 mb-6">
+                Êtes-vous sûr de vouloir supprimer le scénario "{deletingScenario.title}" ? 
+                Cette action est irréversible et supprimera également toutes les sessions associées.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeletingScenario(null)}
+                  disabled={deleteScenarioMutation.isPending}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={confirmDelete}
+                  disabled={deleteScenarioMutation.isPending}
+                >
+                  {deleteScenarioMutation.isPending ? "Suppression..." : "Supprimer"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
