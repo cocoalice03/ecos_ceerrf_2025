@@ -399,7 +399,11 @@ function TeacherPage({ email }: TeacherPageProps) {
                         </CardHeader>
                         <CardContent>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => window.open(`/student?scenario=${scenario.id}`, '_blank')}
+                            >
                               <Play className="h-4 w-4 mr-1" />
                               Lancer
                             </Button>
@@ -416,7 +420,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                     <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario</h3>
                     <p className="text-gray-600 mb-4">Commencez par créer votre premier scénario ECOS</p>
-                    <Button>
+                    <Button onClick={() => setActiveTab('create')}>
                       <BookOpen className="h-4 w-4 mr-2" />
                       Créer un scénario
                     </Button>
