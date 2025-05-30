@@ -44,6 +44,10 @@ export default function TeacherPage({ email }: TeacherPageProps) {
     enabled: !!email, // Only run query when email is available
   });
 
+  // Ensure we have data before calculating stats
+  const scenarios = dashboardData?.scenarios || [];
+  const sessions = dashboardData?.sessions || [];
+
   const stats = {
     totalScenarios: scenarios.length,
     activeSessions: sessions.filter((s: any) => s.status === 'in_progress').length,
@@ -61,10 +65,6 @@ export default function TeacherPage({ email }: TeacherPageProps) {
       </div>
     );
   }
-
-  // Ensure we have data before rendering stats
-  const scenarios = dashboardData?.scenarios || [];
-  const sessions = dashboardData?.sessions || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
