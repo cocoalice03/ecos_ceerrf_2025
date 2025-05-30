@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,16 +44,16 @@ export default function TeacherPage({ email }: TeacherPageProps) {
     enabled: !!email, // Only run query when email is available
   });
 
-  // Ensure we have data before calculating stats
-  const scenarios = dashboardData?.scenarios || [];
-  const sessions = dashboardData?.sessions || [];
+  // Ensure we have data before calculating stats with memoization
+  const scenarios = useMemo(() => dashboardData?.scenarios || [], [dashboardData?.scenarios]);
+  const sessions = useMemo(() => dashboardData?.sessions || [], [dashboardData?.sessions]);
 
-  const stats = {
+  const stats = useMemo(() => ({
     totalScenarios: scenarios.length,
     activeSessions: sessions.filter((s: any) => s.status === 'in_progress').length,
     completedSessions: sessions.filter((s: any) => s.status === 'completed').length,
     totalStudents: new Set(sessions.map((s: any) => s.studentEmail)).size
-  };
+  }), [scenarios, sessions]);
 
   if (dashboardLoading) {
     return (
@@ -61,6 +61,18 @@ export default function TeacherPage({ email }: TeacherPageProps) {
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Chargement du dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state but still render dashboard with fallback data
+  if (dashboardError && !dashboardData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Erreur lors du chargement des données: {dashboardError.message}</p>
+          <p className="text-gray-600 mt-2">Veuillez actualiser la page</p>
         </div>
       </div>
     );
