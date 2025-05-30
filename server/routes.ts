@@ -9,6 +9,11 @@ import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { db } from "./db";
 import multer from 'multer';
+import { ecosService } from './services/ecos.service';
+import { promptGenService } from './services/promptGen.service';
+import { evaluationService } from './services/evaluation.service';
+import { ecosScenarios, ecosSessions } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 // Max questions per day per user
 const MAX_DAILY_QUESTIONS = 20;
@@ -590,6 +595,408 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'error',
         message: "Une erreur est survenue lors du traitement de votre question. Veuillez réessayer plus tard."
       });
+    }
+  });
+
+  // ==================== ECOS ROUTES ====================
+
+  // Teacher Routes - Scenario Management
+  app.post("/api/ecos/scenarios", async (req: Request, res: Response) => {
+    try {
+      const scenarioSchema = z.object({
+        email: z.string().email(),
+        title: z.string().min(1),
+        description: z.string().min(1),
+        patientPrompt: z.string().optional(),
+        evaluationCriteria: z.any().optional(),
+      });
+      
+      const { email, title, description, patientPrompt, evaluationCriteria } = scenarioSchema.parse(req.body);
+      
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      // Generate patient prompt if not provided
+      let finalPatientPrompt = patientPrompt;
+      if (!finalPatientPrompt) {
+        finalPatientPrompt = await promptGenService.generatePatientPrompt(description);
+      }
+
+      // Generate evaluation criteria if not provided
+      let finalCriteria = evaluationCriteria;
+      if (!finalCriteria) {
+        finalCriteria = await promptGenService.generateEvaluationCriteria(description);
+      }
+
+      const result = await db.insert(ecosScenarios).values({
+        title,
+        description,
+        patientPrompt: finalPatientPrompt,
+        evaluationCriteria: finalCriteria,
+        createdBy: email,
+      }).returning();
+
+      return res.status(201).json({ 
+        message: "Scénario créé avec succès",
+        scenario: result[0]
+      });
+    } catch (error) {
+      console.error("Error creating ECOS scenario:", error);
+      return res.status(500).json({ message: "Erreur lors de la création du scénario" });
+    }
+  });
+
+  app.get("/api/ecos/scenarios", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      const scenarios = await db.select().from(ecosScenarios).orderBy(ecosScenarios.createdAt);
+      
+      return res.status(200).json({ scenarios });
+    } catch (error) {
+      console.error("Error fetching scenarios:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des scénarios" });
+    }
+  });
+
+  app.get("/api/ecos/scenarios/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      const scenario = await db.select().from(ecosScenarios).where(eq(ecosScenarios.id, parseInt(id))).limit(1);
+      
+      if (!scenario.length) {
+        return res.status(404).json({ message: "Scénario non trouvé" });
+      }
+      
+      return res.status(200).json({ scenario: scenario[0] });
+    } catch (error) {
+      console.error("Error fetching scenario:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération du scénario" });
+    }
+  });
+
+  app.put("/api/ecos/scenarios/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updateSchema = z.object({
+        email: z.string().email(),
+        title: z.string().min(1).optional(),
+        description: z.string().min(1).optional(),
+        patientPrompt: z.string().optional(),
+        evaluationCriteria: z.any().optional(),
+      });
+      
+      const { email, ...updateData } = updateSchema.parse(req.body);
+      
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      const result = await db.update(ecosScenarios)
+        .set(updateData)
+        .where(eq(ecosScenarios.id, parseInt(id)))
+        .returning();
+      
+      if (!result.length) {
+        return res.status(404).json({ message: "Scénario non trouvé" });
+      }
+      
+      return res.status(200).json({ 
+        message: "Scénario mis à jour avec succès",
+        scenario: result[0]
+      });
+    } catch (error) {
+      console.error("Error updating scenario:", error);
+      return res.status(500).json({ message: "Erreur lors de la mise à jour du scénario" });
+    }
+  });
+
+  app.delete("/api/ecos/scenarios/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      const result = await db.delete(ecosScenarios).where(eq(ecosScenarios.id, parseInt(id))).returning();
+      
+      if (!result.length) {
+        return res.status(404).json({ message: "Scénario non trouvé" });
+      }
+      
+      return res.status(200).json({ message: "Scénario supprimé avec succès" });
+    } catch (error) {
+      console.error("Error deleting scenario:", error);
+      return res.status(500).json({ message: "Erreur lors de la suppression du scénario" });
+    }
+  });
+
+  // Student Routes - Session Management
+  app.get("/api/ecos/sessions", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+      
+      const sessions = await ecosService.getStudentSessions(email);
+      
+      return res.status(200).json({ sessions });
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des sessions" });
+    }
+  });
+
+  app.post("/api/ecos/sessions", async (req: Request, res: Response) => {
+    try {
+      const sessionSchema = z.object({
+        email: z.string().email(),
+        scenarioId: z.number(),
+      });
+      
+      const { email, scenarioId } = sessionSchema.parse(req.body);
+      
+      const sessionId = await ecosService.startSession(scenarioId, email);
+      
+      return res.status(201).json({ 
+        message: "Session créée avec succès",
+        sessionId 
+      });
+    } catch (error) {
+      console.error("Error starting session:", error);
+      return res.status(500).json({ message: "Erreur lors de la création de la session" });
+    }
+  });
+
+  app.get("/api/ecos/sessions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+      
+      const session = await ecosService.getSession(parseInt(id));
+      
+      if (!session) {
+        return res.status(404).json({ message: "Session non trouvée" });
+      }
+      
+      // Verify student access or admin access
+      if (session.studentEmail !== email && !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      return res.status(200).json({ session });
+    } catch (error) {
+      console.error("Error fetching session:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération de la session" });
+    }
+  });
+
+  app.put("/api/ecos/sessions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updateSchema = z.object({
+        email: z.string().email(),
+        status: z.string().optional(),
+      });
+      
+      const { email, status } = updateSchema.parse(req.body);
+      
+      const session = await ecosService.getSession(parseInt(id));
+      
+      if (!session) {
+        return res.status(404).json({ message: "Session non trouvée" });
+      }
+      
+      // Verify student access or admin access
+      if (session.studentEmail !== email && !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      if (status === 'completed') {
+        await ecosService.endSession(parseInt(id));
+        
+        // Auto-generate evaluation when session is completed
+        try {
+          await evaluationService.evaluateSession(parseInt(id));
+        } catch (evalError) {
+          console.error("Error auto-evaluating session:", evalError);
+          // Continue even if evaluation fails
+        }
+      }
+      
+      return res.status(200).json({ message: "Session mise à jour avec succès" });
+    } catch (error) {
+      console.error("Error updating session:", error);
+      return res.status(500).json({ message: "Erreur lors de la mise à jour de la session" });
+    }
+  });
+
+  app.get("/api/ecos/sessions/:id/report", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+      
+      const session = await ecosService.getSession(parseInt(id));
+      
+      if (!session) {
+        return res.status(404).json({ message: "Session non trouvée" });
+      }
+      
+      // Verify student access or admin access
+      if (session.studentEmail !== email && !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      let report = await evaluationService.getSessionReport(parseInt(id));
+      
+      // Generate report if it doesn't exist and session is completed
+      if (!report && session.status === 'completed') {
+        const evaluation = await evaluationService.evaluateSession(parseInt(id));
+        report = evaluation.report;
+      }
+      
+      if (!report) {
+        return res.status(404).json({ message: "Rapport non disponible - session non terminée" });
+      }
+      
+      return res.status(200).json({ report });
+    } catch (error) {
+      console.error("Error fetching session report:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération du rapport" });
+    }
+  });
+
+  // Chatbot Routes
+  app.post("/api/ecos/prompt-assistant", async (req: Request, res: Response) => {
+    try {
+      const promptSchema = z.object({
+        email: z.string().email(),
+        input: z.string().min(1),
+        contextDocs: z.array(z.string()).optional().default([]),
+      });
+      
+      const { email, input, contextDocs } = promptSchema.parse(req.body);
+      
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      const prompt = await promptGenService.generatePatientPrompt(input, contextDocs);
+      
+      return res.status(200).json({ prompt });
+    } catch (error) {
+      console.error("Error generating prompt:", error);
+      return res.status(500).json({ message: "Erreur lors de la génération du prompt" });
+    }
+  });
+
+  app.post("/api/ecos/patient-simulator", async (req: Request, res: Response) => {
+    try {
+      const simulatorSchema = z.object({
+        email: z.string().email().optional(),
+        sessionId: z.number(),
+        query: z.string().min(1),
+      });
+      
+      const { email, sessionId, query } = simulatorSchema.parse(req.body);
+      
+      // Verify session access if email provided
+      if (email) {
+        const session = await ecosService.getSession(sessionId);
+        if (!session) {
+          return res.status(404).json({ message: "Session non trouvée" });
+        }
+        
+        if (session.studentEmail !== email && !isAdminAuthorized(email)) {
+          return res.status(403).json({ message: "Accès non autorisé" });
+        }
+      }
+      
+      const response = await ecosService.simulatePatient(sessionId, query);
+      
+      return res.status(200).json({ response });
+    } catch (error) {
+      console.error("Error simulating patient:", error);
+      return res.status(500).json({ message: "Erreur lors de la simulation du patient" });
+    }
+  });
+
+  app.post("/api/ecos/evaluate", async (req: Request, res: Response) => {
+    try {
+      const evaluationSchema = z.object({
+        email: z.string().email(),
+        sessionId: z.number(),
+      });
+      
+      const { email, sessionId } = evaluationSchema.parse(req.body);
+      
+      const session = await ecosService.getSession(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ message: "Session non trouvée" });
+      }
+      
+      // Verify access (student can evaluate their own session, admin can evaluate any)
+      if (session.studentEmail !== email && !isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+      
+      const evaluation = await evaluationService.evaluateSession(sessionId);
+      
+      return res.status(200).json(evaluation);
+    } catch (error) {
+      console.error("Error evaluating session:", error);
+      return res.status(500).json({ message: "Erreur lors de l'évaluation" });
+    }
+  });
+
+  // Get available scenarios for students
+  app.get("/api/ecos/available-scenarios", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+      
+      // Get only basic scenario info for students (not the patient prompt)
+      const scenarios = await db
+        .select({
+          id: ecosScenarios.id,
+          title: ecosScenarios.title,
+          description: ecosScenarios.description,
+          createdAt: ecosScenarios.createdAt,
+        })
+        .from(ecosScenarios)
+        .orderBy(ecosScenarios.createdAt);
+      
+      return res.status(200).json({ scenarios });
+    } catch (error) {
+      console.error("Error fetching available scenarios:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des scénarios" });
     }
   });
 
