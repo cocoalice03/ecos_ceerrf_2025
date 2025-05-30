@@ -4,23 +4,50 @@ export function preventCustomElementConflicts() {
   // Store original define method
   const originalDefine = window.customElements.define;
   
+  // Track which elements we've already seen
+  const definedElements = new Set<string>();
+  
   // Override the define method to prevent redefinition
   window.customElements.define = function(name: string, constructor: any, options?: any) {
-    // Check if element is already defined
-    if (window.customElements.get(name)) {
-      console.warn(`Custom element "${name}" is already defined. Skipping redefinition to prevent error.`);
+    // Check if element is already defined in the registry OR we've seen it before
+    if (window.customElements.get(name) || definedElements.has(name)) {
+      console.warn(`🚫 Custom element "${name}" already exists. Preventing redefinition.`);
       return;
     }
     
+    // Mark this element as defined
+    definedElements.add(name);
+    
     // If not defined, proceed with original define
     try {
+      console.log(`✅ Defining new custom element: "${name}"`);
       return originalDefine.call(this, name, constructor, options);
     } catch (error) {
-      console.error(`Error defining custom element "${name}":`, error);
+      console.error(`❌ Error defining custom element "${name}":`, error);
+      // Remove from our tracking since it failed
+      definedElements.delete(name);
+      
+      // If it's a redefinition error, just warn and continue
+      if (error instanceof Error && error.message.includes('already been defined')) {
+        console.warn(`🔄 Element "${name}" was already defined by another source. Continuing...`);
+        return;
+      }
+      
       throw error;
     }
   };
   
+  // Pre-emptively handle known problematic elements
+  const problematicElements = ['vite-error-overlay', 'autosize-textarea'];
+  
+  // Check if any problematic elements are already defined
+  problematicElements.forEach(elementName => {
+    if (window.customElements.get(elementName)) {
+      console.warn(`🔥 Problematic element "${elementName}" is already defined. Blocking further definitions.`);
+      definedElements.add(elementName);
+    }
+  });
+
   // Enhanced error handling for custom element conflicts
   const originalErrorHandler = window.addEventListener;
   

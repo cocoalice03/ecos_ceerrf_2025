@@ -14,6 +14,38 @@
     <meta property="og:title" content="Assistant de Cours | LearnWorlds" />
     <meta property="og:description" content="Chatbot intelligent pour répondre à vos questions sur le contenu des cours" />
     <meta property="og:type" content="website" />
+
+    <!-- Early custom element conflict prevention -->
+    <script>
+      (function() {
+        console.log('🛡️ Early custom element protection active');
+
+        // Store the original define method immediately
+        const originalDefine = window.customElements.define;
+        const definedElements = new Set();
+
+        // Override as early as possible
+        window.customElements.define = function(name, constructor, options) {
+          if (window.customElements.get(name) || definedElements.has(name)) {
+            console.warn(`🚫 EARLY BLOCK: Custom element "${name}" already exists`);
+            return;
+          }
+
+          definedElements.add(name);
+
+          try {
+            return originalDefine.call(this, name, constructor, options);
+          } catch (error) {
+            definedElements.delete(name);
+            if (error.message && error.message.includes('already been defined')) {
+              console.warn(`🔄 EARLY CATCH: Element "${name}" was already defined`);
+              return;
+            }
+            throw error;
+          }
+        };
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -28,7 +60,7 @@
           return false;
         }
       });
-      
+
       // Additional protection for custom elements
       const originalDefine = window.customElements.define;
       window.customElements.define = function(name, constructor, options) {

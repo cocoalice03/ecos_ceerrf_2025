@@ -3,8 +3,16 @@ import App from "./App";
 import "./index.css";
 import { preventCustomElementConflicts, logCustomElements, detectCustomElementSources } from "./utils/customElementPrevention";
 
-// Initialize custom element conflict prevention
+// Initialize custom element conflict prevention IMMEDIATELY
+// This must happen before any other scripts that might define custom elements
 preventCustomElementConflicts();
+
+// Log what's already defined
+console.log('🔍 Pre-existing custom elements:', {
+  'vite-error-overlay': !!window.customElements.get('vite-error-overlay'),
+  'autosize-textarea': !!window.customElements.get('autosize-textarea'),
+  'replit-custom-element': !!window.customElements.get('replit-custom-element')
+});
 
 // Log diagnostic information
 setTimeout(() => {
