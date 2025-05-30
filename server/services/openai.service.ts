@@ -29,12 +29,12 @@ This link must appear at the end of the answer when usefull specially for the fi
    */
   async generateResponse(
     question: string,
-    relevantContent: RAGContent[],
+    relevantContent: RAGContent[] | string,
   ): Promise<string> {
     try {
       // Format the context for better prompt understanding
       let contextText = "";
-      if (relevantContent && relevantContent.length > 0) {
+      if (relevantContent && typeof relevantContent !== 'string' && relevantContent.length > 0) {
         contextText = relevantContent
           .map((item, index) => {
             const source = item.metadata?.source
@@ -43,6 +43,8 @@ This link must appear at the end of the answer when usefull specially for the fi
             return `Context ${index + 1}${source}:\n${item.content}\n`;
           })
           .join("\n");
+      } else if (typeof relevantContent === 'string') {
+        contextText = relevantContent;
       }
 
       const userPrompt = `Question: ${question}\n\nRelevant Content:\n${contextText}`;
