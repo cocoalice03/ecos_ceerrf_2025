@@ -39,15 +39,15 @@ interface PDFUploadData {
 export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Get admin email from URL parameters
   const params = new URLSearchParams(window.location.search);
   const adminEmail = params.get('email') || '';
-  
+
   // Admin authorization check
   const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
   const isAuthorized = ADMIN_EMAILS.includes(adminEmail.toLowerCase());
-  
+
   // Document upload state
   const [documentData, setDocumentData] = useState<DocumentData>({
     title: "",
@@ -85,14 +85,16 @@ export default function AdminPage() {
     enabled: isAuthorized
   });
 
-  // Get all Pinecone indexes
-  const { data: indexes, isLoading: indexesLoading, refetch: refetchIndexes } = useQuery({
-    queryKey: ['/api/admin/indexes', adminEmail],
+  // Fetch available indexes
+  const { data: indexesData, isLoading: indexesLoading, error: indexesError, refetch: refetchIndexes } = useQuery({
+    queryKey: ['/api/admin/indexes'],
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/admin/indexes?email=${encodeURIComponent(adminEmail)}`);
-      return await res.json();
+      const data = await res.json();
+      console.log('Frontend - Index data received:', data);
+      return data;
     },
-    enabled: isAuthorized
+    enabled: !!adminEmail,
   });
 
   // Upload document mutation
@@ -218,16 +220,16 @@ export default function AdminPage() {
       if (data.file) {
         formData.append("pdf", data.file);
       }
-      
+
       const res = await fetch("/api/admin/upload-pdf", {
         method: "POST",
         body: formData,
       });
-      
+
       if (!res.ok) {
         throw new Error("Upload failed");
       }
-      
+
       return await res.json();
     },
     onSuccess: (data) => {
@@ -421,7 +423,7 @@ export default function AdminPage() {
                     placeholder="Ex: Protocole de soins pédiatriques..."
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="category">Catégorie</Label>
                   <Select 
@@ -571,7 +573,7 @@ export default function AdminPage() {
                     Respectez les règles de nommage ci-dessus
                   </p>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="dimension">Dimension des vecteurs</Label>
                   <Input
@@ -585,7 +587,7 @@ export default function AdminPage() {
                     Valeur optimale pour OpenAI text-embedding-3-small
                   </p>
                 </div>
-                
+
                 <Button 
                   onClick={handleCreateIndex}
                   disabled={createIndexMutation.isPending}
@@ -630,16 +632,16 @@ export default function AdminPage() {
                         <SelectValue placeholder="Choisir un index pour charger ses documents" />
                       </SelectTrigger>
                       <SelectContent>
-                        {indexes?.indexes?.map((index: string) => (
-                          <SelectItem key={index} value={index}>
-                            📁 {index}
+                        {indexesData?.indexes?.map((index: any) => (
+                          <SelectItem key={index.name} value={index.name}>
+                            📁 {index.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   )}
                 </div>
-                
+
                 <Button 
                   onClick={handleSwitchIndex}
                   disabled={switchIndexMutation.isPending || !selectedIndex}
@@ -652,13 +654,13 @@ export default function AdminPage() {
                 <div className="space-y-2">
                   <Label>Tous vos index :</Label>
                   <div className="flex flex-wrap gap-2">
-                    {indexes?.indexes?.map((index: string) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        📁 {index}
+                    {indexesData?.indexes?.map((index: any) => (
+                      <Badge key={index.name} variant="secondary" className="text-xs">
+                        📁 {index.name}
                       </Badge>
                     ))}
                   </div>
-                  {indexes?.indexes?.length === 0 && (
+                  {indexesData?.indexes?.length === 0 && (
                     <p className="text-sm text-muted-foreground">Aucun index trouvé. Créez-en un d'abord.</p>
                   )}
                 </div>
@@ -728,7 +730,7 @@ export default function AdminPage() {
                     onChange={(e) => setPdfUploadData(prev => ({ ...prev, title: e.target.value }))}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="pdfCategory">Catégorie</Label>
                   <Select 
@@ -752,7 +754,7 @@ export default function AdminPage() {
                   </Select>
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="pdfFile">Fichier PDF</Label>
                 <Input
@@ -768,7 +770,7 @@ export default function AdminPage() {
                   </p>
                 )}
               </div>
-              
+
               <Button 
                 onClick={handlePDFUpload}
                 disabled={uploadPDFMutation.isPending || !pdfUploadData.file || !pdfUploadData.title}
@@ -813,7 +815,7 @@ export default function AdminPage() {
                   className="min-h-20"
                 />
               </div>
-              
+
               <Button 
                 onClick={handleSQLQuery}
                 disabled={sqlMutation.isPending}
@@ -830,14 +832,14 @@ export default function AdminPage() {
                       {sqlResult.question}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Requête SQL générée:</Label>
                     <div className="p-3 bg-muted rounded-lg font-mono text-sm">
                       {sqlResult.sql_query}
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label>Résultats ({sqlResult.results.length} ligne(s)):</Label>
                     <div className="p-3 bg-muted rounded-lg max-h-64 overflow-auto">
