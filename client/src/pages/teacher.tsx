@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw } from "lucide-react";
 import { useDashboardData } from '@/lib/api';
-import DiagnosticPanel from '@/components/debug/DiagnosticPanel';
 
 interface TeacherPageProps {
   email?: string;
@@ -68,17 +67,6 @@ function TeacherPage({ email }: TeacherPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Debug Panel */}
-      <DiagnosticPanel 
-        email={email}
-        dashboardData={dashboardData}
-        dashboardLoading={dashboardLoading}
-        dashboardError={dashboardError}
-        scenarios={scenarios}
-        sessions={sessions}
-        stats={stats}
-      />
-      
       <div className="container mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Tableau de bord Enseignant</h1>
