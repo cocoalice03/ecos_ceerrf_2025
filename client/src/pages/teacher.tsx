@@ -11,6 +11,7 @@ import { useDashboardData } from '@/lib/api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
 import EcosDebugger from "@/components/debug/EcosDebugger";
+import { AdminButton } from "@/components/layout/AdminButton";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ScenarioCreationFormProps {
@@ -254,14 +255,21 @@ function TeacherPage({ email }: TeacherPageProps) {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Tableau de bord Enseignant</h1>
-          <p className="text-gray-600 mt-2">Gérez vos scénarios ECOS et suivez les progrès de vos étudiants</p>
-          {email && <p className="text-sm text-blue-600 mt-1">Connecté en tant que: {email}</p>}
-          {dashboardError && (
-            <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 text-sm">
-              ⚠️ Données partiellement disponibles (mode dégradé)
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Tableau de bord Enseignant</h1>
+              <p className="text-gray-600 mt-2">Gérez vos scénarios ECOS et suivez les progrès de vos étudiants</p>
+              {email && <p className="text-sm text-blue-600 mt-1">Connecté en tant que: {email}</p>}
+              {dashboardError && (
+                <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 text-sm">
+                  ⚠️ Données partiellement disponibles (mode dégradé)
+                </div>
+              )}
             </div>
-          )}
+            <div className="flex gap-3">
+              <AdminButton email={email || ''} />
+            </div>
+          </div>
         </div>
 
         {/* Statistics Cards */}
