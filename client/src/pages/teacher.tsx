@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2 } from "lucide-react";
 import { useDashboardData } from '@/lib/api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from '@/lib/queryClient';
+import TeacherAssistant from "@/components/ecos/TeacherAssistant";
+import EcosDebugger from "@/components/debug/EcosDebugger";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ScenarioCreationFormProps {
   email: string;
@@ -70,7 +71,7 @@ function ScenarioCreationForm({ email, onSuccess }: ScenarioCreationFormProps) {
     }
 
     let criteria = undefined;
-    
+
     if (formData.evaluationCriteria && formData.evaluationCriteria.trim()) {
       try {
         criteria = JSON.parse(formData.evaluationCriteria);
@@ -79,7 +80,7 @@ function ScenarioCreationForm({ email, onSuccess }: ScenarioCreationFormProps) {
         return;
       }
     }
-    
+
     createScenarioMutation.mutate({
       title: formData.title,
       description: formData.description,
@@ -178,7 +179,7 @@ function ScenarioCreationForm({ email, onSuccess }: ScenarioCreationFormProps) {
         >
           {createScenarioMutation.isPending ? "Création en cours..." : "Créer le Scénario"}
         </Button>
-        
+
         <Button
           variant="outline"
           onClick={() => setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "" })}
@@ -197,7 +198,7 @@ interface TeacherPageProps {
 
 function TeacherPage({ email }: TeacherPageProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  
+
   // Add debugging for authentication issues - MUST be before any conditional returns
   React.useEffect(() => {
     if (!email) {
@@ -206,7 +207,7 @@ function TeacherPage({ email }: TeacherPageProps) {
   }, [email]);
 
   console.log('TeacherPage rendering with email:', email);
-  
+
   const { 
     data: dashboardData, 
     isLoading: dashboardLoading, 
@@ -312,11 +313,12 @@ function TeacherPage({ email }: TeacherPageProps) {
 
         {/* Tabs for different sections */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid grid-cols-5 w-fit">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="scenarios">Scénarios</TabsTrigger>
             <TabsTrigger value="create">Créer</TabsTrigger>
             <TabsTrigger value="sessions">Sessions</TabsTrigger>
+            <TabsTrigger value="debug">Debug</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -485,6 +487,18 @@ function TeacherPage({ email }: TeacherPageProps) {
                     <p className="text-gray-600">Les sessions des étudiants apparaîtront ici</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="debug">
+            <Card>
+              <CardHeader>
+                <CardTitle>Debug ECOS</CardTitle>
+                <CardDescription>Diagnostiquer les problèmes d'autorisation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EcosDebugger email={email || ''} />
               </CardContent>
             </Card>
           </TabsContent>

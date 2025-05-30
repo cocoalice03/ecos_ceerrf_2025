@@ -41,11 +41,13 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
     queryKey: ['ecos-scenarios', email],
     queryFn: async () => {
       try {
-        const response = await apiRequest('GET', `/api/ecos/scenarios?email=${email}`);
+        console.log('Fetching scenarios for email:', email);
+        const response = await apiRequest('GET', `/api/ecos/scenarios?email=${encodeURIComponent(email)}`);
+        console.log('Scenarios response:', response);
         return response.scenarios || [];
       } catch (error) {
         console.error('Error fetching scenarios:', error);
-        return [];
+        throw error;
       }
     },
     enabled: !!email,
