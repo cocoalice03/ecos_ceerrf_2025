@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
@@ -10,157 +9,153 @@ import Chat from "@/pages/chat";
 import AdminPage from "@/pages/admin";
 import TeacherPage from "@/pages/teacher";
 import StudentPage from "@/pages/student";
-import RoleSwitcher from "@/components/debug/RoleSwitcher";
 import { apiRequest } from "@/lib/queryClient";
 import { MessageCircle } from "lucide-react";
 
-interface User {
-  email: string;
-  role?: string;
+interface AppProps {
+  initialEmail: string | null;
 }
 
-function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [currentRole, setCurrentRole] = useState<string>('student');
+function Router({ email }: { email: string | null }) {
+  // Gérer toutes les routes, avec priorité pour l'admin
+  return (
+    <Switch>
+      <Route path="/admin">
+        <AdminPage />
+      </Route>
+      <Route path="/teacher/:email">
+        {(params) => <TeacherPage email={params.email} />}
+      </Route>
+      <Route path="/student/:email">
+        {(params) => (
+          <div className="min-h-screen bg-gray-50">
+            <StudentPage email={params.email} />
+          </div>
+        )}
+      </Route>
+      <Route path="/chat/:email">
+        {(params) => (
+          <div className="flex h-screen bg-neutral-50">
+            <Chat email={params.email} />
+          </div>
+        )}
+      </Route>
+      <Route path="/*">
+        {!email ? (
+          <div className="flex items-center justify-center min-h-screen bg-neutral-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-card">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
+                  <MessageCircle className="text-primary text-3xl h-8 w-8" />
+                </div>
+              </div>
+              <h3 className="text-center font-heading font-semibold text-xl mb-2">Assistant de Cours</h3>
+              <p className="text-center text-neutral-600 mb-6">
+                Ce chatbot est conçu pour vous accompagner dans votre apprentissage.
+              </p>
+              <div className="bg-blue-50 rounded-lg p-4 mb-6 text-sm">
+                <h4 className="font-medium text-blue-700 mb-2">Instructions d'accès :</h4>
+                <ol className="list-decimal pl-5 text-blue-700 space-y-2">
+                  <li>Chat RAG : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/votre@email.com</code></li>
+                  <li>Mode Enseignant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/teacher/votre@email.com</code></li>
+                  <li>Mode Étudiant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/student/votre@email.com</code></li>
+                  <li>Administration : <code className="bg-blue-100 px-1 py-0.5 rounded">/admin</code></li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Chat email={email} />
+        )}
+      </Route>
+    </Switch>
+  );
+}
+
+function App({ initialEmail }: AppProps) {
+  const [email, setEmail] = useState<string | null>(initialEmail);
+  const [authenticating, setAuthenticating] = useState<boolean>(!!initialEmail);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [userEmail, setUserEmail] = useState<string>('cherubindavid@gmail.com');
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await apiRequest('GET', '/api/status');
-        console.log('Detected email:', response.email);
-        
-        if (response.email) {
-          // Determine role based on email or other logic
-          let role = 'student'; // default role
-          
-          // Example role determination logic
-          if (response.email.includes('admin') || response.email.includes('prof')) {
-            role = 'teacher';
-          }
-          
-          setUser({ 
-            email: response.email,
-            role: role
-          });
-        } else {
-          console.log('No user authenticated - response not ok');
-          // For development, use test email
-          const testEmail = 'cherubindavid@gmail.com';
-          console.log('Using test email for development:', testEmail);
-          setUser({ 
-            email: testEmail,
-            role: 'student' // You can change this to 'teacher' for testing
-          });
+    async function authenticateUser() {
+      if (initialEmail) {
+        try {
+          setAuthenticating(true);
+          // Create or update session via webhook endpoint
+          await apiRequest("POST", "/api/webhook", { email: initialEmail });
+          setEmail(initialEmail);
+        } catch (error) {
+          console.error("Authentication error:", error);
+          setEmail(null);
+        } finally {
+          setAuthenticating(false);
         }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        // Fallback for development
-        const testEmail = 'cherubindavid@gmail.com';
-        setUser({ 
-          email: testEmail,
-          role: 'student'
-        });
-      } finally {
-        setLoading(false);
       }
-    };
+    }
 
-    checkAuth();
+    authenticateUser();
+  }, [initialEmail]);
+
+  useEffect(() => {
+    async function detectUser() {
+      try {
+        const response = await fetch('/__replauthuser');
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData && userData.name) {
+            const emailFromAuth = `${userData.name.toLowerCase().replace(/\s+/g, '')}@replit.com`;
+            console.log('Detected email:', emailFromAuth);
+            setEmail(emailFromAuth);
+            return;
+          }
+        }
+
+        // Fallback to test email for development
+        const testEmail = 'cherubindavid@gmail.com';
+        console.log('Using test email for development:', testEmail);
+        setEmail(testEmail);
+      } catch (error) {
+        console.error('Error detecting user:', error);
+        // Fallback to test email for development
+        const testEmail = 'cherubindavid@gmail.com';
+        setEmail(testEmail);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    detectUser();
   }, []);
 
-  if (loading) {
+  if (authenticating) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement...</p>
+      <div className="flex items-center justify-center min-h-screen bg-neutral-50">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-t-4 border-primary border-solid rounded-full animate-spin"></div>
+          <p className="mt-4 text-neutral-600">Authentification en cours...</p>
         </div>
       </div>
     );
   }
 
-  // Role switching handler
-  const handleRoleChange = (newRole: string) => {
-    setCurrentRole(newRole);
-    setUser(prev => prev ? { ...prev, role: newRole } : null);
-  };
-
-  // Role-based routing
-  const renderMainContent = () => {
-    if (!user?.email) {
-      return <Chat />;
-    }
-    
-    switch (currentRole) {
-      case 'teacher':
-      case 'admin':
-        return <TeacherPage email={user.email} />;
-      case 'student':
-      default:
-        return <StudentPage email={user.email} />;
-    }
-  };
+  if (isLoading || !email) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement de l'application...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-background text-foreground">
-          <Switch>
-            {/* Admin route */}
-            <Route path="/admin">
-              <AdminPage />
-            </Route>
-            
-            {/* Chat route */}
-            <Route path="/chat">
-              <Chat />
-            </Route>
-            
-            {/* Teacher route */}
-            <Route path="/teacher">
-              {user?.email ? <TeacherPage email={user.email} /> : <Chat />}
-            </Route>
-            
-            {/* Student route */}
-            <Route path="/student">
-              {user?.email ? <StudentPage email={user.email} /> : <Chat />}
-            </Route>
-            
-            {/* Default route - role-based routing */}
-            <Route path="/">
-              {renderMainContent()}
-            </Route>
-            
-            {/* 404 route */}
-            <Route>
-              <NotFound />
-            </Route>
-          </Switch>
-
-          {/* Role switcher for development */}
-          {user?.email && (
-            <RoleSwitcher 
-              currentRole={currentRole}
-              onRoleChange={handleRoleChange}
-              email={user.email}
-            />
-          )}
-
-          {/* Floating action button to access chat when in ECOS mode */}
-          {user?.email && window.location.pathname !== '/chat' && (
-            <div className="fixed bottom-6 right-6 z-50">
-              <button
-                onClick={() => window.location.href = '/chat'}
-                className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors"
-                title="Accéder au Chat"
-              >
-                <MessageCircle className="w-6 h-6" />
-              </button>
-            </div>
-          )}
-        </div>
         <Toaster />
+        <Router email={email} />
       </TooltipProvider>
     </QueryClientProvider>
   );
