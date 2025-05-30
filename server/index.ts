@@ -3,7 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
 import { insertLog } from "./storage";
-import routes from "./routes";
+import { registerRoutes } from "./routes";
 import { addDiagnosticRoutes } from "./diagnostic-endpoint";
 
 const app = express();
@@ -60,8 +60,7 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use routes
-  app.use(routes);
+  
 
   // Add diagnostic routes
   addDiagnosticRoutes(app);
