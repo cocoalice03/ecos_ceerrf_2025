@@ -85,9 +85,16 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
   });
 
   const handleCreateScenario = () => {
-    const criteria = formData.evaluationCriteria ? 
-      JSON.parse(formData.evaluationCriteria) : 
-      undefined;
+    let criteria = undefined;
+    
+    if (formData.evaluationCriteria && formData.evaluationCriteria.trim()) {
+      try {
+        criteria = JSON.parse(formData.evaluationCriteria);
+      } catch (error) {
+        alert("Erreur : Les critères d'évaluation doivent être au format JSON valide. Exemple : {\"anamnese\": 20, \"examen_physique\": 30}");
+        return;
+      }
+    }
     
     createScenarioMutation.mutate({
       title: formData.title,
@@ -238,6 +245,9 @@ export default function TeacherAssistant({ email }: TeacherAssistantProps) {
                   placeholder='{"anamnese": 20, "examen_physique": 30, "diagnostic": 25, "plan_therapeutique": 25}'
                   rows={4}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Format JSON requis. Exemple : {"{"}"anamnese": 20, "examen_physique": 30{"}"}
+                </p>
               </div>
 
               <Button
