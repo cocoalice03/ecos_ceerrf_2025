@@ -218,8 +218,8 @@ export class PineconeService {
       });
       
       // Provide more specific error messages
-      if (error.status === 409) {
-        throw new Error(`Index "${indexName}" already exists. Please choose a different name.`);
+      if (error.message && error.message.includes('ALREADY_EXISTS')) {
+        throw new Error(`L'index "${indexName}" existe déjà. Veuillez choisir un nom différent ou attendre quelques minutes si vous venez de le supprimer.`);
       } else if (error.status === 403) {
         throw new Error('Permission denied. Please check your Pinecone API key.');
       } else if (error.status === 400) {
