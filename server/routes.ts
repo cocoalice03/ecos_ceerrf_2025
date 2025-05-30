@@ -38,7 +38,13 @@ const upload = multer({
 
 // Middleware to check admin authorization
 function isAdminAuthorized(email: string): boolean {
-  return ADMIN_EMAILS.includes(email.toLowerCase());
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+  // Convert both the input email and admin emails to lowercase for comparison
+  const normalizedEmail = email.toLowerCase().trim();
+  const normalizedAdminEmails = ADMIN_EMAILS.map(adminEmail => adminEmail.toLowerCase().trim());
+  return normalizedAdminEmails.includes(normalizedEmail);
 }
 
 // Utility functions for document processing

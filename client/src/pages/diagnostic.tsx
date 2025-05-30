@@ -1,5 +1,5 @@
-
 import DeepDiagnostic from "@/components/debug/DeepDiagnostic";
+import AuthDebugger from "@/components/debug/AuthDebugger";
 
 export default function DiagnosticPage() {
   return (
@@ -12,6 +12,7 @@ export default function DiagnosticPage() {
       </div>
       <div className="py-6">
         <DeepDiagnostic />
+        <AuthDebugger />
       </div>
     </div>
   );

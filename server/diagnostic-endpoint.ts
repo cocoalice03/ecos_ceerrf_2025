@@ -2,6 +2,34 @@
 import { Request, Response } from "express";
 
 export function addDiagnosticRoutes(app: any) {
+  // Auth debugging endpoint
+  app.get("/api/diagnostic/auth-check", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+      
+      const authInfo = {
+        receivedEmail: email,
+        emailType: typeof email,
+        emailString: String(email || ''),
+        emailLowerCase: String(email || '').toLowerCase(),
+        adminEmails: ADMIN_EMAILS,
+        isAuthorized: ADMIN_EMAILS.includes(String(email || '').toLowerCase()),
+        directCheck: email === 'cherubindavid@gmail.com',
+        includes: ADMIN_EMAILS.includes(email as string),
+        query: req.query,
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json(authInfo);
+    } catch (error) {
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   app.get("/api/diagnostic/health", async (req: Request, res: Response) => {
     try {
       const health = {
