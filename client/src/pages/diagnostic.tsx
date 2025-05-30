@@ -1,5 +1,6 @@
 import DeepDiagnostic from "@/components/debug/DeepDiagnostic";
 import AuthDebugger from "@/components/debug/AuthDebugger";
+import CustomElementDiagnostic from "@/components/debug/CustomElementDiagnostic";
 
 export default function DiagnosticPage() {
   return (
@@ -13,6 +14,7 @@ export default function DiagnosticPage() {
       <div className="py-6">
         <DeepDiagnostic />
         <AuthDebugger email="cherubindavid@gmail.com" />
+        <CustomElementDiagnostic />
       </div>
     </div>
   );

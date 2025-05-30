@@ -1,22 +1,16 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { preventCustomElementConflicts, logCustomElements, detectCustomElementSources } from "./utils/customElementPrevention";
 
-// Prevent custom element redefinition errors during development
-window.addEventListener('unhandledrejection', function(event) {
-  if (event.reason && event.reason.message && event.reason.message.includes('already been defined')) {
-    console.warn('Custom element redefinition prevented:', event.reason.message);
-    event.preventDefault();
-  }
-});
+// Initialize custom element conflict prevention
+preventCustomElementConflicts();
 
-window.addEventListener('error', function(event) {
-  if (event.error && event.error.message && event.error.message.includes('already been defined')) {
-    console.warn('Custom element redefinition prevented:', event.error.message);
-    event.preventDefault();
-    return false;
-  }
-});
+// Log diagnostic information
+setTimeout(() => {
+  logCustomElements();
+  detectCustomElementSources();
+}, 1000);
 
 // URL params to extract email for authentication
 let email = null;
