@@ -9,6 +9,7 @@ import Chat from "@/pages/chat";
 import AdminPage from "@/pages/admin";
 import TeacherPage from "@/pages/teacher";
 import StudentPage from "@/pages/student";
+import DiagnosticPage from "@/pages/diagnostic";
 import { apiRequest } from "@/lib/queryClient";
 import { MessageCircle } from "lucide-react";
 
@@ -22,6 +23,9 @@ function Router({ email }: { email: string | null }) {
     <Switch>
       <Route path="/admin">
         <AdminPage />
+      </Route>
+      <Route path="/diagnostic">
+        <DiagnosticPage />
       </Route>
       <Route path="/teacher/:email">
         {(params) => <TeacherPage email={params.email} />}

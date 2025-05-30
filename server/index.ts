@@ -1,6 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { db } from "./db";
+import { insertLog } from "./storage";
+import routes from "./routes";
+import { addDiagnosticRoutes } from "./diagnostic-endpoint";
 
 const app = express();
 app.use(express.json());
@@ -55,6 +59,12 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Use routes
+  app.use(routes);
+
+  // Add diagnostic routes
+  addDiagnosticRoutes(app);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
