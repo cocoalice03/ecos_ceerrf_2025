@@ -1013,7 +1013,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email } = req.query;
       
+      console.log('Available Scenarios - Full query:', req.query);
+      console.log('Available Scenarios - Email received:', email);
+      
       if (!email || typeof email !== "string") {
+        console.log('Available Scenarios - Email validation failed:', email);
         return res.status(400).json({ message: "Email requis" });
       }
       
@@ -1027,6 +1031,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .from(ecosScenarios)
         .orderBy(ecosScenarios.createdAt);
+      
+      console.log('Available Scenarios - Query result:', scenarios);
+      console.log('Available Scenarios - Number of scenarios found:', scenarios.length);
       
       return res.status(200).json({ scenarios });
     } catch (error) {

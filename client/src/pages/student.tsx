@@ -23,7 +23,10 @@ export default function StudentPage({ email }: StudentPageProps) {
   const { data: scenarios, isLoading: scenariosLoading } = useQuery({
     queryKey: ['available-scenarios', email],
     queryFn: async () => {
+      console.log('Fetching available scenarios for email:', email);
       const response = await apiRequest('GET', `/api/ecos/available-scenarios?email=${email}`);
+      console.log('Available scenarios response:', response);
+      console.log('Number of scenarios received:', response.scenarios?.length || 0);
       return response.scenarios || [];
     }
   });
