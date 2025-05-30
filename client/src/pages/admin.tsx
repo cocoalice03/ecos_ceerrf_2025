@@ -96,9 +96,25 @@ export default function AdminPage() {
     queryFn: async () => {
       if (!adminEmail) throw new Error('Email required');
       console.log('Fetching indexes for email:', adminEmail);
-      const result = await apiRequest("GET", `/api/admin/indexes?email=${encodeURIComponent(adminEmail)}`);
-      console.log('Indexes API response:', result);
-      return await result.json();
+      
+      const response = await fetch(`/api/admin/indexes?email=${encodeURIComponent(adminEmail)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('Indexes API response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Indexes API error:', errorText);
+        throw new Error(`Failed to fetch indexes: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Indexes API response data:', data);
+      return data;
     },
     enabled: !!adminEmail,
     staleTime: 0, // Always fetch fresh data
