@@ -7,6 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Chat from "@/pages/chat";
 import AdminPage from "@/pages/admin";
+import TeacherPage from "@/pages/teacher";
+import StudentPage from "@/pages/student";
 import { apiRequest } from "@/lib/queryClient";
 import { MessageCircle } from "lucide-react";
 
@@ -20,6 +22,12 @@ function Router({ email }: { email: string | null }) {
     <Switch>
       <Route path="/admin">
         <AdminPage />
+      </Route>
+      <Route path="/teacher/:email">
+        {(params) => <TeacherPage email={params.email} />}
+      </Route>
+      <Route path="/student/:email">
+        {(params) => <StudentPage email={params.email} />}
       </Route>
       <Route path="/chat/:email">
         {(params) => <Chat email={params.email} />}
@@ -40,9 +48,10 @@ function Router({ email }: { email: string | null }) {
               <div className="bg-blue-50 rounded-lg p-4 mb-6 text-sm">
                 <h4 className="font-medium text-blue-700 mb-2">Instructions d'accès :</h4>
                 <ol className="list-decimal pl-5 text-blue-700 space-y-2">
-                  <li>Accédez directement avec votre email : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/votre@email.com</code></li>
-                  <li>Exemple : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/colombemadoungou@gmail.com</code></li>
-                  <li>Interface d'administration : <code className="bg-blue-100 px-1 py-0.5 rounded">/admin</code></li>
+                  <li>Chat RAG : <code className="bg-blue-100 px-1 py-0.5 rounded">/chat/votre@email.com</code></li>
+                  <li>Mode Enseignant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/teacher/votre@email.com</code></li>
+                  <li>Mode Étudiant ECOS : <code className="bg-blue-100 px-1 py-0.5 rounded">/student/votre@email.com</code></li>
+                  <li>Administration : <code className="bg-blue-100 px-1 py-0.5 rounded">/admin</code></li>
                 </ol>
               </div>
             </div>
