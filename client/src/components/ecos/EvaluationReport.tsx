@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,31 +61,31 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
   // Calculate overall score percentage
   const calculateOverallScore = (evaluation: any) => {
     console.log('📊 Evaluation data for score calculation:', evaluation);
-    
+
     if (!evaluation) return 0;
-    
+
     // Check if scores exist in the evaluation object - handle nested structure
     let scores: number[] = [];
-    
+
     // First check if evaluation has nested evaluation object (from API response)
     const evalData = evaluation.evaluation || evaluation;
-    
+
     if (evalData.scores && typeof evalData.scores === 'object') {
       scores = Object.values(evalData.scores).filter(score => typeof score === 'number') as number[];
     } else if (evalData.criteria && Array.isArray(evalData.criteria)) {
       scores = evalData.criteria.map((c: any) => c.score).filter((score: any) => typeof score === 'number');
     }
-    
+
     console.log('📊 Extracted scores:', scores);
-    
+
     if (scores.length === 0) return 0;
-    
+
     const totalScore = scores.reduce((sum, score) => sum + score, 0);
     const maxPossibleScore = scores.length * 4;
     const percentage = Math.round((totalScore / maxPossibleScore) * 100);
-    
+
     console.log(`📊 Score calculation: ${totalScore}/${maxPossibleScore} = ${percentage}%`);
-    
+
     return percentage;
   };
 
@@ -119,19 +118,34 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
     );
   }
 
-  if (error || !transformedEvaluation) {
+  if (error) {
+    const errorMessage = error.message || 'Impossible de charger l\'évaluation';
+    const isInsufficientContent = errorMessage.includes('assez d\'échanges') || errorMessage.includes('Aucune question');
+
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Card>
-          <CardContent className="p-8 text-center">
-            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Évaluation en attente</h3>
-            <p className="text-gray-600 mb-4">
-              L'évaluation de cette session est en cours de génération ou a rencontré un problème.
-            </p>
-            <p className="text-sm text-gray-500">
-              Veuillez rafraîchir la page dans quelques instants ou contacter votre enseignant si le problème persiste.
-            </p>
+          <CardContent className="p-8">
+            <div className="text-center">
+              {isInsufficientContent ? (
+                <>
+                  <AlertCircle className="w-16 h-16 mx-auto mb-4 text-amber-500" />
+                  <h3 className="text-lg font-semibold mb-2">Évaluation non disponible</h3>
+                  <p className="text-gray-600 mb-4">
+                    Cette session ne contient pas assez d'échanges pour générer une évaluation.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Une évaluation nécessite au moins une question de l'étudiant et une réponse du patient.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+                  <h3 className="text-lg font-semibold mb-2">Erreur lors du chargement</h3>
+                  <p className="text-gray-600">{errorMessage}</p>
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

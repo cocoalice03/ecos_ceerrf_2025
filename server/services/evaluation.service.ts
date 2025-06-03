@@ -23,6 +23,22 @@ export class EvaluationService {
         };
       }
 
+      // Get complete session history first to check if there's meaningful content
+      const history = await this.getCompleteSessionHistory(sessionId);
+      
+      // Check if there are meaningful exchanges (at least 2 messages - student question + patient response)
+      if (history.length < 2) {
+        console.log(`⚠️ Insufficient conversation history for session ${sessionId} (${history.length} messages)`);
+        throw new Error('Session ne contient pas assez d\'échanges pour générer une évaluation. Au moins une question et une réponse sont nécessaires.');
+      }
+
+      // Check if there are actual student questions (user messages)
+      const studentMessages = history.filter(msg => msg.role === 'user');
+      if (studentMessages.length === 0) {
+        console.log(`⚠️ No student questions found for session ${sessionId}`);
+        throw new Error('Aucune question d\'étudiant trouvée dans cette session. Une évaluation nécessite au moins une interaction.');
+      }
+
       // Get session data
       const sessionData = await db
         .select({
@@ -50,8 +66,7 @@ export class EvaluationService {
         prise_en_charge: { name: "Prise en charge", maxScore: 4 }
       };
 
-      // Get complete session history
-      const history = await this.getCompleteSessionHistory(sessionId);
+      // History already retrieved above for validation
 
       // Generate evaluation using OpenAI
       const evaluationPrompt = `Tu es un évaluateur expert pour les ECOS (Examens Cliniques Objectifs Structurés).

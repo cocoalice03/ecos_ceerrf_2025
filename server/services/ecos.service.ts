@@ -151,11 +151,18 @@ RAPPEL CRITIQUE: Ce scénario concerne spécifiquement "${sessionResult[0].descr
       })
       .where(eq(ecosSessions.id, sessionId));
 
-    // Automatically trigger evaluation when session ends
+    // Only trigger evaluation if there are meaningful exchanges
     try {
-      const { evaluationService } = await import('./evaluation.service');
-      await evaluationService.evaluateSession(sessionId);
-      console.log(`✅ Evaluation completed for session ${sessionId}`);
+      const history = await this.getSessionHistory(sessionId);
+      const studentMessages = history.filter(msg => msg.role === 'user');
+      
+      if (history.length >= 2 && studentMessages.length > 0) {
+        const { evaluationService } = await import('./evaluation.service');
+        await evaluationService.evaluateSession(sessionId);
+        console.log(`✅ Evaluation completed for session ${sessionId}`);
+      } else {
+        console.log(`⚠️ Session ${sessionId} ended without meaningful exchanges - no evaluation generated`);
+      }
     } catch (error) {
       console.error(`❌ Failed to evaluate session ${sessionId}:`, error);
       // Don't throw error to avoid breaking session termination
