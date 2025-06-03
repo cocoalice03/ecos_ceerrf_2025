@@ -52,17 +52,35 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
     })) : [])
   } : null;
 
+  console.log('🔍 Raw evaluation data:', evaluation);
+  console.log('🔍 Transformed evaluation:', transformedEvaluation);
+
   // Calculate overall score percentage
   const calculateOverallScore = (evaluation: any) => {
-    if (!evaluation || !evaluation.scores) return 0;
+    console.log('📊 Evaluation data for score calculation:', evaluation);
     
-    const scores = Object.values(evaluation.scores).filter(score => typeof score === 'number') as number[];
+    if (!evaluation) return 0;
+    
+    // Check if scores exist in the evaluation object
+    let scores: number[] = [];
+    
+    if (evaluation.scores && typeof evaluation.scores === 'object') {
+      scores = Object.values(evaluation.scores).filter(score => typeof score === 'number') as number[];
+    } else if (evaluation.criteria && Array.isArray(evaluation.criteria)) {
+      scores = evaluation.criteria.map((c: any) => c.score).filter((score: any) => typeof score === 'number');
+    }
+    
+    console.log('📊 Extracted scores:', scores);
+    
     if (scores.length === 0) return 0;
     
     const totalScore = scores.reduce((sum, score) => sum + score, 0);
     const maxPossibleScore = scores.length * 4;
+    const percentage = Math.round((totalScore / maxPossibleScore) * 100);
     
-    return Math.round((totalScore / maxPossibleScore) * 100);
+    console.log(`📊 Score calculation: ${totalScore}/${maxPossibleScore} = ${percentage}%`);
+    
+    return percentage;
   };
 
   const overallScore = transformedEvaluation ? calculateOverallScore(transformedEvaluation) : 0;
