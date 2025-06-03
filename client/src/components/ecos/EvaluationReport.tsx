@@ -40,6 +40,18 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
     }
   });
 
+  // Transform evaluation data to match expected structure
+  const transformedEvaluation = evaluation ? {
+    ...evaluation,
+    criteria: evaluation.criteria || (evaluation.scores ? Object.entries(evaluation.scores).map(([key, score]) => ({
+      id: key,
+      name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+      score: typeof score === 'number' ? score : 0,
+      maxScore: 4,
+      feedback: evaluation.comments?.[key] || 'Aucun commentaire'
+    })) : [])
+  } : null;
+
   // Fetch session report
   const { data: report } = useQuery({
     queryKey: ['ecos-report', sessionId],
@@ -64,7 +76,7 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
     );
   }
 
-  if (error || !evaluation) {
+  if (error || !transformedEvaluation) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Card>
@@ -102,13 +114,13 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
           <CardTitle className="flex items-center justify-between">
             <span>Résultat Global</span>
             <Badge variant="outline" className="text-lg px-3 py-1">
-              {evaluation.overallScore}%
+              {transformedEvaluation.overallScore || 0}%
             </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <Progress value={evaluation.overallScore} className="h-3" />
+            <Progress value={transformedEvaluation.overallScore || 0} className="h-3" />
           </div>
           {report?.summary && (
             <p className="text-gray-700">{report.summary}</p>
@@ -122,7 +134,7 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
           <CardTitle>Évaluation Détaillée</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {evaluation.criteria.map((criterion) => (
+          {transformedEvaluation.criteria.map((criterion) => (
             <div key={criterion.id} className="border-b border-gray-100 pb-4 last:border-b-0">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
