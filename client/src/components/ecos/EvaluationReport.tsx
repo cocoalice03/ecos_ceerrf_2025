@@ -56,7 +56,7 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
   const { data: report } = useQuery({
     queryKey: ['ecos-report', sessionId],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/ecos/reports/${sessionId}?email=${email}`);
+      const response = await apiRequest('GET', `/api/ecos/sessions/${sessionId}/report?email=${email}`);
       return response.report;
     }
   });

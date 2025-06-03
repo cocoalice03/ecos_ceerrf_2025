@@ -165,11 +165,14 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
     const match = text.match(regex);
     if (!match) return ['Aucun élément identifié'];
 
-    return match[1]
+    const items = match[1]
       .split('\n')
       .filter(line => line.trim())
       .map(line => line.replace(/^[\d\-\*\s]+/, '').trim())
       .filter(line => line.length > 0);
+
+    // Ensure we always return an array with at least one element
+    return items.length > 0 ? items : ['Aucun élément identifié'];
   }
 
   private async saveEvaluation(sessionId: number, evaluation: any): Promise<void> {
@@ -189,11 +192,24 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
   }
 
   private async generateReport(sessionId: number, evaluation: any): Promise<any> {
+    // Ensure all fields are properly formatted as arrays
+    const strengths = Array.isArray(evaluation.strengths) 
+      ? evaluation.strengths 
+      : (evaluation.strengths ? [evaluation.strengths] : ['Points forts à identifier']);
+    
+    const weaknesses = Array.isArray(evaluation.weaknesses) 
+      ? evaluation.weaknesses 
+      : (evaluation.weaknesses ? [evaluation.weaknesses] : ['Points à améliorer à identifier']);
+    
+    const recommendations = Array.isArray(evaluation.recommendations) 
+      ? evaluation.recommendations 
+      : (evaluation.recommendations ? [evaluation.recommendations] : ['Recommandations à définir']);
+
     const report = {
       summary: this.generateSummary(evaluation),
-      strengths: evaluation.strengths || ['Points forts à identifier'],
-      weaknesses: evaluation.weaknesses || ['Points à améliorer à identifier'],
-      recommendations: evaluation.recommendations || ['Recommandations à définir']
+      strengths,
+      weaknesses,
+      recommendations
     };
 
     // Save report to database
