@@ -76,6 +76,7 @@ export default function StudentPage({ email }: StudentPageProps) {
       const scenarioId = parseInt(scenarioParam);
       const scenarioExists = scenarios.find((s: any) => s.id === scenarioId);
       if (scenarioExists) {
+        console.log('Auto-starting scenario:', scenarioId);
         handleStartSession(scenarioId);
       }
     }
@@ -84,6 +85,14 @@ export default function StudentPage({ email }: StudentPageProps) {
   const handleSessionEnd = () => {
     setActiveSessionId(null);
     refetchSessions();
+    
+    // Clear the scenario parameter from URL to prevent auto-restart
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('scenario')) {
+      urlParams.delete('scenario');
+      const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+      window.history.replaceState({}, '', newUrl);
+    }
   };
 
   const handleViewReport = (sessionId: number) => {
