@@ -149,6 +149,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
   const httpServer = createServer(app);
 
+  // Simple DB test endpoint
+  app.get("/api/test/db", async (req: Request, res: Response) => {
+    try {
+      const result = await db.execute('SELECT NOW() as current_time, 1 as test_value');
+      return res.status(200).json({ 
+        status: 'success',
+        result: result.rows[0],
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('DB test failed:', error);
+      return res.status(500).json({ 
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Webhook endpoint for LearnWorlds/Zapier integration
   app.post("/api/webhook", async (req: Request, res: Response) => {
     try {
@@ -1224,12 +1243,29 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
     try {
       const { email } = req.query;
 
+      // Test database connection
+      let dbStatus = 'unknown';
+      let dbError = null;
+      try {
+        await db.execute('SELECT 1 as test');
+        dbStatus = 'connected';
+      } catch (dbErr) {
+        dbStatus = 'error';
+        dbError = dbErr instanceof Error ? dbErr.message : 'Unknown DB error';
+        console.error('Database health check failed:', dbErr);
+      }
+
       const healthCheck = {
         timestamp: new Date().toISOString(),
         server: {
           status: 'running',
           uptime: process.uptime(),
           memory: process.memoryUsage()
+        },
+        database: {
+          status: dbStatus,
+          error: dbError,
+          url: process.env.DATABASE_URL ? 'configured' : 'missing'
         },
         pinecone: {
           serviceAvailable: !!pineconeService,

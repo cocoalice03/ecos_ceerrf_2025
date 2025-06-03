@@ -4,10 +4,15 @@ import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
 import { insertLog } from "./storage";
 import { addDiagnosticRoutes } from "./diagnostic-endpoint";
+import { createDebugMiddleware, createDatabaseErrorHandler } from "./debug.middleware";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add debug middleware
+app.use(createDebugMiddleware());
+app.use(createDatabaseErrorHandler());
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -50,8 +55,21 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
+    // Log the error with more details
+    console.error(`❌ Server Error [${status}]:`, {
+      message,
+      stack: err.stack,
+      url: _req.url,
+      method: _req.method,
+      timestamp: new Date().toISOString()
+    });
+
     res.status(status).json({ message });
-    throw err;
+    
+    // Don't throw the error in production to prevent crash
+    if (process.env.NODE_ENV !== 'production') {
+      throw err;
+    }
   });
 
   // importantly only setup vite in development and after
