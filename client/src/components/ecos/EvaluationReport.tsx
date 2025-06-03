@@ -41,16 +41,20 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
   });
 
   // Transform evaluation data to match expected structure
-  const transformedEvaluation = evaluation ? {
-    ...evaluation,
-    criteria: evaluation.criteria || (evaluation.scores ? Object.entries(evaluation.scores).map(([key, score]) => ({
-      id: key,
-      name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
-      score: typeof score === 'number' ? score : 0,
-      maxScore: 4,
-      feedback: evaluation.comments?.[key] || 'Aucun commentaire'
-    })) : [])
-  } : null;
+  const transformedEvaluation = evaluation ? (() => {
+    const evalData = evaluation.evaluation || evaluation;
+    return {
+      ...evaluation,
+      ...evalData,
+      criteria: evalData.criteria || (evalData.scores ? Object.entries(evalData.scores).map(([key, score]) => ({
+        id: key,
+        name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+        score: typeof score === 'number' ? score : 0,
+        maxScore: 4,
+        feedback: evalData.comments?.[key] || 'Aucun commentaire'
+      })) : [])
+    };
+  })() : null;
 
   console.log('🔍 Raw evaluation data:', evaluation);
   console.log('🔍 Transformed evaluation:', transformedEvaluation);
@@ -61,13 +65,16 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
     
     if (!evaluation) return 0;
     
-    // Check if scores exist in the evaluation object
+    // Check if scores exist in the evaluation object - handle nested structure
     let scores: number[] = [];
     
-    if (evaluation.scores && typeof evaluation.scores === 'object') {
-      scores = Object.values(evaluation.scores).filter(score => typeof score === 'number') as number[];
-    } else if (evaluation.criteria && Array.isArray(evaluation.criteria)) {
-      scores = evaluation.criteria.map((c: any) => c.score).filter((score: any) => typeof score === 'number');
+    // First check if evaluation has nested evaluation object (from API response)
+    const evalData = evaluation.evaluation || evaluation;
+    
+    if (evalData.scores && typeof evalData.scores === 'object') {
+      scores = Object.values(evalData.scores).filter(score => typeof score === 'number') as number[];
+    } else if (evalData.criteria && Array.isArray(evalData.criteria)) {
+      scores = evalData.criteria.map((c: any) => c.score).filter((score: any) => typeof score === 'number');
     }
     
     console.log('📊 Extracted scores:', scores);
