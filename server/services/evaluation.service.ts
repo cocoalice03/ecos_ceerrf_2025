@@ -122,16 +122,36 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
   }
 
   private async getSessionWithData(sessionId: number): Promise<any> {
-    const sessionData = await db.query.ecosSessions.findFirst({
-      where: eq(ecosSessions.id, sessionId),
-      with: {
-        scenario: true,
-        messages: {
-          orderBy: (ecosMessages, { timestamp }) => timestamp,
-        },
-      },
-    });
-    return sessionData;
+    // Get session data
+    const session = await db
+      .select()
+      .from(ecosSessions)
+      .where(eq(ecosSessions.id, sessionId))
+      .limit(1);
+
+    if (!session[0]) {
+      return null;
+    }
+
+    // Get scenario data
+    const scenario = await db
+      .select()
+      .from(ecosScenarios)
+      .where(eq(ecosScenarios.id, session[0].scenarioId))
+      .limit(1);
+
+    // Get messages
+    const messages = await db
+      .select()
+      .from(ecosMessages)
+      .where(eq(ecosMessages.sessionId, sessionId))
+      .orderBy(ecosMessages.timestamp);
+
+    return {
+      ...session[0],
+      scenario: scenario[0] || null,
+      messages: messages || []
+    };
   }
 
   private async getCompleteSessionHistory(sessionId: number) {
