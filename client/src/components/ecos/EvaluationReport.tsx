@@ -53,10 +53,10 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
   } : null;
 
   // Calculate overall score percentage
-  const calculateOverallScore = (eval: any) => {
-    if (!eval || !eval.scores) return 0;
+  const calculateOverallScore = (evaluation: any) => {
+    if (!evaluation || !evaluation.scores) return 0;
     
-    const scores = Object.values(eval.scores).filter(score => typeof score === 'number') as number[];
+    const scores = Object.values(evaluation.scores).filter(score => typeof score === 'number') as number[];
     if (scores.length === 0) return 0;
     
     const totalScore = scores.reduce((sum, score) => sum + score, 0);
