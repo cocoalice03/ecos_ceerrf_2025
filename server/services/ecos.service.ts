@@ -37,13 +37,18 @@ export class EcosService {
       const messages = [
         {
           role: "system" as const,
-          content: `${patientPrompt}\n\nInstructions importantes:
+          content: `Instructions comportementales générales:
 - Tu es ce patient dans le scénario: ${title}
 - Réponds toujours en restant dans le rôle
 - Sois réaliste et cohérent avec les symptômes décrits
 - Ne révèle pas d'informations que le patient ne connaîtrait pas
 - Adapte ton niveau de langage à celui d'un patient
-- Si l'étudiant pose des questions techniques complexes, réponds comme un patient ordinaire le ferait`
+- Si l'étudiant pose des questions techniques complexes, réponds comme un patient ordinaire le ferait
+
+IMPORTANT - Instructions spécifiques du scénario à suivre ABSOLUMENT:
+${patientPrompt}
+
+Tu DOIS respecter scrupuleusement toutes les consignes ci-dessus définies par l'enseignant. Elles sont prioritaires sur tout le reste.`
         },
         ...history.map(msg => ({
           role: msg.role as "user" | "assistant",
