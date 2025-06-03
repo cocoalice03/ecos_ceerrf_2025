@@ -869,7 +869,6 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
 
       if (!result.length) {
         return res.status(404).json({ message: "Scénario non trouvé" });
-      ```text
       }
 
       return res.status(200).json({ message: "Scénario supprimé avec succès" });
