@@ -347,7 +347,7 @@ function TeacherPage({ email }: TeacherPageProps) {
   // Delete scenario mutation
   const deleteScenarioMutation = useMutation({
     mutationFn: async (scenarioId: number) => {
-      return apiRequest('DELETE', `/api/ecos/scenarios/${scenarioId}`, { email });
+      return apiRequest('DELETE', `/api/ecos/scenarios/${scenarioId}?email=${encodeURIComponent(email || '')}`, { email });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });

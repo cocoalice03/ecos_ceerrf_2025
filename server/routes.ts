@@ -854,9 +854,14 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
   app.delete("/api/ecos/scenarios/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { email } = req.query;
+      // Try to get email from both query and body for flexibility
+      const email = (req.query.email || req.body.email) as string;
 
-      if (!email || typeof email !== "string" || !isAdminAuthorized(email)) {
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
