@@ -303,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 app.post('/api/ecos/generate-criteria', async (req, res) => {
   try {
     const { description, email } = req.body;
-    
+
     if (!description || !email) {
       return res.status(400).json({ message: 'Description et email requis' });
     }
@@ -314,7 +314,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
     }
 
     const criteria = await promptGenService.generateEvaluationCriteria(description);
-    
+
     res.json({ criteria });
   } catch (error) {
     console.error('Error generating criteria:', error);
@@ -869,6 +869,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
 
       if (!result.length) {
         return res.status(404).json({ message: "Scénario non trouvé" });
+      ```text
       }
 
       return res.status(200).json({ message: "Scénario supprimé avec succès" });
@@ -984,6 +985,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
     }
   });
 
+  // Get session report
   app.get("/api/ecos/sessions/:id/report", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

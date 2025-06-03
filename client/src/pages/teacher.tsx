@@ -791,6 +791,9 @@ function TeacherPage({ email }: TeacherPageProps) {
                     >
                       Voir le Rapport d'Évaluation
                     </Button>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Si la session était vide, le rapport indiquera que l'évaluation n'est pas disponible
+                    </p>
                   </div>
                 )}
               </div>
