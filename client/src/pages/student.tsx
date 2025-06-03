@@ -167,14 +167,6 @@ export default function StudentPage({ email }: StudentPageProps) {
               <p className="text-gray-600">Bienvenue, {decodedEmail}</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowDiagnostic(true)}
-                className="text-orange-600 border-orange-200 hover:bg-orange-50"
-              >
-                🔧 Diagnostic
-              </Button>
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                 Mode Étudiant
               </Badge>
