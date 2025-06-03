@@ -129,13 +129,13 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
             <div className="text-center">
               {isInsufficientContent ? (
                 <>
-                  <AlertCircle className="w-16 h-16 mx-auto mb-4 text-amber-500" />
-                  <h3 className="text-lg font-semibold mb-2">Évaluation non disponible</h3>
+                  <AlertCircle className="w-16 h-16 mx-auto mb-4 text-blue-500" />
+                  <h3 className="text-lg font-semibold mb-2 text-gray-800">Évaluation non disponible</h3>
                   <p className="text-gray-600 mb-4">
-                    Cette session ne contient pas assez d'échanges pour générer une évaluation.
+                    L'évaluation n'est pas disponible car la session était vide.
                   </p>
                   <p className="text-sm text-gray-500">
-                    Une évaluation nécessite au moins une question de l'étudiant et une réponse du patient.
+                    Aucune interaction entre l'étudiant et le patient n'a été enregistrée pour cette session.
                   </p>
                 </>
               ) : (
