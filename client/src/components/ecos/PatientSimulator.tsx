@@ -24,16 +24,23 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuery, setCurrentQuery] = useState("");
   const [sessionStartTime] = useState(new Date());
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [remainingTime, setRemainingTime] = useState(8 * 60); // 8 minutes in seconds
 
-  // Timer effect
+  // Countdown timer effect
   useEffect(() => {
     const timer = setInterval(() => {
-      setElapsedTime(Math.floor((new Date().getTime() - sessionStartTime.getTime()) / 1000));
+      setRemainingTime(prev => {
+        if (prev <= 1) {
+          // Time's up - automatically end session
+          endSessionMutation.mutate();
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [sessionStartTime]);
+  }, []);
 
   // Fetch session details
   const { data: session } = useQuery({
@@ -115,9 +122,12 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
               <p className="text-gray-600 mt-1">{session?.scenario?.description}</p>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="flex items-center space-x-1">
+              <Badge 
+                variant="outline" 
+                className={`flex items-center space-x-1 ${remainingTime <= 60 ? 'bg-red-50 text-red-700 border-red-200' : ''}`}
+              >
                 <Clock className="w-4 h-4" />
-                <span>{formatTime(elapsedTime)}</span>
+                <span>{formatTime(remainingTime)}</span>
               </Badge>
               <Button variant="destructive" onClick={handleEndSession}>
                 Terminer la Session
