@@ -5,57 +5,53 @@ import { eq } from 'drizzle-orm';
 
 export class EvaluationService {
   async evaluateSession(sessionId: number): Promise<any> {
+    console.log(`🔄 Starting evaluation for session ${sessionId}`);
+
     try {
-      console.log(`🔄 Starting evaluation for session ${sessionId}`);
+      // Get session data with messages and scenario
+      const sessionData = await this.getSessionWithData(sessionId);
 
-      // Check if evaluation already exists
-      const existingEvaluation = await db
-        .select()
-        .from(ecosEvaluations)
-        .where(eq(ecosEvaluations.sessionId, sessionId))
-        .limit(1);
+      if (!sessionData) {
+        throw new Error('Session non trouvée');
+      }
 
-      if (existingEvaluation.length > 0) {
-        console.log(`✅ Evaluation already exists for session ${sessionId}`);
+      // Check if we have enough conversation to evaluate
+      const conversationHistory = sessionData.messages || [];
+      console.log(`📊 Conversation history for session ${sessionId}: ${conversationHistory.length} messages`);
+
+      if (conversationHistory.length < 2) {
+        console.log(`⚠️ Insufficient conversation history for session ${sessionId} (${conversationHistory.length} messages)`);
+
+        // Return a special report for empty sessions instead of throwing an error
+        const emptySessionReport = {
+          sessionId,
+          isInsufficientContent: true,
+          message: "Évaluation non disponible car la session était vide",
+          details: "Aucune interaction entre l'étudiant et le patient n'a été enregistrée pour cette session.",
+          scores: {},
+          globalScore: 0,
+          feedback: "Cette session ne contient aucun échange. Une évaluation nécessite au moins une question de l'étudiant et une réponse du patient.",
+          timestamp: new Date().toISOString()
+        };
+
+        // Save this empty report to the database
+        await this.saveEvaluationReport(sessionId, emptySessionReport);
+
         return {
-          evaluation: existingEvaluation[0].evaluation,
-          report: await this.getSessionReport(sessionId)
+          success: true,
+          report: emptySessionReport
         };
       }
 
-      // Get complete session history first to check if there's meaningful content
-      const history = await this.getCompleteSessionHistory(sessionId);
-      
-      // Check if there are meaningful exchanges (at least 2 messages - student question + patient response)
-      if (history.length < 2) {
-        console.log(`⚠️ Insufficient conversation history for session ${sessionId} (${history.length} messages)`);
-        throw new Error('Session ne contient pas assez d\'échanges pour générer une évaluation. Au moins une question et une réponse sont nécessaires.');
-      }
-
       // Check if there are actual student questions (user messages)
-      const studentMessages = history.filter(msg => msg.role === 'user');
+      const studentMessages = conversationHistory.filter(msg => msg.role === 'user');
       if (studentMessages.length === 0) {
         console.log(`⚠️ No student questions found for session ${sessionId}`);
         throw new Error('Aucune question d\'étudiant trouvée dans cette session. Une évaluation nécessite au moins une interaction.');
       }
 
       // Get session data
-      const sessionData = await db
-        .select({
-          evaluationCriteria: ecosScenarios.evaluationCriteria,
-          title: ecosScenarios.title,
-          description: ecosScenarios.description,
-        })
-        .from(ecosSessions)
-        .innerJoin(ecosScenarios, eq(ecosSessions.scenarioId, ecosScenarios.id))
-        .where(eq(ecosSessions.id, sessionId))
-        .limit(1);
-
-      if (!sessionData.length) {
-        throw new Error('Session not found');
-      }
-
-      const { evaluationCriteria, title, description } = sessionData[0];
+      const { evaluationCriteria, title, description } = sessionData.scenario;
 
       // Use default criteria if none defined
       const criteria = evaluationCriteria || {
@@ -79,7 +75,7 @@ ${JSON.stringify(criteria, null, 2)}
 
 Évalue la performance de l'étudiant basée sur cette interaction complète:
 
-${this.formatHistoryForEvaluation(history)}
+${this.formatHistoryForEvaluation(conversationHistory)}
 
 Fournir une évaluation détaillée incluant:
 1. Score pour chaque critère (0-4 points)
@@ -123,6 +119,19 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
       console.error('Error evaluating session:', error);
       throw new Error('Failed to evaluate session');
     }
+  }
+
+  private async getSessionWithData(sessionId: number): Promise<any> {
+    const sessionData = await db.query.ecosSessions.findFirst({
+      where: eq(ecosSessions.id, sessionId),
+      with: {
+        scenario: true,
+        messages: {
+          orderBy: (ecosMessages, { timestamp }) => timestamp,
+        },
+      },
+    });
+    return sessionData;
   }
 
   private async getCompleteSessionHistory(sessionId: number) {
@@ -279,6 +288,27 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
 
     return report[0] || null;
   }
+
+    private async saveEvaluationReport(sessionId: number, report: any): Promise<void> {
+        try {
+            // Convert report object to JSON string
+            const reportJSON = JSON.stringify(report);
+
+            // Insert report into database
+            await db.insert(ecosReports).values({
+                sessionId,
+                summary: report.message, // Use the message for the summary for now
+                strengths: [], // No strengths for empty reports
+                weaknesses: [], // No weaknesses for empty reports
+                recommendations: [], // No recommendations for empty reports
+            });
+
+            console.log(`✅ Empty session report saved successfully for session ${sessionId}`);
+        } catch (error) {
+            console.error('Error saving empty session report:', error);
+            throw new Error('Failed to save empty session report');
+        }
+    }
 }
 
 export const evaluationService = new EvaluationService();

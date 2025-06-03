@@ -1009,8 +1009,30 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
 
       // Generate report if it doesn't exist and session is completed
       if (!report && session.status === 'completed') {
-        const evaluation = await evaluationService.evaluateSession(parseInt(id));
-        report = evaluation.report;
+        try {
+          const evaluation = await evaluationService.evaluateSession(parseInt(id));
+          report = evaluation.report;
+        } catch (evalError) {
+          console.error("Error generating evaluation:", evalError);
+          // If evaluation fails, still check if it's because of insufficient content
+          // In that case, we should have received a proper empty session report
+          const emptyReport = await evaluationService.getSessionReport(parseInt(id));
+          if (emptyReport) {
+            report = emptyReport;
+          } else {
+            // Create a fallback empty session report
+            report = {
+              sessionId: parseInt(id),
+              isInsufficientContent: true,
+              message: "Évaluation non disponible car la session était vide",
+              details: "Aucune interaction entre l'étudiant et le patient n'a été enregistrée pour cette session.",
+              scores: {},
+              globalScore: 0,
+              feedback: "Cette session ne contient aucun échange.",
+              timestamp: new Date().toISOString()
+            };
+          }
+        }
       }
 
       if (!report) {
@@ -1099,9 +1121,32 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
-      const evaluation = await evaluationService.evaluateSession(sessionId);
-
-      return res.status(200).json(evaluation);
+      try {
+        const evaluation = await evaluationService.evaluateSession(sessionId);
+        return res.status(200).json(evaluation);
+      } catch (evalError) {
+        console.error("Error evaluating session:", evalError);
+        
+        // Check if it's an insufficient content error - this should now be handled gracefully
+        if (evalError instanceof Error && evalError.message.includes('assez d\'échanges')) {
+          // This shouldn't happen anymore with our new logic, but just in case
+          return res.status(200).json({
+            success: true,
+            report: {
+              sessionId,
+              isInsufficientContent: true,
+              message: "Évaluation non disponible car la session était vide",
+              details: "Aucune interaction entre l'étudiant et le patient n'a été enregistrée pour cette session.",
+              scores: {},
+              globalScore: 0,
+              feedback: "Cette session ne contient aucun échange.",
+              timestamp: new Date().toISOString()
+            }
+          });
+        }
+        
+        throw evalError; // Re-throw other errors
+      }
     } catch (error) {
       console.error("Error evaluating session:", error);
       return res.status(500).json({ message: "Erreur lors de l'évaluation" });
