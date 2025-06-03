@@ -2,7 +2,7 @@
 import { pineconeService } from './pinecone.service';
 import { db } from '../db';
 import { ecosSessions, ecosScenarios, ecosMessages, ecosEvaluations, ecosReports } from '@shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -197,7 +197,7 @@ RAPPEL CRITIQUE: Ce scénario concerne spécifiquement "${sessionResult[0].descr
       .from(ecosSessions)
       .innerJoin(ecosScenarios, eq(ecosSessions.scenarioId, ecosScenarios.id))
       .where(eq(ecosSessions.studentEmail, studentEmail))
-      .orderBy(ecosSessions.startTime);
+      .orderBy(desc(ecosSessions.startTime));
   }
 }
 
