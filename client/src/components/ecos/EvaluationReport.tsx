@@ -52,6 +52,21 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
     })) : [])
   } : null;
 
+  // Calculate overall score percentage
+  const calculateOverallScore = (eval: any) => {
+    if (!eval || !eval.scores) return 0;
+    
+    const scores = Object.values(eval.scores).filter(score => typeof score === 'number') as number[];
+    if (scores.length === 0) return 0;
+    
+    const totalScore = scores.reduce((sum, score) => sum + score, 0);
+    const maxPossibleScore = scores.length * 4;
+    
+    return Math.round((totalScore / maxPossibleScore) * 100);
+  };
+
+  const overallScore = transformedEvaluation ? calculateOverallScore(transformedEvaluation) : 0;
+
   // Fetch session report
   const { data: report } = useQuery({
     queryKey: ['ecos-report', sessionId],
@@ -120,13 +135,13 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
           <CardTitle className="flex items-center justify-between">
             <span>Résultat Global</span>
             <Badge variant="outline" className="text-lg px-3 py-1">
-              {transformedEvaluation.overallScore || 0}%
+              {overallScore}%
             </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <Progress value={transformedEvaluation.overallScore || 0} className="h-3" />
+            <Progress value={overallScore} className="h-3" />
           </div>
           {report?.summary && (
             <p className="text-gray-700">{report.summary}</p>
