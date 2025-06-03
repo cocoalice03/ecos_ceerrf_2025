@@ -25,25 +25,28 @@ export default function StudentPage({ email }: StudentPageProps) {
   // Check for scenario parameter in URL
   const urlParams = new URLSearchParams(window.location.search);
   const scenarioParam = urlParams.get('scenario');
+  
+  // Decode email if it comes from URL (in case it's URL encoded)
+  const decodedEmail = email ? decodeURIComponent(email) : email;
 
   // Fetch available scenarios
   const { data: scenarios, isLoading: scenariosLoading } = useQuery({
-    queryKey: ['available-scenarios', email],
+    queryKey: ['available-scenarios', decodedEmail],
     queryFn: async () => {
-      console.log('Fetching available scenarios for email:', email);
-      const response = await apiRequest('GET', `/api/ecos/available-scenarios?email=${encodeURIComponent(email)}`);
+      console.log('Fetching available scenarios for email:', decodedEmail);
+      const response = await apiRequest('GET', `/api/ecos/available-scenarios?email=${encodeURIComponent(decodedEmail)}`);
       console.log('Available scenarios response:', response);
       console.log('Number of scenarios received:', response.scenarios?.length || 0);
       return response.scenarios || [];
     },
-    enabled: !!email,
+    enabled: !!decodedEmail,
   });
 
   // Fetch student sessions
   const { data: sessions, isLoading: sessionsLoading, refetch: refetchSessions } = useQuery({
-    queryKey: ['student-sessions', email],
+    queryKey: ['student-sessions', decodedEmail],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/ecos/sessions?email=${email}`);
+      const response = await apiRequest('GET', `/api/ecos/sessions?email=${decodedEmail}`);
       return response.sessions || [];
     }
   });
@@ -51,8 +54,9 @@ export default function StudentPage({ email }: StudentPageProps) {
   // Start session mutation
   const startSessionMutation = useMutation({
     mutationFn: async (scenarioId: number) => {
+      console.log('Starting session with decoded email:', decodedEmail, 'and scenario:', scenarioId);
       return apiRequest('POST', '/api/ecos/sessions', {
-        email,
+        email: decodedEmail,
         scenarioId
       });
     },
@@ -100,7 +104,7 @@ export default function StudentPage({ email }: StudentPageProps) {
             </div>
           </div>
         </div>
-        <StudentDiagnostic email={email} />
+        <StudentDiagnostic email={decodedEmail} />
       </div>
     );
   }
@@ -119,7 +123,7 @@ export default function StudentPage({ email }: StudentPageProps) {
             </div>
           </div>
         </div>
-        <EvaluationReport sessionId={viewingReport} email={email} />
+        <EvaluationReport sessionId={viewingReport} email={decodedEmail} />
       </div>
     );
   }
@@ -130,7 +134,7 @@ export default function StudentPage({ email }: StudentPageProps) {
       <div className="min-h-screen bg-gray-50">
         <PatientSimulator 
           sessionId={activeSessionId} 
-          email={email} 
+          email={decodedEmail} 
           onSessionEnd={handleSessionEnd}
         />
       </div>
@@ -151,7 +155,7 @@ export default function StudentPage({ email }: StudentPageProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Dashboard Étudiant ECOS</h1>
-              <p className="text-gray-600">Bienvenue, {email}</p>
+              <p className="text-gray-600">Bienvenue, {decodedEmail}</p>
             </div>
             <div className="flex items-center gap-3">
               <Button 
