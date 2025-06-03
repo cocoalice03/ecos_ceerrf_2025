@@ -72,6 +72,30 @@ This link must appear at the end of the answer when usefull specially for the fi
   }
 
   /**
+   * Create a completion with custom system prompt (for ECOS evaluation)
+   */
+  async createCompletion(params: {
+    model: string;
+    messages: Array<{ role: string; content: string }>;
+    temperature?: number;
+    max_tokens?: number;
+  }): Promise<any> {
+    try {
+      const response = await openai.chat.completions.create({
+        model: params.model,
+        messages: params.messages,
+        temperature: params.temperature || 0.5,
+        max_tokens: params.max_tokens || 1000,
+      });
+
+      return response;
+    } catch (error) {
+      console.error("Error creating OpenAI completion:", error);
+      throw new Error("Impossible de générer une réponse. Service indisponible.");
+    }
+  }
+
+  /**
    * Convert natural language question to SQL query
    */
   async convertToSQL(
