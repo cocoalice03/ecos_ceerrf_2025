@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,10 @@ export default function StudentPage({ email }: StudentPageProps) {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
+  
+  // Check for scenario parameter in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const scenarioParam = urlParams.get('scenario');
 
   // Fetch available scenarios
   const { data: scenarios, isLoading: scenariosLoading } = useQuery({
@@ -60,6 +65,17 @@ export default function StudentPage({ email }: StudentPageProps) {
   const handleStartSession = (scenarioId: number) => {
     startSessionMutation.mutate(scenarioId);
   };
+
+  // Auto-start session if scenario parameter is provided in URL
+  React.useEffect(() => {
+    if (scenarioParam && !activeSessionId && scenarios && scenarios.length > 0) {
+      const scenarioId = parseInt(scenarioParam);
+      const scenarioExists = scenarios.find((s: any) => s.id === scenarioId);
+      if (scenarioExists) {
+        handleStartSession(scenarioId);
+      }
+    }
+  }, [scenarioParam, scenarios, activeSessionId]);
 
   const handleSessionEnd = () => {
     setActiveSessionId(null);

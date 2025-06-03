@@ -557,7 +557,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                             <Button 
                               size="sm" 
                               variant="outline"
-                              onClick={() => window.open(`/student?scenario=${scenario.id}`, '_blank')}
+                              onClick={() => window.open(`/student/${encodeURIComponent(email || '')}?scenario=${scenario.id}`, '_blank')}
                             >
                               <Play className="h-4 w-4 mr-1" />
                               Lancer
