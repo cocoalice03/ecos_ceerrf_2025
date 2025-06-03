@@ -1,4 +1,3 @@
-
 import { openaiService } from './openai.service';
 import { db } from '../db';
 import { ecosSessions, ecosScenarios, ecosMessages, ecosEvaluations, ecosReports } from '@shared/schema';
@@ -7,7 +6,24 @@ import { eq } from 'drizzle-orm';
 export class EvaluationService {
   async evaluateSession(sessionId: number): Promise<any> {
     try {
-      // Get session details and evaluation criteria
+      console.log(`🔄 Starting evaluation for session ${sessionId}`);
+
+      // Check if evaluation already exists
+      const existingEvaluation = await db
+        .select()
+        .from(ecosEvaluations)
+        .where(eq(ecosEvaluations.sessionId, sessionId))
+        .limit(1);
+
+      if (existingEvaluation.length > 0) {
+        console.log(`✅ Evaluation already exists for session ${sessionId}`);
+        return {
+          evaluation: existingEvaluation[0].evaluation,
+          report: await this.getSessionReport(sessionId)
+        };
+      }
+
+      // Get session data
       const sessionData = await db
         .select({
           evaluationCriteria: ecosScenarios.evaluationCriteria,
@@ -126,7 +142,7 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
 
     // Fallback: create structured evaluation from text
     const lines = evaluationText.split('\n');
-    
+
     return {
       scores: {
         communication: this.extractScore(evaluationText, 'communication'),
@@ -177,7 +193,7 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
 
   private async saveEvaluation(sessionId: number, evaluation: any): Promise<void> {
     const scores = evaluation.scores || {};
-    
+
     // Save each criterion evaluation
     for (const [criterionId, score] of Object.entries(scores)) {
       if (typeof score === 'number') {
@@ -196,11 +212,11 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
     const strengths = Array.isArray(evaluation.strengths) 
       ? evaluation.strengths 
       : (evaluation.strengths ? [evaluation.strengths] : ['Points forts à identifier']);
-    
+
     const weaknesses = Array.isArray(evaluation.weaknesses) 
       ? evaluation.weaknesses 
       : (evaluation.weaknesses ? [evaluation.weaknesses] : ['Points à améliorer à identifier']);
-    
+
     const recommendations = Array.isArray(evaluation.recommendations) 
       ? evaluation.recommendations 
       : (evaluation.recommendations ? [evaluation.recommendations] : ['Recommandations à définir']);

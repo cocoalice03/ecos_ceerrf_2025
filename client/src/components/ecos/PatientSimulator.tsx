@@ -92,6 +92,9 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
     },
     onSuccess: () => {
       onSessionEnd();
+    },
+    onError: (error) => {
+      console.error('Error ending session:', error);
     }
   });
 
@@ -129,8 +132,12 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
                 <Clock className="w-4 h-4" />
                 <span>{formatTime(remainingTime)}</span>
               </Badge>
-              <Button variant="destructive" onClick={handleEndSession}>
-                Terminer la Session
+              <Button 
+                variant="destructive" 
+                onClick={handleEndSession}
+                disabled={endSessionMutation.isPending}
+              >
+                {endSessionMutation.isPending ? 'Fermeture...' : 'Terminer la Session'}
               </Button>
             </div>
           </div>
