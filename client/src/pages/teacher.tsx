@@ -307,6 +307,7 @@ function TeacherPage({ email }: TeacherPageProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [editingScenario, setEditingScenario] = useState<any>(null);
   const [deletingScenario, setDeletingScenario] = useState<any>(null);
+  const [viewingSessionDetails, setViewingSessionDetails] = useState<any>(null);
 
   // Add debugging for authentication issues - MUST be before any conditional returns
   React.useEffect(() => {
@@ -373,6 +374,10 @@ function TeacherPage({ email }: TeacherPageProps) {
   const handleEditScenario = (scenario: any) => {
     setEditingScenario(scenario);
     setActiveTab('create');
+  };
+
+  const handleViewSessionDetails = (session: any) => {
+    setViewingSessionDetails(session);
   };
 
   if (isDashboardLoading) {
@@ -655,7 +660,11 @@ function TeacherPage({ email }: TeacherPageProps) {
                           <Badge variant={session.status === 'completed' ? 'default' : 'secondary'}>
                             {session.status === 'completed' ? 'Terminée' : 'En cours'}
                           </Badge>
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleViewSessionDetails(session)}
+                          >
                             Voir détails
                           </Button>
                         </div>
@@ -710,6 +719,80 @@ function TeacherPage({ email }: TeacherPageProps) {
                 >
                   {deleteScenarioMutation.isPending ? "Suppression..." : "Supprimer"}
                 </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Session Details Modal */}
+        {viewingSessionDetails && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Détails de la Session #{viewingSessionDetails.id}</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setViewingSessionDetails(null)}
+                >
+                  Fermer
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Statut</label>
+                    <div className="mt-1">
+                      <Badge variant={viewingSessionDetails.status === 'completed' ? 'default' : 'secondary'}>
+                        {viewingSessionDetails.status === 'completed' ? 'Terminée' : 'En cours'}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Scénario</label>
+                    <p className="mt-1 text-sm">{viewingSessionDetails.scenarioTitle || `Scénario #${viewingSessionDetails.scenarioId}`}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Étudiant</label>
+                    <p className="mt-1 text-sm">{viewingSessionDetails.student_id}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Durée</label>
+                    <p className="mt-1 text-sm">
+                      {viewingSessionDetails.endTime 
+                        ? `${Math.round((new Date(viewingSessionDetails.endTime).getTime() - new Date(viewingSessionDetails.startTime).getTime()) / 1000 / 60)} minutes`
+                        : 'En cours'
+                      }
+                    </p>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Heure de début</label>
+                  <p className="mt-1 text-sm">{new Date(viewingSessionDetails.startTime).toLocaleString('fr-FR')}</p>
+                </div>
+                
+                {viewingSessionDetails.endTime && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Heure de fin</label>
+                    <p className="mt-1 text-sm">{new Date(viewingSessionDetails.endTime).toLocaleString('fr-FR')}</p>
+                  </div>
+                )}
+                
+                {viewingSessionDetails.status === 'completed' && (
+                  <div className="pt-4 border-t">
+                    <Button
+                      onClick={() => window.open(`/student/${encodeURIComponent(email || '')}?report=${viewingSessionDetails.id}`, '_blank')}
+                      className="w-full"
+                    >
+                      Voir le Rapport d'Évaluation
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
