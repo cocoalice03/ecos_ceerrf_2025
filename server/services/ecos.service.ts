@@ -1,9 +1,13 @@
 
-import { openaiService } from './openai.service';
 import { pineconeService } from './pinecone.service';
 import { db } from '../db';
 import { ecosSessions, ecosScenarios, ecosMessages, ecosEvaluations, ecosReports } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || "",
+});
 
 export class EcosService {
   async simulatePatient(sessionId: number, studentQuery: string): Promise<string> {
@@ -62,18 +66,22 @@ export class EcosService {
         }
       }
 
-      // Generate patient response using the existing generateResponse method
-      const systemMessage = messages[0].content;
-      const userQuery = studentQuery;
-      const history_context = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-      
-      const fullContext = [
-        contextDocs ? `Contexte médical disponible:\n${contextDocs}\n` : '',
-        history_context,
-        `\nSystem: ${systemMessage}`
-      ].filter(Boolean).join('\n');
-      
-      const patientResponse = await openaiService.generateResponse(userQuery, fullContext);
+      // Generate patient response using direct OpenAI call
+      let finalMessages = messages;
+      if (contextDocs) {
+        // Add context to system message if available
+        finalMessages[0].content += `\n\nContexte médical disponible:\n${contextDocs}`;
+      }
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: finalMessages,
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
+
+      const patientResponse = response.choices[0].message.content || 
+        "Je ne peux pas répondre à cette question maintenant.";
 
       // Save the interaction
       await this.saveInteraction(sessionId, studentQuery, patientResponse);
