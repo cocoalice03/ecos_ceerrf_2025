@@ -150,6 +150,16 @@ RAPPEL CRITIQUE: Ce scénario concerne spécifiquement "${sessionResult[0].descr
         endTime: new Date()
       })
       .where(eq(ecosSessions.id, sessionId));
+
+    // Automatically trigger evaluation when session ends
+    try {
+      const { evaluationService } = await import('./evaluation.service');
+      await evaluationService.evaluateSession(sessionId);
+      console.log(`✅ Evaluation completed for session ${sessionId}`);
+    } catch (error) {
+      console.error(`❌ Failed to evaluate session ${sessionId}:`, error);
+      // Don't throw error to avoid breaking session termination
+    }
   }
 
   async getSession(sessionId: number) {

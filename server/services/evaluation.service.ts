@@ -25,6 +25,15 @@ export class EvaluationService {
 
       const { evaluationCriteria, title, description } = sessionData[0];
 
+      // Use default criteria if none defined
+      const criteria = evaluationCriteria || {
+        communication: { name: "Communication", maxScore: 4 },
+        anamnese: { name: "Anamnèse", maxScore: 4 },
+        examen: { name: "Examen clinique", maxScore: 4 },
+        raisonnement: { name: "Raisonnement clinique", maxScore: 4 },
+        prise_en_charge: { name: "Prise en charge", maxScore: 4 }
+      };
+
       // Get complete session history
       const history = await this.getCompleteSessionHistory(sessionId);
 
@@ -35,7 +44,7 @@ Scénario: ${title}
 Description: ${description}
 
 Critères d'évaluation:
-${JSON.stringify(evaluationCriteria, null, 2)}
+${JSON.stringify(criteria, null, 2)}
 
 Évalue la performance de l'étudiant basée sur cette interaction complète:
 

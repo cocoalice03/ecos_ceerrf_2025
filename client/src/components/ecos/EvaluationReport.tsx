@@ -69,6 +69,9 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
             <div className="text-center">
               <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600">Génération de l'évaluation en cours...</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Cette opération peut prendre quelques secondes
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -82,9 +85,12 @@ export default function EvaluationReport({ sessionId, email }: EvaluationReportP
         <Card>
           <CardContent className="p-8 text-center">
             <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Erreur lors de l'évaluation</h3>
-            <p className="text-gray-600">
-              Une erreur est survenue lors de la génération de votre évaluation.
+            <h3 className="text-lg font-semibold mb-2">Évaluation en attente</h3>
+            <p className="text-gray-600 mb-4">
+              L'évaluation de cette session est en cours de génération ou a rencontré un problème.
+            </p>
+            <p className="text-sm text-gray-500">
+              Veuillez rafraîchir la page dans quelques instants ou contacter votre enseignant si le problème persiste.
             </p>
           </CardContent>
         </Card>
