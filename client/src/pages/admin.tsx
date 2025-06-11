@@ -169,14 +169,7 @@ export default function AdminPage() {
   // Natural Language to SQL mutation
   const sqlMutation = useMutation({
     mutationFn: async (question: string) => {
-      const res = await apiRequest("POST", "/api/admin/nl-to-sql", { question, email: adminEmail });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Erreur lors de la conversion SQL');
-      }
-
-      return await res.json();
+      return await apiRequest("POST", "/api/admin/nl-to-sql", { question, email: adminEmail });
     },
     onSuccess: (data) => {
       console.log('SQL Query Success:', data);
