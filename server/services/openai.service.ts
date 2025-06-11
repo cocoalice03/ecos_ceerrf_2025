@@ -114,12 +114,12 @@ Instructions importantes :
 - Génère uniquement une requête SELECT (pas d'INSERT, UPDATE, DELETE)
 - Utilise la syntaxe PostgreSQL
 - Utilise UNIQUEMENT les tables et colonnes listées dans le schéma ci-dessus
-- ATTENTION: Dans la table 'exchanges' la colonne utilisateur s'appelle 'email' (pas 'utilisateur_email')
-- ATTENTION: Dans la table 'daily_counters' la colonne utilisateur s'appelle 'email' (pas 'utilisateur_email')
-- Pour les questions sur les utilisateurs connectés/actifs, utilise la table 'exchanges' avec la colonne 'email'
-- Pour les compteurs quotidiens, utilise la table 'daily_counters' avec la colonne 'email'
+- ATTENTION: Dans la table 'exchanges' la colonne utilisateur s'appelle 'utilisateur_email' (PAS 'email')
+- ATTENTION: Dans la table 'daily_counters' la colonne utilisateur s'appelle 'utilisateur_email' (PAS 'email')
+- Pour les questions sur les utilisateurs connectés/actifs, utilise la table 'exchanges' avec la colonne 'utilisateur_email'
+- Pour les compteurs quotidiens, utilise la table 'daily_counters' avec la colonne 'utilisateur_email'
 - Pour les dates, utilise DATE(timestamp) = CURRENT_DATE pour aujourd'hui
-- Pour compter les utilisateurs uniques: COUNT(DISTINCT email)
+- Pour compter les utilisateurs uniques: COUNT(DISTINCT utilisateur_email)
 - Inclus les alias de tables si nécessaire
 - Réponds uniquement avec la requête SQL, sans explication ni markdown
 

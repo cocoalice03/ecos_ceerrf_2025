@@ -83,17 +83,20 @@ async function getDatabaseSchema(): Promise<string> {
       // Return detailed schema based on your actual tables
       return `
 Tables disponibles:
-- sessions: id (integer), email (text), created_at (timestamp), expires_at (timestamp)
-- exchanges: id (integer), email (text), question (text), response (text), timestamp (timestamp), session_id (integer)
-- daily_counters: id (integer), email (text), date (date), count (integer), created_at (timestamp), updated_at (timestamp)
-- ecos_scenarios: id (integer), title (text), description (text), patient_prompt (text), evaluation_criteria (jsonb), created_by (text), created_at (timestamp)
-- ecos_sessions: id (integer), scenario_id (integer), student_email (text), status (text), start_time (timestamp), end_time (timestamp)
-- ecos_messages: id (integer), session_id (integer), sender (text), content (text), timestamp (timestamp)
-- ecos_evaluations: id (integer), session_id (integer), report (jsonb), created_at (timestamp)
+- sessions: sid (varchar), sess (jsonb), expire (timestamp)
+- exchanges: id (integer), utilisateur_email (text), question (text), reponse (text), timestamp (timestamp)
+- daily_counters: utilisateur_email (text), date (timestamp), count (integer)
+- ecos_scenarios: id (integer), title (varchar), description (text), patient_prompt (text), evaluation_criteria (jsonb), created_by (varchar), created_at (timestamp)
+- ecos_sessions: id (integer), scenario_id (integer), student_email (varchar), status (varchar), start_time (timestamp), end_time (timestamp)
+- ecos_messages: id (integer), session_id (integer), role (varchar), content (text), timestamp (timestamp)
+- ecos_evaluations: id (integer), session_id (integer), criterion_id (varchar), score (integer), feedback (text)
+- ecos_reports: id (integer), session_id (integer), summary (text), strengths (text[]), weaknesses (text[]), recommendations (text[])
+
+IMPORTANT: Dans les tables exchanges et daily_counters, la colonne email s'appelle "utilisateur_email"
 
 Exemples de requêtes:
-- SELECT COUNT(DISTINCT email) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
-- SELECT email, COUNT(*) as total_questions FROM exchanges GROUP BY email
+- SELECT COUNT(DISTINCT utilisateur_email) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
+- SELECT utilisateur_email, COUNT(*) as total_questions FROM exchanges GROUP BY utilisateur_email
 - SELECT * FROM daily_counters WHERE date = CURRENT_DATE
 - SELECT COUNT(*) FROM ecos_sessions WHERE status = 'completed'
 - SELECT COUNT(DISTINCT student_email) FROM ecos_sessions
@@ -103,13 +106,14 @@ Exemples de requêtes:
     console.error('Error getting schema:', error);
     return `
 Tables disponibles:
-- sessions: id, email, created_at, expires_at
-- exchanges: id, email, question, response, timestamp, session_id
-- daily_counters: id, email, date, count, created_at, updated_at
+- exchanges: id, utilisateur_email, question, reponse, timestamp
+- daily_counters: utilisateur_email, date, count
+
+IMPORTANT: La colonne email s'appelle "utilisateur_email"
 
 Exemples de requêtes:
-- SELECT * FROM exchanges WHERE email = 'example@email.com'
-- SELECT COUNT(*) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
+- SELECT * FROM exchanges WHERE utilisateur_email = 'example@email.com'
+- SELECT COUNT(DISTINCT utilisateur_email) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
     `.trim();
   }
 }
