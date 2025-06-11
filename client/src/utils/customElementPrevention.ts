@@ -43,7 +43,7 @@ export function preventCustomElementConflicts() {
   // Check if any problematic elements are already defined
   problematicElements.forEach(elementName => {
     if (window.customElements.get(elementName)) {
-      console.warn(`🔥 Problematic element "${elementName}" is already defined. Blocking further definitions.`);
+      console.debug(`🔥 Problematic element "${elementName}" is already defined. Blocking further definitions.`);
       definedElements.add(elementName);
     }
   });
@@ -80,9 +80,9 @@ export function logCustomElements() {
   knownProblematic.forEach(name => {
     const element = window.customElements.get(name);
     if (element) {
-      console.warn(`🚨 Problematic element "${name}" is defined:`, element);
+      console.debug(`🚨 Problematic element "${name}" is defined:`, element);
     } else {
-      console.log(`✅ Element "${name}" is not defined`);
+      console.debug(`✅ Element "${name}" is not defined`);
     }
   });
   
@@ -101,9 +101,9 @@ export function detectCustomElementSources() {
     const isSuspicious = suspiciousSources.some(keyword => src.toLowerCase().includes(keyword));
     
     if (isSuspicious) {
-      console.warn(`🔍 Suspicious script ${index + 1}:`, src);
+      console.debug(`🔍 Suspicious script ${index + 1}:`, src);
     } else {
-      console.log(`📄 Script ${index + 1}:`, src);
+      console.debug(`📄 Script ${index + 1}:`, src);
     }
   });
   
