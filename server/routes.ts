@@ -86,12 +86,17 @@ Tables disponibles:
 - sessions: id (integer), email (text), created_at (timestamp), expires_at (timestamp)
 - exchanges: id (integer), email (text), question (text), response (text), timestamp (timestamp), session_id (integer)
 - daily_counters: id (integer), email (text), date (date), count (integer), created_at (timestamp), updated_at (timestamp)
+- ecos_scenarios: id (integer), title (text), description (text), patient_prompt (text), evaluation_criteria (jsonb), created_by (text), created_at (timestamp)
+- ecos_sessions: id (integer), scenario_id (integer), student_email (text), status (text), start_time (timestamp), end_time (timestamp)
+- ecos_messages: id (integer), session_id (integer), sender (text), content (text), timestamp (timestamp)
+- ecos_evaluations: id (integer), session_id (integer), report (jsonb), created_at (timestamp)
 
 Exemples de requêtes:
-- SELECT * FROM exchanges WHERE email = 'example@email.com'
-- SELECT COUNT(*) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
+- SELECT COUNT(DISTINCT email) FROM exchanges WHERE DATE(timestamp) = CURRENT_DATE
 - SELECT email, COUNT(*) as total_questions FROM exchanges GROUP BY email
 - SELECT * FROM daily_counters WHERE date = CURRENT_DATE
+- SELECT COUNT(*) FROM ecos_sessions WHERE status = 'completed'
+- SELECT COUNT(DISTINCT student_email) FROM ecos_sessions
       `.trim();
     }
   } catch (error) {
