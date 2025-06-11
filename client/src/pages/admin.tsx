@@ -337,6 +337,7 @@ export default function AdminPage() {
     uploadMutation.mutate(documentData);
   };
 
+  // Handle SQL query execution
   const handleSQLQuery = () => {
     if (!nlQuestion.trim()) {
       toast({
