@@ -98,17 +98,17 @@ This link must appear at the end of the answer when usefull specially for the fi
   /**
    * Convert natural language question to SQL query
    */
-  async convertToSQL(
-    question: string,
-    databaseSchema: string,
-  ): Promise<string> {
+  async convertToSQL(question: string, schema: string): Promise<string> {
     try {
-      const prompt = `Tu es un expert en SQL. Convertis cette question en langage naturel en requête SQL valide.
+      console.log("Conversion SQL - Question reçue:", question);
+      console.log("Conversion SQL - Schéma fourni:", schema.substring(0, 200) + "...");
 
-Schéma de la base de données :
-${databaseSchema}
+      const prompt = `Tu es un expert en bases de données PostgreSQL. Convertis cette question en langage naturel en requête SQL valide.
 
-Question : ${question}
+Base de données PostgreSQL avec le schéma suivant :
+${schema}
+
+Question en français : ${question}
 
 Instructions importantes :
 - Génère uniquement une requête SELECT (pas d'INSERT, UPDATE, DELETE)
@@ -116,42 +116,40 @@ Instructions importantes :
 - Utilise UNIQUEMENT les tables et colonnes listées dans le schéma ci-dessus
 - Si la question fait référence à des utilisateurs, utilise la table 'exchanges' ou 'sessions' avec la colonne 'email'
 - Pour les questions sur l'activité, utilise la table 'exchanges' ou 'daily_counters'
+- Pour les dates, utilise DATE(timestamp) = CURRENT_DATE pour aujourd'hui
 - Inclus les alias de tables si nécessaire
 - Réponds uniquement avec la requête SQL, sans explication ni markdown
 
 Requête SQL :`;
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content:
-              "Tu es un expert en conversion de langage naturel vers SQL. Réponds uniquement avec la requête SQL demandée.",
+            content: "Tu es un expert en conversion de langage naturel vers SQL. Réponds uniquement avec la requête SQL demandée, sans formatage markdown."
           },
-          { role: "user", content: prompt },
+          { role: "user", content: prompt }
         ],
-        max_tokens: 500,
+        max_tokens: 300,
         temperature: 0.1,
       });
 
       let sqlQuery = response.choices[0].message.content?.trim() || "";
-
       console.log("Réponse OpenAI brute:", sqlQuery);
 
-      // Extract SQL from response if it's wrapped in markdown or explanations
-      const sqlMatch = sqlQuery.match(/```(?:sql)?\s*(SELECT[\s\S]*?)```/i);
+      // Clean up the response - remove markdown if present
+      sqlQuery = sqlQuery.replace(/```sql\s*/gi, '').replace(/```\s*/gi, '');
+
+      // Extract SQL from response if it's wrapped in explanations
+      const sqlMatch = sqlQuery.match(/(SELECT[\s\S]*?)(?:\n\s*$|$)/i);
       if (sqlMatch) {
         sqlQuery = sqlMatch[1].trim();
-        console.log("SQL extrait du markdown:", sqlQuery);
-      } else {
-        // Look for SELECT statement anywhere in the response
-        const selectMatch = sqlQuery.match(/(SELECT[\s\S]*?)(?:\n\n|$)/i);
-        if (selectMatch) {
-          sqlQuery = selectMatch[1].trim();
-          console.log("SQL extrait par pattern:", sqlQuery);
-        }
+        console.log("SQL extrait:", sqlQuery);
       }
+
+      // Remove trailing semicolon if present
+      sqlQuery = sqlQuery.replace(/;\s*$/, '');
 
       // Basic validation
       if (!sqlQuery.toLowerCase().includes("select")) {
@@ -159,10 +157,19 @@ Requête SQL :`;
         throw new Error("Aucune requête SELECT valide trouvée dans la réponse");
       }
 
+      // Additional validation - check if it starts with SELECT
+      if (!sqlQuery.toLowerCase().trim().startsWith("select")) {
+        console.log("Échec validation - ne commence pas par SELECT:", sqlQuery);
+        throw new Error("La requête doit commencer par SELECT");
+      }
+
       console.log("SQL final validé:", sqlQuery);
       return sqlQuery;
     } catch (error) {
       console.error("Error converting to SQL:", error);
+      if (error instanceof Error) {
+        throw new Error(`Impossible de convertir la question en requête SQL: ${error.message}`);
+      }
       throw new Error("Impossible de convertir la question en requête SQL");
     }
   }

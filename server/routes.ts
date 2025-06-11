@@ -112,16 +112,49 @@ Exemples de requêtes:
 // Execute SQL query safely (read-only)
 async function executeSQLQuery(sqlQuery: string) {
   try {
+    console.log("🔍 Validating SQL query:", sqlQuery);
+    
     // Only allow SELECT queries for safety
     const normalizedQuery = sqlQuery.trim().toLowerCase();
     if (!normalizedQuery.startsWith('select')) {
+      console.log("❌ Invalid query type - not SELECT:", normalizedQuery.substring(0, 50));
       throw new Error('Seules les requêtes SELECT sont autorisées');
     }
 
+    // Additional safety checks
+    const dangerousKeywords = ['drop', 'delete', 'update', 'insert', 'alter', 'create', 'truncate'];
+    const containsDangerous = dangerousKeywords.some(keyword => 
+      normalizedQuery.includes(keyword.toLowerCase())
+    );
+    
+    if (containsDangerous) {
+      console.log("❌ Dangerous keywords detected in query");
+      throw new Error('Requête contient des mots-clés non autorisés');
+    }
+
+    console.log("✅ SQL query validated, executing...");
     const result = await db.execute(sqlQuery);
+    console.log("✅ Query executed successfully, rows:", result.rows.length);
+    
     return result.rows;
   } catch (error) {
-    console.error('Error executing SQL:', error);
+    console.error('❌ Error executing SQL:', error);
+    
+    if (error instanceof Error) {
+      // More specific error handling
+      if (error.message.includes('column') && error.message.includes('does not exist')) {
+        throw new Error('Colonne inexistante dans la base de données. Vérifiez le schéma.');
+      } else if (error.message.includes('table') && error.message.includes('does not exist')) {
+        throw new Error('Table inexistante dans la base de données. Vérifiez le schéma.');
+      } else if (error.message.includes('syntax error')) {
+        throw new Error('Erreur de syntaxe SQL. La requête générée est invalide.');
+      } else if (error.message.includes('autorisées') || error.message.includes('mots-clés')) {
+        throw error; // Re-throw our security errors as-is
+      } else {
+        throw new Error(`Erreur d'exécution SQL: ${error.message}`);
+      }
+    }
+    
     throw new Error('Erreur lors de l\'exécution de la requête SQL');
   }
 }
@@ -458,6 +491,8 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
   // Natural Language to SQL Query
   app.post("/api/admin/nl-to-sql", async (req: Request, res: Response) => {
     try {
+      console.log("📝 NL to SQL request received:", req.body);
+
       const nlSchema = z.object({
         email: z.string().email(),
         question: z.string().min(1),
@@ -465,19 +500,26 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       });
 
       const { email, question, database_schema } = nlSchema.parse(req.body);
+      console.log("✅ Request validated:", { email, question: question.substring(0, 50) + "..." });
 
       if (!isAdminAuthorized(email)) {
+        console.log("❌ Unauthorized access attempt:", email);
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
       // Get database schema if not provided
       const schema = database_schema || await getDatabaseSchema();
+      console.log("📊 Using schema:", schema.substring(0, 100) + "...");
 
       // Convert natural language to SQL using OpenAI
+      console.log("🤖 Converting to SQL...");
       const sqlQuery = await openaiService.convertToSQL(question, schema);
+      console.log("✅ SQL generated:", sqlQuery);
 
       // Execute the query safely (read-only)
+      console.log("🗄️ Executing SQL query...");
       const results = await executeSQLQuery(sqlQuery);
+      console.log("✅ Query executed successfully, results count:", results.length);
 
       return res.status(200).json({ 
         question,
@@ -486,8 +528,28 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         executed_at: new Date().toISOString()
       });
     } catch (error) {
-      console.error("Error processing NL to SQL:", error);
-      return res.status(500).json({ message: "Erreur lors de la conversion en SQL" });
+      console.error("❌ Error processing NL to SQL:", error);
+      
+      // More specific error messages
+      let errorMessage = "Erreur lors de la conversion en SQL";
+      
+      if (error instanceof z.ZodError) {
+        errorMessage = "Données de requête invalides: " + error.errors.map(e => e.message).join(", ");
+      } else if (error instanceof Error) {
+        if (error.message.includes("SELECT")) {
+          errorMessage = "Impossible de générer une requête SQL valide. Essayez de reformuler votre question.";
+        } else if (error.message.includes("SQL")) {
+          errorMessage = "Erreur d'exécution SQL: " + error.message;
+        } else {
+          errorMessage = "Erreur: " + error.message;
+        }
+      }
+
+      return res.status(500).json({ 
+        message: errorMessage,
+        details: error instanceof Error ? error.message : "Erreur inconnue",
+        timestamp: new Date().toISOString()
+      });
     }
   });
 
