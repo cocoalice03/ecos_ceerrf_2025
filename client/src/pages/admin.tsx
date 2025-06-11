@@ -96,22 +96,22 @@ export default function AdminPage() {
     queryFn: async () => {
       if (!adminEmail) throw new Error('Email required');
       console.log('Fetching indexes for email:', adminEmail);
-      
+
       const response = await fetch(`/api/admin/indexes?email=${encodeURIComponent(adminEmail)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
+
       console.log('Indexes API response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Indexes API error:', errorText);
         throw new Error(`Failed to fetch indexes: ${response.status} ${errorText}`);
       }
-      
+
       const data = await response.json();
       console.log('Indexes API response data:', data);
       return data;
@@ -170,29 +170,37 @@ export default function AdminPage() {
   const sqlMutation = useMutation({
     mutationFn: async (question: string) => {
       const res = await apiRequest("POST", "/api/admin/nl-to-sql", { question, email: adminEmail });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Erreur lors de la conversion SQL');
+      }
+
       return await res.json();
     },
     onSuccess: (data) => {
+      console.log('SQL Query Success:', data);
       setSqlResult(data);
       toast({
         title: "Requête SQL générée",
-        description: "Question convertie en SQL avec succès",
+        description: `SQL: ${data.sql_query}`,
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('SQL Query Error:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de convertir la question en SQL",
+        description: error instanceof Error ? error.message : "Impossible de convertir la question en SQL",
         variant: "destructive",
       });
-    }
+    },
   });
 
   // Create Pinecone index mutation
   const createIndexMutation = useMutation({
     mutationFn: async (data: IndexData) => {
       console.log('Creating index:', data);
-      
+
       const response = await fetch("/api/admin/indexes", {
         method: "POST",
         headers: {
@@ -200,15 +208,15 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ ...data, email: adminEmail }),
       });
-      
+
       console.log('Create index response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Create index error:', errorText);
         throw new Error(`Failed to create index: ${response.status} ${errorText}`);
       }
-      
+
       const result = await response.json();
       console.log('Create index response data:', result);
       return result;
@@ -236,7 +244,7 @@ export default function AdminPage() {
   const switchIndexMutation = useMutation({
     mutationFn: async (indexName: string) => {
       console.log('Switching to index:', indexName);
-      
+
       const response = await fetch("/api/admin/indexes/switch", {
         method: "POST",
         headers: {
@@ -244,15 +252,15 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ indexName, email: adminEmail }),
       });
-      
+
       console.log('Switch index response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Switch index error:', errorText);
         throw new Error(`Failed to switch index: ${response.status} ${errorText}`);
       }
-      
+
       const data = await response.json();
       console.log('Switch index response data:', data);
       return data;
@@ -733,7 +741,7 @@ export default function AdminPage() {
                       Actualiser
                     </Button>
                   </div>
-                  
+
                   {indexesError && (
                     <div className="bg-red-50 border border-red-200 rounded p-3 mb-4">
                       <p className="text-red-600 text-sm">
@@ -768,7 +776,7 @@ export default function AdminPage() {
                         <p className="text-sm text-muted-foreground">Aucun index trouvé. Créez-en un d'abord.</p>
                       )
                     )}
-                    
+
                   </div>
                 </div>
               </CardContent>
@@ -925,39 +933,53 @@ export default function AdminPage() {
 
               <Button 
                 onClick={handleSQLQuery}
-                disabled={sqlMutation.isPending}
+                disabled={sqlMutation.isPending || !nlQuestion.trim()}
+                className="w-full"
               >
-                {sqlMutation.isPending ? "Conversion..." : "Convertir en SQL et Exécuter"}
+                <Search className="w-4 h-4 mr-2" />
+                {sqlMutation.isPending ? "Conversion en cours..." : "Convertir en SQL et Exécuter"}
               </Button>
 
-              {/* SQL Results */}
-              {sqlResult && (
-                <div className="space-y-4 mt-6">
-                  <div>
-                    <Label>Question posée:</Label>
-                    <div className="p-3 bg-muted rounded-lg">
-                      {sqlResult.question}
-                    </div>
+              {sqlMutation.isPending && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-blue-700">Génération et exécution de la requête SQL...</span>
                   </div>
+                </div>
+              )}
 
+              {sqlResult && (
+                <div className="mt-6 space-y-4">
                   <div>
-                    <Label>Requête SQL générée:</Label>
-                    <div className="p-3 bg-muted rounded-lg font-mono text-sm">
+                    <Label className="text-green-700 font-semibold">✅ Requête SQL générée et exécutée</Label>
+                    <div className="bg-gray-100 p-3 rounded font-mono text-sm border">
                       {sqlResult.sql_query}
                     </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Exécutée le {new Date(sqlResult.executed_at).toLocaleString('fr-FR')}
+                    </p>
                   </div>
 
                   <div>
-                    <Label>Résultats ({sqlResult.results.length} ligne(s)):</Label>
-                    <div className="p-3 bg-muted rounded-lg max-h-64 overflow-auto">
-                      {sqlResult.results.length > 0 ? (
+                    <Label className="font-semibold">Résultats ({sqlResult.results.length} ligne(s))</Label>
+                    {sqlResult.results.length > 0 ? (
+                      <div className="bg-gray-50 p-3 rounded max-h-64 overflow-auto border">
                         <pre className="text-sm">
                           {JSON.stringify(sqlResult.results, null, 2)}
                         </pre>
-                      ) : (
-                        <div className="text-muted-foreground">Aucun résultat</div>
-                                            )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                        <p className="text-yellow-800">Aucun résultat trouvé pour cette requête.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>Question:</strong> {sqlResult.question}
+                    </p>
                   </div>
                 </div>
               )}
