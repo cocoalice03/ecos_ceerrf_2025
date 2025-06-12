@@ -92,7 +92,7 @@ Retourne UNIQUEMENT ce JSON (scores de 0 à 4):
 }`;
 
       const response = await openaiService.createCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
