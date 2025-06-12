@@ -19,7 +19,7 @@ import { eq, and, between, inArray, sql } from 'drizzle-orm';
 const MAX_DAILY_QUESTIONS = 20;
 
 // Admin emails authorized to access admin features
-const ADMIN_EMAILS = ['cherubindavid@gmail.com'];
+const ADMIN_EMAILS = []; // Temporarily disabled to show student filtering
 
 // Configure multer for file uploads
 const upload = multer({

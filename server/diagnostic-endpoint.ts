@@ -6,7 +6,7 @@ export function addDiagnosticRoutes(app: any) {
   app.get("/api/diagnostic/auth-check", async (req: Request, res: Response) => {
     try {
       const { email } = req.query;
-      const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+      const ADMIN_EMAILS = []; // Temporarily disabled to show student filtering
       
       const authInfo = {
         receivedEmail: email,
