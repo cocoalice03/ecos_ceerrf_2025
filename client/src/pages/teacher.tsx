@@ -881,6 +881,126 @@ function TeacherPage({ email }: TeacherPageProps) {
             </div>
           </div>
         )}
+
+        {/* Modal pour afficher les résultats de l'étudiant */}
+        {viewingReport && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold">Résultats de la Consultation #{viewingReport}</h2>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setViewingReport(null)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                {isReportLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p>Chargement du rapport...</p>
+                  </div>
+                ) : reportData ? (
+                  <div className="space-y-6">
+                    {/* Informations générales */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="font-semibold mb-3">Informations de la consultation</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">Étudiant:</span>
+                          <p>{reportData.studentEmail || 'Non défini'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Scénario:</span>
+                          <p>{reportData.scenarioTitle || 'Non défini'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Date:</span>
+                          <p>{reportData.startTime ? new Date(reportData.startTime).toLocaleString('fr-FR') : 'Non définie'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Durée:</span>
+                          <p>{reportData.duration || 'Non définie'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Résumé de l'évaluation */}
+                    {reportData.summary && (
+                      <div>
+                        <h3 className="font-semibold mb-3">Résumé de l'évaluation</h3>
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <p className="text-sm">{reportData.summary}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Points forts */}
+                    {reportData.strengths && reportData.strengths.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-green-700">Points forts</h3>
+                        <div className="bg-green-50 p-4 rounded-lg">
+                          <ul className="list-disc list-inside space-y-1 text-sm">
+                            {reportData.strengths.map((strength: string, index: number) => (
+                              <li key={index}>{strength}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Points à améliorer */}
+                    {reportData.weaknesses && reportData.weaknesses.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-orange-700">Points à améliorer</h3>
+                        <div className="bg-orange-50 p-4 rounded-lg">
+                          <ul className="list-disc list-inside space-y-1 text-sm">
+                            {reportData.weaknesses.map((weakness: string, index: number) => (
+                              <li key={index}>{weakness}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recommandations */}
+                    {reportData.recommendations && reportData.recommendations.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-blue-700">Recommandations</h3>
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <ul className="list-disc list-inside space-y-1 text-sm">
+                            {reportData.recommendations.map((recommendation: string, index: number) => (
+                              <li key={index}>{recommendation}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Note finale */}
+                    {reportData.finalScore !== undefined && (
+                      <div className="bg-gray-100 p-4 rounded-lg text-center">
+                        <h3 className="font-semibold mb-2">Note finale</h3>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {reportData.finalScore}/100
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Aucun rapport disponible pour cette consultation.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
