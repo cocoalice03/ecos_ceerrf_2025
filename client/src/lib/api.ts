@@ -41,6 +41,15 @@ export const api = {
     return await res.json();
   },
 
+  // Get all students assigned to training sessions (for teacher view)
+  async getTeacherStudents(email: string): Promise<any> {
+    const res = await apiRequest(
+      "GET", 
+      `/api/teacher/students?email=${encodeURIComponent(email)}`
+    );
+    return await res.json();
+  },
+
   // Ask a question
   async askQuestion(email: string, question: string): Promise<AskResponse> {
     const res = await apiRequest(
@@ -157,5 +166,17 @@ export const useAvailableIndexes = (email: string) => {
     },
     enabled: !!email,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+};
+
+export const useTeacherStudents = (email: string) => {
+  return useQuery({
+    queryKey: ['teacher-students', email],
+    queryFn: async () => {
+      const data = await api.getTeacherStudents(email);
+      return data.students || [];
+    },
+    enabled: !!email,
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 };

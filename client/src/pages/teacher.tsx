@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2, Calendar, UserPlus, CheckCircle } from "lucide-react";
-import { useDashboardData, useAvailableIndexes } from '@/lib/api';
+import { useDashboardData, useAvailableIndexes, useTeacherStudents } from '@/lib/api';
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
 import EcosDebugger from "@/components/debug/EcosDebugger";
@@ -320,6 +320,7 @@ function TeacherPage({ email }: TeacherPageProps) {
   console.log('TeacherPage rendering with email:', email);
 
   const { data: dashboardData, error: dashboardError, isLoading: isDashboardLoading } = useDashboardData(email || '');
+  const { data: assignedStudents, isLoading: isStudentsLoading } = useTeacherStudents(email || '');
 
   // Fallback: try to get scenarios from student endpoint if dashboard fails
   const { data: studentScenarios } = useQuery({
@@ -333,7 +334,7 @@ function TeacherPage({ email }: TeacherPageProps) {
         return [];
       }
     },
-    enabled: !!email && (dashboardError || !dashboardData?.scenarios?.length),
+    enabled: !!email && (!!dashboardError || !dashboardData?.scenarios?.length),
   });
 
   // Check if we have actual errors vs just partial data
@@ -661,42 +662,82 @@ function TeacherPage({ email }: TeacherPageProps) {
                 <CardDescription>Suivez les sessions d'examen en cours et terminées</CardDescription>
               </CardHeader>
               <CardContent>
-                {sessions.length > 0 ? (
+                {isStudentsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Chargement des étudiants...</p>
+                  </div>
+                ) : assignedStudents && assignedStudents.length > 0 ? (
                   <div className="space-y-4">
-                    {sessions.map((session: any) => (
-                      <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-4">
+                    {/* Group students by email */}
+                    {Object.entries(
+                      assignedStudents.reduce((acc: any, student: any) => {
+                        if (!acc[student.studentEmail]) {
+                          acc[student.studentEmail] = [];
+                        }
+                        acc[student.studentEmail].push(student);
+                        return acc;
+                      }, {})
+                    ).map(([studentEmail, studentSessions]: [string, any]) => (
+                      <div key={studentEmail} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
                           <div>
-                            <p className="font-medium">Session #{session.id}</p>
+                            <h4 className="font-medium text-lg">{studentEmail}</h4>
                             <p className="text-sm text-gray-600">
-                              Étudiant: {session.student_id} | 
-                              Scénario: {session.scenario_id}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Créée: {new Date(session.created_at).toLocaleDateString('fr-FR')}
+                              Session de formation: {studentSessions[0].trainingSessionTitle}
                             </p>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={session.status === 'completed' ? 'default' : 'secondary'}>
-                            {session.status === 'completed' ? 'Terminée' : 'En cours'}
+                          <Badge variant="outline">
+                            <UserPlus className="w-3 h-3 mr-1" />
+                            Assigné
                           </Badge>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleViewSessionDetails(session)}
-                          >
-                            Voir détails
-                          </Button>
+                        </div>
+                        
+                        {/* Show ECOS sessions for this student */}
+                        <div className="space-y-2">
+                          {studentSessions.filter((s: any) => s.ecosSessionId).length > 0 ? (
+                            studentSessions
+                              .filter((s: any) => s.ecosSessionId)
+                              .map((session: any) => (
+                                <div key={session.ecosSessionId} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                  <div>
+                                    <p className="font-medium">Session ECOS #{session.ecosSessionId}</p>
+                                    <p className="text-sm text-gray-600">
+                                      Scénario: {session.ecosScenarioTitle}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Démarrée: {new Date(session.ecosSessionStartTime).toLocaleString('fr-FR')}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant={session.ecosSessionStatus === 'completed' ? 'default' : 'secondary'}>
+                                      {session.ecosSessionStatus === 'completed' ? 'Terminée' : 'En cours'}
+                                    </Badge>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => handleViewSessionDetails(session)}
+                                    >
+                                      Détails
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))
+                          ) : (
+                            <div className="p-3 bg-blue-50 rounded text-center">
+                              <p className="text-sm text-blue-700">Aucune session ECOS démarrée</p>
+                              <p className="text-xs text-blue-600">L'étudiant peut commencer un examen depuis son interface</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune session</h3>
-                    <p className="text-gray-600">Les sessions des étudiants apparaîtront ici</p>
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun étudiant assigné</h3>
+                    <p className="text-gray-600">Les étudiants assignés aux sessions de formation apparaîtront ici</p>
                   </div>
                 )}
               </CardContent>
