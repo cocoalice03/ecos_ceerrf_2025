@@ -100,27 +100,26 @@ app.use((req, res, next) => {
   // Remove server signature
   res.removeHeader('X-Powered-By');
   
-  // Content Security Policy - Strict policy with necessary allowances for the app
+  // Content Security Policy - Adjusted for Replit environment
   const cspPolicy = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://replit.com https://fonts.googleapis.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https:",
-    "connect-src 'self' https: wss: ws:",
-    "media-src 'self'",
+    "default-src 'self' *.replit.com *.replit.dev",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://replit.com *.replit.com *.replit.dev https://fonts.googleapis.com https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com *.replit.com *.replit.dev",
+    "font-src 'self' https://fonts.gstatic.com *.replit.com *.replit.dev",
+    "img-src 'self' data: blob: https: *.replit.com *.replit.dev",
+    "connect-src 'self' https: wss: ws: *.replit.com *.replit.dev",
+    "media-src 'self' *.replit.com *.replit.dev",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests"
+    "frame-ancestors 'self' *.replit.com *.replit.dev"
   ].join('; ');
   
   res.setHeader('Content-Security-Policy', cspPolicy);
   
   // Existing security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN'); // Changed from DENY to SAMEORIGIN for Replit compatibility
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   
@@ -146,10 +145,10 @@ app.use((req, res, next) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
   
-  // Cross-Origin policies
-  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  // Cross-Origin policies - Adjusted for Replit compatibility
+  // Removed Cross-Origin-Embedder-Policy as it's too restrictive for Replit
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // More permissive for Replit
   
   // Prevent directory traversal
   if (req.path.includes('..')) {
