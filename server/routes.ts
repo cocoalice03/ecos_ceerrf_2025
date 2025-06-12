@@ -19,7 +19,7 @@ import { eq, and, between, inArray, sql, lte, gte } from 'drizzle-orm';
 const MAX_DAILY_QUESTIONS = 20;
 
 // Admin emails authorized to access admin features
-const ADMIN_EMAILS: string[] = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+const ADMIN_EMAILS: string[] = ['cherubindavid@gmail.com'];
 
 // Configure multer for file uploads
 const upload = multer({
