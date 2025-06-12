@@ -114,6 +114,32 @@ export const ecosMessages = pgTable("ecos_messages", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Training Sessions table (sessions de formation)
+export const trainingSessions = pgTable("training_sessions", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Training Session Scenarios table (relation many-to-many)
+export const trainingSessionScenarios = pgTable("training_session_scenarios", {
+  id: serial("id").primaryKey(),
+  trainingSessionId: integer("training_session_id").references(() => trainingSessions.id),
+  scenarioId: integer("scenario_id").references(() => ecosScenarios.id),
+});
+
+// Training Session Students table (étudiants assignés à une session)
+export const trainingSessionStudents = pgTable("training_session_students", {
+  id: serial("id").primaryKey(),
+  trainingSessionId: integer("training_session_id").references(() => trainingSessions.id),
+  studentEmail: varchar("student_email", { length: 255 }).notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+});
+
 // Create insert schemas for ECOS tables
 export const insertEcosScenarioSchema = createInsertSchema(ecosScenarios).pick({
   title: true,
@@ -143,6 +169,24 @@ export const insertEcosMessageSchema = createInsertSchema(ecosMessages).pick({
   content: true,
 });
 
+export const insertTrainingSessionSchema = createInsertSchema(trainingSessions).pick({
+  title: true,
+  description: true,
+  startDate: true,
+  endDate: true,
+  createdBy: true,
+});
+
+export const insertTrainingSessionScenarioSchema = createInsertSchema(trainingSessionScenarios).pick({
+  trainingSessionId: true,
+  scenarioId: true,
+});
+
+export const insertTrainingSessionStudentSchema = createInsertSchema(trainingSessionStudents).pick({
+  trainingSessionId: true,
+  studentEmail: true,
+});
+
 // Types for TypeScript
 export type Exchange = typeof exchanges.$inferSelect;
 export type InsertExchange = z.infer<typeof insertExchangeSchema>;
@@ -164,3 +208,13 @@ export type EcosReport = typeof ecosReports.$inferSelect;
 
 export type EcosMessage = typeof ecosMessages.$inferSelect;
 export type InsertEcosMessage = z.infer<typeof insertEcosMessageSchema>;
+
+// Training Session Types
+export type TrainingSession = typeof trainingSessions.$inferSelect;
+export type InsertTrainingSession = z.infer<typeof insertTrainingSessionSchema>;
+
+export type TrainingSessionScenario = typeof trainingSessionScenarios.$inferSelect;
+export type InsertTrainingSessionScenario = z.infer<typeof insertTrainingSessionScenarioSchema>;
+
+export type TrainingSessionStudent = typeof trainingSessionStudents.$inferSelect;
+export type InsertTrainingSessionStudent = z.infer<typeof insertTrainingSessionStudentSchema>;

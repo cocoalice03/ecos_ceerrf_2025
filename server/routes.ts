@@ -12,8 +12,8 @@ import multer from 'multer';
 import { ecosService } from './services/ecos.service';
 import { promptGenService } from './services/promptGen.service';
 import { evaluationService } from './services/evaluation.service';
-import { ecosScenarios, ecosSessions } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { ecosScenarios, ecosSessions, trainingSessions, trainingSessionScenarios, trainingSessionStudents } from '@shared/schema';
+import { eq, and, between, inArray, sql } from 'drizzle-orm';
 
 // Max questions per day per user
 const MAX_DAILY_QUESTIONS = 20;
@@ -1306,6 +1306,399 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       return res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord" });
+    }
+  });
+
+  // ==================== TRAINING SESSIONS ROUTES ====================
+
+  // Create a new training session
+  app.post("/api/training-sessions", async (req: Request, res: Response) => {
+    try {
+      const createSchema = z.object({
+        email: z.string().email(),
+        title: z.string().min(1),
+        description: z.string().optional(),
+        startDate: z.string(),
+        endDate: z.string(),
+        scenarioIds: z.array(z.number()),
+        studentEmails: z.array(z.string().email()).optional().default([]),
+      });
+
+      const { email, title, description, startDate, endDate, scenarioIds, studentEmails } = createSchema.parse(req.body);
+
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      // Validate dates
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (start >= end) {
+        return res.status(400).json({ message: "La date de fin doit être postérieure à la date de début" });
+      }
+
+      // Create training session
+      const result = await db.transaction(async (tx) => {
+        // Insert training session
+        const [trainingSession] = await tx.insert(trainingSessions).values({
+          title,
+          description,
+          startDate: start,
+          endDate: end,
+          createdBy: email,
+        }).returning();
+
+        // Insert scenarios
+        if (scenarioIds.length > 0) {
+          await tx.insert(trainingSessionScenarios).values(
+            scenarioIds.map(scenarioId => ({
+              trainingSessionId: trainingSession.id,
+              scenarioId,
+            }))
+          );
+        }
+
+        // Insert students
+        if (studentEmails.length > 0) {
+          await tx.insert(trainingSessionStudents).values(
+            studentEmails.map(studentEmail => ({
+              trainingSessionId: trainingSession.id,
+              studentEmail,
+            }))
+          );
+        }
+
+        return trainingSession;
+      });
+
+      return res.status(201).json({ 
+        message: "Session de formation créée avec succès",
+        trainingSession: result
+      });
+    } catch (error) {
+      console.error("Error creating training session:", error);
+      return res.status(500).json({ message: "Erreur lors de la création de la session de formation" });
+    }
+  });
+
+  // Get training sessions for a teacher
+  app.get("/api/training-sessions", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      const decodedEmail = decodeURIComponent(email);
+
+      if (!isAdminAuthorized(decodedEmail)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      // Get training sessions with scenarios and student count
+      const sessions = await db
+        .select({
+          id: trainingSessions.id,
+          title: trainingSessions.title,
+          description: trainingSessions.description,
+          startDate: trainingSessions.startDate,
+          endDate: trainingSessions.endDate,
+          createdBy: trainingSessions.createdBy,
+          createdAt: trainingSessions.createdAt,
+        })
+        .from(trainingSessions)
+        .where(eq(trainingSessions.createdBy, decodedEmail))
+        .orderBy(trainingSessions.createdAt);
+
+      // Get scenarios and students for each session
+      const enrichedSessions = await Promise.all(
+        sessions.map(async (session) => {
+          // Get scenarios
+          const scenarios = await db
+            .select({
+              id: ecosScenarios.id,
+              title: ecosScenarios.title,
+              description: ecosScenarios.description,
+            })
+            .from(trainingSessionScenarios)
+            .innerJoin(ecosScenarios, eq(trainingSessionScenarios.scenarioId, ecosScenarios.id))
+            .where(eq(trainingSessionScenarios.trainingSessionId, session.id));
+
+          // Get student count
+          const studentCount = await db
+            .select({ count: sql`COUNT(*)` })
+            .from(trainingSessionStudents)
+            .where(eq(trainingSessionStudents.trainingSessionId, session.id));
+
+          return {
+            ...session,
+            scenarios,
+            studentCount: parseInt(studentCount[0]?.count || '0'),
+          };
+        })
+      );
+
+      return res.status(200).json({ trainingSessions: enrichedSessions });
+    } catch (error) {
+      console.error("Error fetching training sessions:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des sessions de formation" });
+    }
+  });
+
+  // Get a specific training session
+  app.get("/api/training-sessions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { email } = req.query;
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      const decodedEmail = decodeURIComponent(email);
+
+      if (!isAdminAuthorized(decodedEmail)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      // Get training session
+      const [session] = await db
+        .select()
+        .from(trainingSessions)
+        .where(and(
+          eq(trainingSessions.id, parseInt(id)),
+          eq(trainingSessions.createdBy, decodedEmail)
+        ))
+        .limit(1);
+
+      if (!session) {
+        return res.status(404).json({ message: "Session de formation non trouvée" });
+      }
+
+      // Get scenarios
+      const scenarios = await db
+        .select({
+          id: ecosScenarios.id,
+          title: ecosScenarios.title,
+          description: ecosScenarios.description,
+        })
+        .from(trainingSessionScenarios)
+        .innerJoin(ecosScenarios, eq(trainingSessionScenarios.scenarioId, ecosScenarios.id))
+        .where(eq(trainingSessionScenarios.trainingSessionId, session.id));
+
+      // Get students
+      const students = await db
+        .select({
+          studentEmail: trainingSessionStudents.studentEmail,
+          assignedAt: trainingSessionStudents.assignedAt,
+        })
+        .from(trainingSessionStudents)
+        .where(eq(trainingSessionStudents.trainingSessionId, session.id));
+
+      return res.status(200).json({
+        trainingSession: {
+          ...session,
+          scenarios,
+          students,
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching training session:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération de la session de formation" });
+    }
+  });
+
+  // Update a training session
+  app.put("/api/training-sessions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updateSchema = z.object({
+        email: z.string().email(),
+        title: z.string().min(1).optional(),
+        description: z.string().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        scenarioIds: z.array(z.number()).optional(),
+        studentEmails: z.array(z.string().email()).optional(),
+      });
+
+      const { email, ...updateData } = updateSchema.parse(req.body);
+
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      // Check if session exists and belongs to user
+      const [existingSession] = await db
+        .select()
+        .from(trainingSessions)
+        .where(and(
+          eq(trainingSessions.id, parseInt(id)),
+          eq(trainingSessions.createdBy, email)
+        ))
+        .limit(1);
+
+      if (!existingSession) {
+        return res.status(404).json({ message: "Session de formation non trouvée" });
+      }
+
+      const result = await db.transaction(async (tx) => {
+        // Update training session
+        const updateFields: any = {};
+        if (updateData.title) updateFields.title = updateData.title;
+        if (updateData.description !== undefined) updateFields.description = updateData.description;
+        if (updateData.startDate) updateFields.startDate = new Date(updateData.startDate);
+        if (updateData.endDate) updateFields.endDate = new Date(updateData.endDate);
+
+        if (Object.keys(updateFields).length > 0) {
+          await tx.update(trainingSessions)
+            .set(updateFields)
+            .where(eq(trainingSessions.id, parseInt(id)));
+        }
+
+        // Update scenarios if provided
+        if (updateData.scenarioIds) {
+          // Delete existing scenarios
+          await tx.delete(trainingSessionScenarios)
+            .where(eq(trainingSessionScenarios.trainingSessionId, parseInt(id)));
+
+          // Insert new scenarios
+          if (updateData.scenarioIds.length > 0) {
+            await tx.insert(trainingSessionScenarios).values(
+              updateData.scenarioIds.map(scenarioId => ({
+                trainingSessionId: parseInt(id),
+                scenarioId,
+              }))
+            );
+          }
+        }
+
+        // Update students if provided
+        if (updateData.studentEmails) {
+          // Delete existing students
+          await tx.delete(trainingSessionStudents)
+            .where(eq(trainingSessionStudents.trainingSessionId, parseInt(id)));
+
+          // Insert new students
+          if (updateData.studentEmails.length > 0) {
+            await tx.insert(trainingSessionStudents).values(
+              updateData.studentEmails.map(studentEmail => ({
+                trainingSessionId: parseInt(id),
+                studentEmail,
+              }))
+            );
+          }
+        }
+
+        return await tx.select().from(trainingSessions).where(eq(trainingSessions.id, parseInt(id))).limit(1);
+      });
+
+      return res.status(200).json({ 
+        message: "Session de formation mise à jour avec succès",
+        trainingSession: result[0]
+      });
+    } catch (error) {
+      console.error("Error updating training session:", error);
+      return res.status(500).json({ message: "Erreur lors de la mise à jour de la session de formation" });
+    }
+  });
+
+  // Delete a training session
+  app.delete("/api/training-sessions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const email = (req.query.email || req.body.email) as string;
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      if (!isAdminAuthorized(email)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      const result = await db.transaction(async (tx) => {
+        // Delete related records first
+        await tx.delete(trainingSessionScenarios).where(eq(trainingSessionScenarios.trainingSessionId, parseInt(id)));
+        await tx.delete(trainingSessionStudents).where(eq(trainingSessionStudents.trainingSessionId, parseInt(id)));
+
+        // Delete training session
+        return await tx.delete(trainingSessions)
+          .where(and(
+            eq(trainingSessions.id, parseInt(id)),
+            eq(trainingSessions.createdBy, email)
+          ))
+          .returning();
+      });
+
+      if (!result.length) {
+        return res.status(404).json({ message: "Session de formation non trouvée" });
+      }
+
+      return res.status(200).json({ message: "Session de formation supprimée avec succès" });
+    } catch (error) {
+      console.error("Error deleting training session:", error);
+      return res.status(500).json({ message: "Erreur lors de la suppression de la session de formation" });
+    }
+  });
+
+  // Get available scenarios for a student based on their training sessions
+  app.get("/api/student/available-scenarios", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      const decodedEmail = decodeURIComponent(email);
+      const now = new Date();
+
+      // Get active training sessions for this student
+      const activeTrainingSessions = await db
+        .select({
+          sessionId: trainingSessions.id,
+          sessionTitle: trainingSessions.title,
+        })
+        .from(trainingSessionStudents)
+        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
+        .where(and(
+          eq(trainingSessionStudents.studentEmail, decodedEmail),
+          between(sql`NOW()`, trainingSessions.startDate, trainingSessions.endDate)
+        ));
+
+      if (activeTrainingSessions.length === 0) {
+        return res.status(200).json({ scenarios: [], message: "Aucune session active pour cet étudiant" });
+      }
+
+      // Get scenarios from active training sessions
+      const scenarios = await db
+        .select({
+          id: ecosScenarios.id,
+          title: ecosScenarios.title,
+          description: ecosScenarios.description,
+          createdAt: ecosScenarios.createdAt,
+          trainingSessionTitle: trainingSessions.title,
+        })
+        .from(trainingSessionScenarios)
+        .innerJoin(ecosScenarios, eq(trainingSessionScenarios.scenarioId, ecosScenarios.id))
+        .innerJoin(trainingSessions, eq(trainingSessionScenarios.trainingSessionId, trainingSessions.id))
+        .innerJoin(trainingSessionStudents, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
+        .where(and(
+          eq(trainingSessionStudents.studentEmail, decodedEmail),
+          between(sql`NOW()`, trainingSessions.startDate, trainingSessions.endDate)
+        ))
+        .orderBy(ecosScenarios.createdAt);
+
+      return res.status(200).json({ 
+        scenarios,
+        trainingSessions: activeTrainingSessions
+      });
+    } catch (error) {
+      console.error("Error fetching student scenarios:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des scénarios" });
     }
   });
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -6,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Clock, CheckCircle, BookOpen, TrendingUp } from "lucide-react";
+import { Play, Clock, CheckCircle2, AlertCircle, BarChart3, FileText, Calendar, CheckCircle } from "lucide-react";
 import PatientSimulator from "@/components/ecos/PatientSimulator";
 import EvaluationReport from "@/components/ecos/EvaluationReport";
 import StudentDiagnostic from "@/components/debug/StudentDiagnostic";
@@ -21,11 +20,11 @@ export default function StudentPage({ email }: StudentPageProps) {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
-  
+
   // Check for scenario parameter in URL
   const urlParams = new URLSearchParams(window.location.search);
   const scenarioParam = urlParams.get('scenario');
-  
+
   // Decode email if it comes from URL (in case it's URL encoded)
   const decodedEmail = email ? decodeURIComponent(email) : email;
 
@@ -50,6 +49,36 @@ export default function StudentPage({ email }: StudentPageProps) {
       return response.sessions || [];
     }
   });
+
+    // Fetch training sessions
+    const { data: trainingSessions, isLoading: trainingSessionsLoading } = useQuery({
+      queryKey: ['training-sessions', decodedEmail],
+      queryFn: async () => {
+        const response = await apiRequest('GET', `/api/ecos/training-sessions?email=${decodedEmail}`);
+        return response.sessions || [];
+      },
+    });
+
+    const { data: scenariosData, isLoading: scenariosDataLoading } = useQuery({
+      queryKey: ['scenarios-data', decodedEmail],
+      queryFn: async () => {
+          try {
+              const response = await apiRequest('GET', `/api/ecos/available-scenarios?email=${encodeURIComponent(decodedEmail)}`);
+              return {
+                  scenarios: response.scenarios || [],
+                  message: response.message || null,
+              };
+          } catch (error) {
+              console.error("Failed to fetch scenarios data:", error);
+              return {
+                  scenarios: [],
+                  message: "Failed to load scenarios.",
+              };
+          }
+      },
+      enabled: !!decodedEmail,
+  });
+  
 
   // Start session mutation
   const startSessionMutation = useMutation({
@@ -85,7 +114,7 @@ export default function StudentPage({ email }: StudentPageProps) {
   const handleSessionEnd = () => {
     setActiveSessionId(null);
     refetchSessions();
-    
+
     // Clear the scenario parameter from URL to prevent auto-restart
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('scenario')) {
@@ -229,6 +258,33 @@ export default function StudentPage({ email }: StudentPageProps) {
           </TabsList>
 
           <TabsContent value="scenarios" className="mt-6">
+          {/* Training Sessions Info */}
+          {!activeSessionId && !viewingReport && trainingSessions?.length > 0 && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Sessions de Formation Actives
+                </CardTitle>
+                <CardDescription>
+                  Vous participez actuellement aux sessions de formation suivantes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {trainingSessions.map((session: any) => (
+                    <div key={session.sessionId} className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">{session.sessionTitle}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Available Scenarios */}
+          {!activeSessionId && !viewingReport && (
             <Card>
               <CardHeader>
                 <CardTitle>Scénarios Disponibles</CardTitle>
@@ -247,16 +303,20 @@ export default function StudentPage({ email }: StudentPageProps) {
                     ))}
                   </div>
                 ) : scenarios?.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">Aucun scénario disponible</p>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowDiagnostic(true)}
-                      className="text-orange-600 border-orange-200 hover:bg-orange-50"
-                    >
-                      🔧 Lancer le Diagnostic
-                    </Button>
-                  </div>
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
+                      <p className="text-gray-600">
+                        {scenariosData?.message || "Aucun scénario ECOS n'est actuellement disponible pour vous."}
+                      </p>
+                      {trainingSessions?.length === 0 && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          Vous n'êtes inscrit à aucune session de formation active. Contactez votre enseignant pour plus d'informations.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {scenarios?.map((scenario: any) => (
@@ -281,6 +341,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                 )}
               </CardContent>
             </Card>
+          )}
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">

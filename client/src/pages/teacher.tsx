@@ -7,13 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2 } from "lucide-react";
+import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2, Calendar, UserPlus, CheckCircle } from "lucide-react";
 import { useDashboardData, useAvailableIndexes } from '@/lib/api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
 import EcosDebugger from "@/components/debug/EcosDebugger";
 import { AdminButton } from "@/components/layout/AdminButton";
 import { apiRequest } from "@/lib/queryClient";
+import TrainingSessionsTab from "@/components/ecos/TrainingSessionsTab";
 
 interface ScenarioCreationFormProps {
   email: string;
@@ -466,11 +467,12 @@ function TeacherPage({ email }: TeacherPageProps) {
 
         {/* Tabs for different sections */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-fit">
+          <TabsList className="grid grid-cols-6 w-fit">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="scenarios">Scénarios</TabsTrigger>
             <TabsTrigger value="create">Créer</TabsTrigger>
-            <TabsTrigger value="sessions">Sessions</TabsTrigger>
+            <TabsTrigger value="training-sessions">Sessions Formation</TabsTrigger>
+            <TabsTrigger value="sessions">Sessions ECOS</TabsTrigger>
             <TabsTrigger value="debug">Debug</TabsTrigger>
           </TabsList>
 
@@ -633,11 +635,15 @@ function TeacherPage({ email }: TeacherPageProps) {
             </div>
           </TabsContent>
 
+          <TabsContent value="training-sessions">
+            <TrainingSessionsTab email={email || ''} />
+          </TabsContent>
+
           <TabsContent value="sessions">
             <Card>
               <CardHeader>
-                <CardTitle>Sessions des Étudiants</CardTitle>
-                <CardDescription>Suivez les sessions en cours et terminées</CardDescription>
+                <CardTitle>Sessions ECOS des Étudiants</CardTitle>
+                <CardDescription>Suivez les sessions d'examen en cours et terminées</CardDescription>
               </CardHeader>
               <CardContent>
                 {sessions.length > 0 ? (
