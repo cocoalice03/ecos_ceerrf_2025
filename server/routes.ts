@@ -1364,28 +1364,25 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
-      // Get dashboard statistics using proper queries
+      // Get dashboard statistics - system-wide data for administrators
       const scenarios = await db.select().from(ecosScenarios);
       const ecosSessionsData = await db.select().from(ecosSessions);
       
-      // Get all unique students assigned to training sessions created by this teacher
-      const studentsInTrainingSessions = await db
+      // Get all unique students in the system (not filtered by teacher)
+      const allStudentsInTrainingSessions = await db
         .select({ studentEmail: trainingSessionStudents.studentEmail })
         .from(trainingSessionStudents)
-        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
-        .where(eq(trainingSessions.createdBy, decodedEmail));
+        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id));
       
-      const uniqueStudents = new Set(studentsInTrainingSessions.map(s => s.studentEmail));
+      const uniqueStudents = new Set(allStudentsInTrainingSessions.map(s => s.studentEmail));
       
-      // Filter ECOS sessions to only include those from students in training sessions
+      // Show all ECOS sessions for administrators (system-wide statistics)
       const activeSessions = ecosSessionsData.filter(session => 
-        session.status === 'in_progress' && 
-        uniqueStudents.has(session.studentEmail || '')
+        session.status === 'in_progress'
       );
       
       const completedSessions = ecosSessionsData.filter(session => 
-        session.status === 'completed' && 
-        uniqueStudents.has(session.studentEmail || '')
+        session.status === 'completed'
       );
 
       return res.status(200).json({
