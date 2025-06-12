@@ -5,6 +5,7 @@ import { db } from "./db";
 import { insertLog } from "./storage";
 import { addDiagnosticRoutes } from "./diagnostic-endpoint";
 import { createDebugMiddleware, createDatabaseErrorHandler } from "./debug.middleware";
+import { createTrainingSessionsTables } from "./db";
 
 const app = express();
 app.use(express.json());
@@ -48,6 +49,13 @@ app.use((req, res, next) => {
   // Setup diagnostic routes first
   addDiagnosticRoutes(app);
 
+  // Create training sessions tables if they don't exist
+  try {
+    await createTrainingSessionsTables();
+  } catch (error) {
+    console.error('Warning: Could not create training sessions tables:', error.message);
+  }
+
   // Setup routes
   const server = await registerRoutes(app);
 
@@ -65,7 +73,7 @@ app.use((req, res, next) => {
     });
 
     res.status(status).json({ message });
-    
+
     // Don't throw the error in production to prevent crash
     if (process.env.NODE_ENV !== 'production') {
       throw err;
