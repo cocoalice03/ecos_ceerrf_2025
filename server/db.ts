@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from 'ws';
 import fs from 'fs';
 import path from 'path';
+import * as schema from "@shared/schema";
 
 // Configure Neon to use WebSocket
 neonConfig.webSocketConstructor = ws;
@@ -14,7 +15,7 @@ if (!connectionString) {
 }
 
 const pool = new Pool({ connectionString });
-export const db = drizzle(pool);
+export const db = drizzle({ client: pool, schema });
 
 // Function to create training sessions tables
 export async function createTrainingSessionsTables() {
