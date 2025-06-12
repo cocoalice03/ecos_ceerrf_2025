@@ -1351,31 +1351,48 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
   // Get dashboard data for teacher
   app.get("/api/teacher/dashboard", async (req: Request, res: Response) => {
     try {
+      console.log('🚀 Dashboard endpoint hit');
+      console.log('📧 Request query:', req.query);
+      
       const { email } = req.query;
 
       if (!email || typeof email !== "string") {
+        console.log('❌ Email validation failed:', { email, type: typeof email });
         return res.status(400).json({ message: "Email requis" });
       }
 
       // Decode the email if it's URL encoded
       const decodedEmail = decodeURIComponent(email);
+      console.log('🔓 Email decoded:', { original: email, decoded: decodedEmail });
 
       if (!isAdminAuthorized(decodedEmail)) {
+        console.log('❌ Authorization failed for:', decodedEmail);
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
+      console.log('✅ Authorization passed for:', decodedEmail);
+
       // Get dashboard statistics using proper queries
+      console.log('📊 Fetching scenarios...');
       const scenarios = await db.select().from(ecosScenarios);
+      console.log('📊 Scenarios found:', scenarios.length);
+      
+      console.log('📊 Fetching ECOS sessions...');
       const ecosSessionsData = await db.select().from(ecosSessions);
+      console.log('📊 ECOS sessions found:', ecosSessionsData.length);
       
       // Get all unique students assigned to training sessions created by this teacher
+      console.log('📊 Fetching training session students...');
       const studentsInTrainingSessions = await db
         .select({ studentEmail: trainingSessionStudents.studentEmail })
         .from(trainingSessionStudents)
         .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
         .where(eq(trainingSessions.createdBy, decodedEmail));
       
+      console.log('📊 Students in training sessions:', studentsInTrainingSessions.length);
+      
       const uniqueStudents = new Set(studentsInTrainingSessions.map(s => s.studentEmail));
+      console.log('📊 Unique students:', uniqueStudents.size);
       
       // Filter ECOS sessions to only include those from students in training sessions
       const activeSessions = ecosSessionsData.filter(session => 
@@ -1388,7 +1405,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         uniqueStudents.has(session.studentEmail || '')
       );
 
-      return res.status(200).json({
+      const dashboardData = {
         scenarios,
         sessions: ecosSessionsData,
         stats: {
@@ -1397,11 +1414,19 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
           completedSessions: completedSessions.length,
           totalStudents: uniqueStudents.size
         }
+      };
+
+      console.log('✅ Dashboard data prepared:', {
+        scenariosCount: dashboardData.scenarios.length,
+        sessionsCount: dashboardData.sessions.length,
+        stats: dashboardData.stats
       });
+
+      return res.status(200).json(dashboardData);
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      console.error("Error details:", error instanceof Error ? error.message : String(error));
-      console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
+      console.error("❌ Error fetching dashboard data:", error);
+      console.error("❌ Error details:", error instanceof Error ? error.message : String(error));
+      console.error("❌ Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
       return res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord" });
     }
   });
