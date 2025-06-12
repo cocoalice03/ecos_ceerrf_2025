@@ -309,6 +309,7 @@ function TeacherPage({ email }: TeacherPageProps) {
   const [editingScenario, setEditingScenario] = useState<any>(null);
   const [deletingScenario, setDeletingScenario] = useState<any>(null);
   const [viewingSessionDetails, setViewingSessionDetails] = useState<any>(null);
+  const [viewingReport, setViewingReport] = useState<number | null>(null);
 
   // Add debugging for authentication issues - MUST be before any conditional returns
   React.useEffect(() => {
@@ -335,6 +336,16 @@ function TeacherPage({ email }: TeacherPageProps) {
       }
     },
     enabled: !!email && (!!dashboardError || !dashboardData?.scenarios?.length),
+  });
+
+  // Query pour récupérer les détails du rapport
+  const { data: reportData, isLoading: isReportLoading } = useQuery({
+    queryKey: ['session-report', viewingReport],
+    queryFn: async () => {
+      if (!viewingReport) return null;
+      return apiRequest('GET', `/api/ecos/sessions/${viewingReport}/report`);
+    },
+    enabled: !!viewingReport,
   });
 
   // Check if we have actual errors vs just partial data
@@ -505,9 +516,13 @@ function TeacherPage({ email }: TeacherPageProps) {
                   {sessions.length > 0 ? (
                     <div className="space-y-4">
                       {sessions.slice(0, 5).map((session: any) => (
-                        <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div 
+                          key={session.id} 
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                          onClick={() => session.status === 'completed' && setViewingReport(session.id)}
+                        >
                           <div>
-                            <p className="font-medium">Session #{session.id}</p>
+                            <p className="font-medium">Consultation #{session.id}</p>
                             <p className="text-sm text-gray-600">
                               Étudiant: {session.studentEmail || 'Non défini'}
                             </p>
@@ -519,7 +534,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-center py-8">Aucune session récente</p>
+                    <p className="text-gray-500 text-center py-8">Aucune consultation récente</p>
                   )}
                 </CardContent>
               </Card>
