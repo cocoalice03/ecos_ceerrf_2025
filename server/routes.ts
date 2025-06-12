@@ -7,7 +7,7 @@ import { learnWorldsService } from "./services/learnworlds.service";
 import { insertExchangeSchema } from "@shared/schema";
 import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
-import { db } from "./db";
+import { db, createTrainingSessionsTables } from './db';
 import multer from 'multer';
 import { ecosService } from './services/ecos.service';
 import { promptGenService } from './services/promptGen.service';
@@ -122,7 +122,7 @@ Exemples de requêtes:
 async function executeSQLQuery(sqlQuery: string) {
   try {
     console.log("🔍 Validating SQL query:", sqlQuery);
-    
+
     // Only allow SELECT queries for safety
     const normalizedQuery = sqlQuery.trim().toLowerCase();
     if (!normalizedQuery.startsWith('select')) {
@@ -135,7 +135,7 @@ async function executeSQLQuery(sqlQuery: string) {
     const containsDangerous = dangerousKeywords.some(keyword => 
       normalizedQuery.includes(keyword.toLowerCase())
     );
-    
+
     if (containsDangerous) {
       console.log("❌ Dangerous keywords detected in query");
       throw new Error('Requête contient des mots-clés non autorisés');
@@ -144,11 +144,11 @@ async function executeSQLQuery(sqlQuery: string) {
     console.log("✅ SQL query validated, executing...");
     const result = await db.execute(sqlQuery);
     console.log("✅ Query executed successfully, rows:", result.rows.length);
-    
+
     return result.rows;
   } catch (error) {
     console.error('❌ Error executing SQL:', error);
-    
+
     if (error instanceof Error) {
       // More specific error handling
       if (error.message.includes('column') && error.message.includes('does not exist')) {
@@ -163,7 +163,7 @@ async function executeSQLQuery(sqlQuery: string) {
         throw new Error(`Erreur d'exécution SQL: ${error.message}`);
       }
     }
-    
+
     throw new Error('Erreur lors de l\'exécution de la requête SQL');
   }
 }
@@ -538,10 +538,10 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       });
     } catch (error) {
       console.error("❌ Error processing NL to SQL:", error);
-      
+
       // More specific error messages
       let errorMessage = "Erreur lors de la conversion en SQL";
-      
+
       if (error instanceof z.ZodError) {
         errorMessage = "Données de requête invalides: " + error.errors.map(e => e.message).join(", ");
       } else if (error instanceof Error) {
@@ -1216,7 +1216,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         return res.status(200).json(evaluation);
       } catch (evalError) {
         console.error("Error evaluating session:", evalError);
-        
+
         // Check if it's an insufficient content error - this should now be handled gracefully
         if (evalError instanceof Error && evalError.message.includes('assez d\'échanges')) {
           // This shouldn't happen anymore with our new logic, but just in case
@@ -1234,7 +1234,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
             }
           });
         }
-        
+
         throw evalError; // Re-throw other errors
       }
     } catch (error) {
@@ -1333,7 +1333,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       // Validate dates
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
+
       if (start >= end) {
         return res.status(400).json({ message: "La date de fin doit être postérieure à la date de début" });
       }
