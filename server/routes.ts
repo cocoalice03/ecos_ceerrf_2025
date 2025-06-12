@@ -1293,18 +1293,24 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
-      // Implement your dashboard data retrieval logic here
-      // For example:
-      const totalScenarios = await db.select().from(ecosScenarios).count();
-      const totalSessions = await db.select().from(ecosSessions).count();
+      // Get dashboard statistics using simple queries
+      const scenarios = await db.select().from(ecosScenarios);
+      const sessions = await db.select().from(ecosSessions);
+      const trainingSessionsData = await db.select().from(trainingSessions);
+      const students = await db.select().from(trainingSessionStudents);
+      
+      const uniqueStudents = new Set(students.map(s => s.studentEmail));
 
       return res.status(200).json({
-        totalScenarios: totalScenarios[0].count,
-        totalSessions: totalSessions[0].count,
-        // ... other dashboard data
+        totalScenarios: scenarios.length,
+        totalSessions: sessions.length,
+        totalTrainingSessions: trainingSessionsData.length,
+        totalStudents: uniqueStudents.size
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+      console.error("Error details:", error instanceof Error ? error.message : String(error));
+      console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
       return res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord" });
     }
   });
