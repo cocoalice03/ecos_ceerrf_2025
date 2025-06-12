@@ -342,10 +342,10 @@ function TeacherPage({ email }: TeacherPageProps) {
   const { data: reportData, isLoading: isReportLoading } = useQuery({
     queryKey: ['session-report', viewingReport],
     queryFn: async () => {
-      if (!viewingReport) return null;
-      return apiRequest('GET', `/api/ecos/sessions/${viewingReport}/report`);
+      if (!viewingReport || !email) return null;
+      return apiRequest('GET', `/api/ecos/sessions/${viewingReport}/report?email=${encodeURIComponent(email)}`);
     },
-    enabled: !!viewingReport,
+    enabled: !!viewingReport && !!email,
   });
 
   // Check if we have actual errors vs just partial data
@@ -905,91 +905,115 @@ function TeacherPage({ email }: TeacherPageProps) {
                     <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
                     <p>Chargement du rapport...</p>
                   </div>
-                ) : reportData ? (
+                ) : reportData?.report ? (
                   <div className="space-y-6">
-                    {/* Informations générales */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="font-semibold mb-3">Informations de la consultation</h3>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">Étudiant:</span>
-                          <p>{reportData.studentEmail || 'Non défini'}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Scénario:</span>
-                          <p>{reportData.scenarioTitle || 'Non défini'}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Date:</span>
-                          <p>{reportData.startTime ? new Date(reportData.startTime).toLocaleString('fr-FR') : 'Non définie'}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Durée:</span>
-                          <p>{reportData.duration || 'Non définie'}</p>
-                        </div>
+                    {/* Check if it's an insufficient content report */}
+                    {reportData.report.isInsufficientContent ? (
+                      <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                        <h3 className="font-semibold mb-2 text-yellow-800">Session incomplète</h3>
+                        <p className="text-sm text-yellow-700 mb-2">{reportData.report.message}</p>
+                        <p className="text-xs text-yellow-600">{reportData.report.details}</p>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        {/* Informations générales */}
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <h3 className="font-semibold mb-3">Informations de la consultation</h3>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium">Session ID:</span>
+                              <p>#{reportData.report.sessionId}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium">Date d'évaluation:</span>
+                              <p>{reportData.report.timestamp ? new Date(reportData.report.timestamp).toLocaleString('fr-FR') : 'Non définie'}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium">Score global:</span>
+                              <p className="font-semibold text-blue-600">{reportData.report.globalScore || 0}/100</p>
+                            </div>
+                          </div>
+                        </div>
 
-                    {/* Résumé de l'évaluation */}
-                    {reportData.summary && (
-                      <div>
-                        <h3 className="font-semibold mb-3">Résumé de l'évaluation</h3>
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <p className="text-sm">{reportData.summary}</p>
-                        </div>
-                      </div>
-                    )}
+                        {/* Feedback général */}
+                        {reportData.report.feedback && (
+                          <div>
+                            <h3 className="font-semibold mb-3">Feedback général</h3>
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                              <p className="text-sm">{reportData.report.feedback}</p>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Points forts */}
-                    {reportData.strengths && reportData.strengths.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold mb-3 text-green-700">Points forts</h3>
-                        <div className="bg-green-50 p-4 rounded-lg">
-                          <ul className="list-disc list-inside space-y-1 text-sm">
-                            {reportData.strengths.map((strength: string, index: number) => (
-                              <li key={index}>{strength}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
+                        {/* Scores détaillés */}
+                        {reportData.report.scores && Object.keys(reportData.report.scores).length > 0 && (
+                          <div>
+                            <h3 className="font-semibold mb-3">Scores détaillés</h3>
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {Object.entries(reportData.report.scores).map(([criterion, score]: [string, any]) => (
+                                  <div key={criterion} className="flex justify-between items-center p-2 bg-white rounded border">
+                                    <span className="text-sm font-medium">{criterion}</span>
+                                    <span className="text-sm font-bold text-blue-600">{score}/100</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Points à améliorer */}
-                    {reportData.weaknesses && reportData.weaknesses.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold mb-3 text-orange-700">Points à améliorer</h3>
-                        <div className="bg-orange-50 p-4 rounded-lg">
-                          <ul className="list-disc list-inside space-y-1 text-sm">
-                            {reportData.weaknesses.map((weakness: string, index: number) => (
-                              <li key={index}>{weakness}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
+                        {/* Résumé de l'évaluation */}
+                        {reportData.report.summary && (
+                          <div>
+                            <h3 className="font-semibold mb-3">Résumé de l'évaluation</h3>
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                              <p className="text-sm">{reportData.report.summary}</p>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Recommandations */}
-                    {reportData.recommendations && reportData.recommendations.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold mb-3 text-blue-700">Recommandations</h3>
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <ul className="list-disc list-inside space-y-1 text-sm">
-                            {reportData.recommendations.map((recommendation: string, index: number) => (
-                              <li key={index}>{recommendation}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
+                        {/* Points forts */}
+                        {reportData.report.strengths && reportData.report.strengths.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold mb-3 text-green-700">Points forts</h3>
+                            <div className="bg-green-50 p-4 rounded-lg">
+                              <ul className="list-disc list-inside space-y-2 text-sm">
+                                {reportData.report.strengths.map((strength: string, index: number) => (
+                                  <li key={index} className="leading-relaxed">{strength}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Note finale */}
-                    {reportData.finalScore !== undefined && (
-                      <div className="bg-gray-100 p-4 rounded-lg text-center">
-                        <h3 className="font-semibold mb-2">Note finale</h3>
-                        <div className="text-2xl font-bold text-blue-600">
-                          {reportData.finalScore}/100
-                        </div>
-                      </div>
+                        {/* Points à améliorer */}
+                        {reportData.report.weaknesses && reportData.report.weaknesses.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold mb-3 text-orange-700">Points à améliorer</h3>
+                            <div className="bg-orange-50 p-4 rounded-lg">
+                              <ul className="list-disc list-inside space-y-2 text-sm">
+                                {reportData.report.weaknesses.map((weakness: string, index: number) => (
+                                  <li key={index} className="leading-relaxed">{weakness}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Recommandations */}
+                        {reportData.report.recommendations && reportData.report.recommendations.length > 0 && (
+                          <div>
+                            <h3 className="font-semibold mb-3 text-blue-700">Recommandations</h3>
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                              <ul className="list-disc list-inside space-y-2 text-sm">
+                                {reportData.report.recommendations.map((recommendation: string, index: number) => (
+                                  <li key={index} className="leading-relaxed">{recommendation}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 ) : (
