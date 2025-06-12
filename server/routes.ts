@@ -1383,23 +1383,22 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       console.log('📊 Fetching ECOS sessions...');
       const ecosSessionsData = await db.select().from(ecosSessions);
       console.log('📊 ECOS sessions found:', ecosSessionsData.length);
+      console.log('📊 Sessions details:', ecosSessionsData.map(s => ({ id: s.id, status: s.status, studentEmail: s.studentEmail })));
       
-      // For admin users, count all students who have ECOS sessions
-      console.log('📊 Calculating statistics for admin user...');
+      // Count sessions by status with proper filtering
+      const activeSessions = ecosSessionsData.filter(session => session && session.status === 'in_progress');
+      const completedSessions = ecosSessionsData.filter(session => session && session.status === 'completed');
+      
+      // Count unique students from all sessions
       const allStudentEmails = new Set(
         ecosSessionsData
           .map(session => session.studentEmail)
-          .filter(email => email) // Remove null/undefined emails
+          .filter(email => email && email.trim() !== '') // Remove null/undefined/empty emails
       );
       
+      console.log('📊 Active sessions count:', activeSessions.length);
+      console.log('📊 Completed sessions count:', completedSessions.length);
       console.log('📊 All student emails from sessions:', Array.from(allStudentEmails));
-      
-      // Count sessions by status
-      const activeSessions = ecosSessionsData.filter(session => session.status === 'in_progress');
-      const completedSessions = ecosSessionsData.filter(session => session.status === 'completed');
-      
-      console.log('📊 Active sessions:', activeSessions.length);
-      console.log('📊 Completed sessions:', completedSessions.length);
       console.log('📊 Total unique students:', allStudentEmails.size);
 
       const dashboardData = {
