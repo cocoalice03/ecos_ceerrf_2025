@@ -1684,7 +1684,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
         .where(and(
           eq(trainingSessionStudents.studentEmail, decodedEmail),
-          between(sql`NOW()`, trainingSessions.startDate, trainingSessions.endDate)
+          sql`NOW() BETWEEN ${trainingSessions.startDate} AND ${trainingSessions.endDate}`
         ));
 
       // If no active training sessions, return empty list
@@ -1711,7 +1711,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         .innerJoin(trainingSessionStudents, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
         .where(and(
           eq(trainingSessionStudents.studentEmail, decodedEmail),
-          between(sql`NOW()`, trainingSessions.startDate, trainingSessions.endDate)
+          sql`NOW() BETWEEN ${trainingSessions.startDate} AND ${trainingSessions.endDate}`
         ))
         .orderBy(ecosScenarios.createdAt);
 
