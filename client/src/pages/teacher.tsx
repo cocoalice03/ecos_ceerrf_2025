@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2, Calendar, UserPlus, CheckCircle } from "lucide-react";
 import { useDashboardData, useAvailableIndexes } from '@/lib/api';
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
 import EcosDebugger from "@/components/debug/EcosDebugger";
 import { AdminButton } from "@/components/layout/AdminButton";
