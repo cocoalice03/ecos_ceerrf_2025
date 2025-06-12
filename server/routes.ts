@@ -1300,6 +1300,54 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
     }
   });
 
+  // Get all students assigned to training sessions (for teacher view)
+  app.get("/api/teacher/students", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ message: "Email requis" });
+      }
+
+      const decodedEmail = decodeURIComponent(email);
+
+      if (!isAdminAuthorized(decodedEmail)) {
+        return res.status(403).json({ message: "Accès non autorisé" });
+      }
+
+      // Get all students assigned to training sessions with their current ECOS sessions
+      const studentsWithSessions = await db
+        .select({
+          studentEmail: trainingSessionStudents.studentEmail,
+          trainingSessionId: trainingSessionStudents.trainingSessionId,
+          trainingSessionTitle: trainingSessions.title,
+          ecosSessionId: ecosSessions.id,
+          ecosSessionStatus: ecosSessions.status,
+          ecosScenarioTitle: ecosScenarios.title,
+          ecosSessionStartTime: ecosSessions.startTime,
+        })
+        .from(trainingSessionStudents)
+        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
+        .leftJoin(ecosSessions, and(
+          eq(ecosSessions.studentEmail, trainingSessionStudents.studentEmail),
+          eq(ecosSessions.trainingSessionId, trainingSessions.id)
+        ))
+        .leftJoin(ecosScenarios, eq(ecosSessions.scenarioId, ecosScenarios.id))
+        .where(
+          and(
+            lte(trainingSessions.startDate, new Date()),
+            gte(trainingSessions.endDate, new Date())
+          )
+        )
+        .orderBy(trainingSessionStudents.studentEmail, ecosSessions.startTime);
+
+      return res.status(200).json({ students: studentsWithSessions });
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des étudiants" });
+    }
+  });
+
   // Get dashboard data for teacher
   app.get("/api/teacher/dashboard", async (req: Request, res: Response) => {
     try {
