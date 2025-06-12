@@ -59,6 +59,117 @@ app.use((req, res, next) => {
   // Setup routes
   const server = await registerRoutes(app);
 
+  // Security middleware - Block access to sensitive files and directories
+  app.use((req, res, next) => {
+    // Skip security restrictions in development for Vite resources
+    if (app.get("env") === "development") {
+      // Allow Vite development resources
+      const viteResources = [
+        '/src/',
+        '/@vite/',
+        '/@fs/',
+        '/node_modules/.vite/',
+        '/__vite_ping',
+        '/@react-refresh'
+      ];
+
+      if (viteResources.some(resource => req.path.startsWith(resource))) {
+        return next();
+      }
+    }
+
+    // Allow legitimate application routes
+    const legitimateRoutes = [
+      '/api/',
+      '/chat/',
+      '/teacher/',
+      '/student/',
+      '/admin',
+      '/diagnostic',
+      '/favicon.ico'
+    ];
+
+    // Check if it's a legitimate route first
+    const isLegitimateRoute = legitimateRoutes.some(route => req.path.startsWith(route));
+
+    if (isLegitimateRoute) {
+      return next();
+    }
+
+    const sensitivePaths = [
+      // Environment and config files
+      '/.env',
+      '/.env.local',
+      '/.env.development',
+      '/.env.production',
+      '/config.json',
+      '/package.json',
+      '/package-lock.json',
+      '/yarn.lock',
+      '/pnpm-lock.yaml',
+      '/.replit',
+      '/replit.nix',
+      '/tsconfig.json',
+      '/vite.config.ts',
+      '/tailwind.config.ts',
+      '/postcss.config.js',
+      '/components.json',
+      '/drizzle.config.ts',
+
+      // Git and version control
+      '/.git',
+      '/.gitignore',
+      '/.github',
+
+      // Node modules and build artifacts
+      '/node_modules',
+      '/dist',
+      '/build',
+
+      // Server files (block direct access to server directory)
+      '/server',
+
+      // Shared schema (block direct access)
+      '/shared',
+
+      // Scripts and documentation
+      '/scripts',
+      '/docs',
+      '/documentation',
+
+      // Test files
+      '/test',
+
+      // Any dotfiles (except Vite development resources)
+      '/.*'
+    ];
+
+    // Check if the path matches any sensitive pattern
+    const isSensitive = sensitivePaths.some(pattern => {
+      if (pattern.includes('*')) {
+        // Handle wildcard patterns
+        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+        return regex.test(req.path);
+      }
+      return req.path.startsWith(pattern) || req.path === pattern;
+    });
+
+    if (isSensitive) {
+      console.log(`🚫 SECURITY: Blocked access to sensitive path: ${req.path} from IP: ${req.ip}`);
+
+      // Log security incident
+      console.warn(`⚠️ SECURITY ALERT: Attempt to access sensitive file ${req.path} from ${req.ip} at ${new Date().toISOString()}`);
+
+      // Return 404 instead of 403 to not reveal file existence
+      return res.status(404).json({ 
+        error: "Not Found", 
+        message: "The requested resource was not found on this server" 
+      });
+    }
+
+    next();
+  });
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
