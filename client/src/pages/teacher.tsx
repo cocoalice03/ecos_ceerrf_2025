@@ -310,6 +310,9 @@ function TeacherPage({ email }: TeacherPageProps) {
   const [deletingScenario, setDeletingScenario] = useState<any>(null);
   const [viewingSessionDetails, setViewingSessionDetails] = useState<any>(null);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState<boolean>(false);
 
   // Add debugging for authentication issues - MUST be before any conditional returns
   React.useEffect(() => {
@@ -320,7 +323,6 @@ function TeacherPage({ email }: TeacherPageProps) {
 
   console.log('TeacherPage rendering with email:', email);
 
-  const { data: dashboardData, error: dashboardError, isLoading: isDashboardLoading } = useDashboardData(email || '');
   const { data: assignedStudents, isLoading: isStudentsLoading } = useTeacherStudents(email || '');
 
   // Fallback: try to get scenarios from student endpoint if dashboard fails
@@ -348,11 +350,45 @@ function TeacherPage({ email }: TeacherPageProps) {
     enabled: !!viewingReport && !!email,
   });
 
+  // Load dashboard data
+  useEffect(() => {
+    if (email) {
+      console.log('🔄 Loading dashboard data for email:', email);
+      setDashboardLoading(true);
+      setDashboardError(null);
+
+      apiRequest('GET', `/api/teacher/dashboard?email=${encodeURIComponent(email)}`)
+        .then(response => {
+          console.log('📊 Dashboard API response:', response);
+          console.log('📊 Dashboard data:', response);
+          if (response === null || response === undefined) {
+            console.warn('⚠️ Dashboard returned null/undefined data');
+            setDashboardError('Données du dashboard non disponibles');
+          } else {
+            setDashboardData(response);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Dashboard data error:', error);
+          console.error('❌ Error details:', {
+            status: error?.response?.status,
+            statusText: error?.response?.statusText,
+            data: error?.response,
+            message: error?.message
+          });
+          setDashboardError(error?.response?.message || error?.message || 'Erreur inconnue');
+        })
+        .finally(() => {
+          setDashboardLoading(false);
+        });
+    }
+  }, [email]);
+
   // Check if we have actual errors vs just partial data
-  const hasRealError = dashboardError || (dashboardData?.partial && dashboardData?.scenarios?.length === 0);
+  const hasRealError = dashboardError || (dashboardData?.scenarios?.length === 0);
 
   console.log('Dashboard data:', dashboardData);
-  console.log('Dashboard loading:', isDashboardLoading);
+  console.log('Dashboard loading:', dashboardLoading);
   console.log('Dashboard error:', dashboardError);
 
   // Provide fallback data structure
@@ -410,7 +446,7 @@ function TeacherPage({ email }: TeacherPageProps) {
     setViewingSessionDetails(session);
   };
 
-  if (isDashboardLoading) {
+  if (dashboardLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -711,7 +747,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                             Assigné
                           </Badge>
                         </div>
-                        
+
                         {/* Show ECOS sessions for this student */}
                         <div className="space-y-2">
                           {studentSessions.filter((s: any) => s.ecosSessionId).length > 0 ? (
@@ -819,7 +855,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                   Fermer
                 </Button>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -830,17 +866,17 @@ function TeacherPage({ email }: TeacherPageProps) {
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium text-gray-600">Scénario</label>
                     <p className="mt-1 text-sm">{viewingSessionDetails.scenarioTitle || `Scénario #${viewingSessionDetails.scenarioId}`}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium text-gray-600">Étudiant</label>
                     <p className="mt-1 text-sm">{viewingSessionDetails.student_id}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium text-gray-600">Durée</label>
                     <p className="mt-1 text-sm">
@@ -851,19 +887,19 @@ function TeacherPage({ email }: TeacherPageProps) {
                     </p>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-gray-600">Heure de début</label>
                   <p className="mt-1 text-sm">{new Date(viewingSessionDetails.startTime).toLocaleString('fr-FR')}</p>
                 </div>
-                
+
                 {viewingSessionDetails.endTime && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Heure de fin</label>
                     <p className="mt-1 text-sm">{new Date(viewingSessionDetails.endTime).toLocaleString('fr-FR')}</p>
                   </div>
                 )}
-                
+
                 {viewingSessionDetails.status === 'completed' && (
                   <div className="pt-4 border-t">
                     <Button
@@ -898,7 +934,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="p-6">
                 {isReportLoading ? (
                   <div className="text-center py-8">
