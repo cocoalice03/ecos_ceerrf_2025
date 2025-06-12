@@ -266,7 +266,16 @@ app.use((req, res, next) => {
   server.on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`❌ Port ${port} is already in use. Trying to kill existing processes...`);
-      process.exit(1);
+      // Try to kill existing processes and retry
+      require('child_process').exec(`pkill -f "tsx server/index.ts"`, (error) => {
+        if (error) {
+          console.error('Failed to kill existing processes:', error.message);
+        }
+        setTimeout(() => {
+          console.log('Retrying to start server...');
+          process.exit(1);
+        }, 2000);
+      });
     } else {
       console.error('❌ Server error:', err);
       throw err;
