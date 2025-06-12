@@ -744,10 +744,13 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         query: z.string().min(1).max(500),
       });
 
-      // Set CORS headers for LearnWorlds
+      // Set specific CORS headers for LearnWorlds (override global security policy for this endpoint)
       res.header("Access-Control-Allow-Origin", "*");
       res.header("Access-Control-Allow-Methods", "POST, OPTIONS");
       res.header("Access-Control-Allow-Headers", "Content-Type");
+      
+      // Temporarily relax Cross-Origin policies for this API endpoint
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
 
       // Handle preflight requests
       if (req.method === "OPTIONS") {

@@ -100,11 +100,56 @@ app.use((req, res, next) => {
   // Remove server signature
   res.removeHeader('X-Powered-By');
   
-  // Security headers
+  // Content Security Policy - Strict policy with necessary allowances for the app
+  const cspPolicy = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://replit.com https://fonts.googleapis.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https: wss: ws:",
+    "media-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests"
+  ].join('; ');
+  
+  res.setHeader('Content-Security-Policy', cspPolicy);
+  
+  // Existing security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Additional security headers
+  res.setHeader('Permissions-Policy', [
+    'camera=()',
+    'microphone=()',
+    'geolocation=()',
+    'payment=()',
+    'usb=()',
+    'magnetometer=()',
+    'gyroscope=()',
+    'accelerometer=()',
+    'ambient-light-sensor=()',
+    'autoplay=(self)',
+    'encrypted-media=(self)',
+    'fullscreen=(self)',
+    'picture-in-picture=(self)'
+  ].join(', '));
+  
+  // Strict Transport Security (HTTPS only)
+  if (req.secure || req.get('x-forwarded-proto') === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+  
+  // Cross-Origin policies
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   
   // Prevent directory traversal
   if (req.path.includes('..')) {
