@@ -1385,20 +1385,45 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       console.log('📊 ECOS sessions found:', ecosSessionsData.length);
       console.log('📊 Sessions details:', ecosSessionsData.map(s => ({ id: s.id, status: s.status, studentEmail: s.studentEmail })));
       
-      // Count sessions by status with proper filtering
-      const activeSessions = ecosSessionsData.filter(session => session && session.status === 'in_progress');
-      const completedSessions = ecosSessionsData.filter(session => session && session.status === 'completed');
+      // Count sessions by status with detailed logging
+      console.log('📊 Processing sessions for statistics...');
+      ecosSessionsData.forEach((session, index) => {
+        console.log(`📊 Session ${index + 1}:`, {
+          id: session.id,
+          status: session.status,
+          studentEmail: session.studentEmail,
+          statusType: typeof session.status
+        });
+      });
+
+      const activeSessions = ecosSessionsData.filter(session => {
+        const isActive = session && session.status === 'in_progress';
+        console.log(`📊 Session ${session?.id} active check:`, isActive, 'status:', session?.status);
+        return isActive;
+      });
+      
+      const completedSessions = ecosSessionsData.filter(session => {
+        const isCompleted = session && session.status === 'completed';
+        console.log(`📊 Session ${session?.id} completed check:`, isCompleted, 'status:', session?.status);
+        return isCompleted;
+      });
       
       // Count unique students from all sessions
-      const allStudentEmails = new Set(
-        ecosSessionsData
-          .map(session => session.studentEmail)
-          .filter(email => email && email.trim() !== '') // Remove null/undefined/empty emails
-      );
+      const validEmails = ecosSessionsData
+        .map(session => session.studentEmail)
+        .filter(email => {
+          const isValid = email && email.trim() !== '';
+          console.log('📊 Email validation:', email, 'valid:', isValid);
+          return isValid;
+        });
       
+      const allStudentEmails = new Set(validEmails);
+      
+      console.log('📊 Final counts:');
       console.log('📊 Active sessions count:', activeSessions.length);
       console.log('📊 Completed sessions count:', completedSessions.length);
-      console.log('📊 All student emails from sessions:', Array.from(allStudentEmails));
+      console.log('📊 Valid emails:', validEmails);
+      console.log('📊 Unique student emails:', Array.from(allStudentEmails));
       console.log('📊 Total unique students:', allStudentEmails.size);
 
       const dashboardData = {
