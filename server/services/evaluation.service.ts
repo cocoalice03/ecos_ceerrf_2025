@@ -132,12 +132,14 @@ Retourne seulement un JSON avec:
 
       // Get scenario and messages in parallel for better performance
       const [scenario, messages] = await Promise.all([
-        // Fixed: Use proper type casting for scenario ID comparison
-        db
-          .select()
-          .from(ecosScenarios)
-          .where(eq(ecosScenarios.id, session[0].scenarioId as number))
-          .limit(1),
+        // Get scenario data using the session's scenarioId
+        session[0].scenarioId ? 
+          db
+            .select()
+            .from(ecosScenarios)
+            .where(eq(ecosScenarios.id, session[0].scenarioId))
+            .limit(1)
+          : Promise.resolve([]),
         
         db
           .select({
