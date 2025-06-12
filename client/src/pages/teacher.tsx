@@ -350,15 +350,17 @@ function TeacherPage({ email }: TeacherPageProps) {
 
   console.log('Scenarios:', scenarios);
   console.log('Sessions:', sessions);
+  console.log('Dashboard stats from API:', dashboardData?.stats);
 
-  const stats = {
+  // Use stats from API if available, otherwise calculate fallback
+  const stats = dashboardData?.stats || {
     totalScenarios: scenarios.length,
     activeSessions: sessions.filter((s: any) => s.status === 'in_progress').length,
     completedSessions: sessions.filter((s: any) => s.status === 'completed').length,
-    totalStudents: new Set(sessions.map((s: any) => s.student_id)).size
+    totalStudents: new Set(sessions.map((s: any) => s.student_id || s.studentEmail)).size
   };
 
-  console.log('Calculated stats:', stats);
+  console.log('Final stats for display:', stats);
 
   const queryClient = useQueryClient();
 

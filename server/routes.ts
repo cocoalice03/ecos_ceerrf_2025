@@ -1364,19 +1364,39 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
-      // Get dashboard statistics using simple queries
+      // Get dashboard statistics using proper queries
       const scenarios = await db.select().from(ecosScenarios);
-      const sessions = await db.select().from(ecosSessions);
-      const trainingSessionsData = await db.select().from(trainingSessions);
-      const students = await db.select().from(trainingSessionStudents);
+      const ecosSessionsData = await db.select().from(ecosSessions);
       
-      const uniqueStudents = new Set(students.map(s => s.studentEmail));
+      // Get all unique students assigned to training sessions created by this teacher
+      const studentsInTrainingSessions = await db
+        .select({ studentEmail: trainingSessionStudents.studentEmail })
+        .from(trainingSessionStudents)
+        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
+        .where(eq(trainingSessions.createdBy, decodedEmail));
+      
+      const uniqueStudents = new Set(studentsInTrainingSessions.map(s => s.studentEmail));
+      
+      // Filter ECOS sessions to only include those from students in training sessions
+      const activeSessions = ecosSessionsData.filter(session => 
+        session.status === 'in_progress' && 
+        uniqueStudents.has(session.studentEmail || '')
+      );
+      
+      const completedSessions = ecosSessionsData.filter(session => 
+        session.status === 'completed' && 
+        uniqueStudents.has(session.studentEmail || '')
+      );
 
       return res.status(200).json({
-        totalScenarios: scenarios.length,
-        totalSessions: sessions.length,
-        totalTrainingSessions: trainingSessionsData.length,
-        totalStudents: uniqueStudents.size
+        scenarios,
+        sessions: ecosSessionsData,
+        stats: {
+          totalScenarios: scenarios.length,
+          activeSessions: activeSessions.length,
+          completedSessions: completedSessions.length,
+          totalStudents: uniqueStudents.size
+        }
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
