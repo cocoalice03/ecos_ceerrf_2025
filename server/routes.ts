@@ -19,7 +19,7 @@ import { eq, and, between, inArray, sql } from 'drizzle-orm';
 const MAX_DAILY_QUESTIONS = 20;
 
 // Admin emails authorized to access admin features
-const ADMIN_EMAILS = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com'];
+const ADMIN_EMAILS = ['cherubindavid@gmail.com'];
 
 // Configure multer for file uploads
 const upload = multer({
@@ -1687,21 +1687,12 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
           between(sql`NOW()`, trainingSessions.startDate, trainingSessions.endDate)
         ));
 
-      // If no active training sessions, return all scenarios as fallback for compatibility
+      // If no active training sessions, return empty list
       if (activeTrainingSessions.length === 0) {
-        const allScenarios = await db
-          .select({
-            id: ecosScenarios.id,
-            title: ecosScenarios.title,
-            description: ecosScenarios.description,
-            createdAt: ecosScenarios.createdAt,
-          })
-          .from(ecosScenarios)
-          .orderBy(ecosScenarios.createdAt);
-
         return res.status(200).json({ 
-          scenarios: allScenarios, 
-          message: "Aucune session de formation active - tous les scénarios disponibles" 
+          scenarios: [], 
+          trainingSessions: [],
+          message: "Aucune session de formation active" 
         });
       }
 
