@@ -744,13 +744,10 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         query: z.string().min(1).max(500),
       });
 
-      // Set specific CORS headers for LearnWorlds (override global security policy for this endpoint)
+      // Set CORS headers for LearnWorlds
       res.header("Access-Control-Allow-Origin", "*");
       res.header("Access-Control-Allow-Methods", "POST, OPTIONS");
       res.header("Access-Control-Allow-Headers", "Content-Type");
-      
-      // Temporarily relax Cross-Origin policies for this API endpoint
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
 
       // Handle preflight requests
       if (req.method === "OPTIONS") {
@@ -1354,100 +1351,57 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
   // Get dashboard data for teacher
   app.get("/api/teacher/dashboard", async (req: Request, res: Response) => {
     try {
-      console.log('🚀 Dashboard endpoint hit');
-      console.log('📧 Request query:', req.query);
-      
       const { email } = req.query;
 
       if (!email || typeof email !== "string") {
-        console.log('❌ Email validation failed:', { email, type: typeof email });
         return res.status(400).json({ message: "Email requis" });
       }
 
       // Decode the email if it's URL encoded
       const decodedEmail = decodeURIComponent(email);
-      console.log('🔓 Email decoded:', { original: email, decoded: decodedEmail });
 
       if (!isAdminAuthorized(decodedEmail)) {
-        console.log('❌ Authorization failed for:', decodedEmail);
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
-      console.log('✅ Authorization passed for:', decodedEmail);
-
       // Get dashboard statistics using proper queries
-      console.log('📊 Fetching scenarios...');
       const scenarios = await db.select().from(ecosScenarios);
-      console.log('📊 Scenarios found:', scenarios.length);
-      
-      console.log('📊 Fetching ECOS sessions...');
       const ecosSessionsData = await db.select().from(ecosSessions);
-      console.log('📊 ECOS sessions found:', ecosSessionsData.length);
-      console.log('📊 Sessions details:', ecosSessionsData.map(s => ({ id: s.id, status: s.status, studentEmail: s.studentEmail })));
       
-      // Count sessions by status with detailed logging
-      console.log('📊 Processing sessions for statistics...');
-      ecosSessionsData.forEach((session, index) => {
-        console.log(`📊 Session ${index + 1}:`, {
-          id: session.id,
-          status: session.status,
-          studentEmail: session.studentEmail,
-          statusType: typeof session.status
-        });
-      });
+      // Get all unique students assigned to training sessions created by this teacher
+      const studentsInTrainingSessions = await db
+        .select({ studentEmail: trainingSessionStudents.studentEmail })
+        .from(trainingSessionStudents)
+        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
+        .where(eq(trainingSessions.createdBy, decodedEmail));
+      
+      const uniqueStudents = new Set(studentsInTrainingSessions.map(s => s.studentEmail));
+      
+      // Filter ECOS sessions to only include those from students in training sessions
+      const activeSessions = ecosSessionsData.filter(session => 
+        session.status === 'in_progress' && 
+        uniqueStudents.has(session.studentEmail || '')
+      );
+      
+      const completedSessions = ecosSessionsData.filter(session => 
+        session.status === 'completed' && 
+        uniqueStudents.has(session.studentEmail || '')
+      );
 
-      const activeSessions = ecosSessionsData.filter(session => {
-        const isActive = session && session.status === 'in_progress';
-        console.log(`📊 Session ${session?.id} active check:`, isActive, 'status:', session?.status);
-        return isActive;
-      });
-      
-      const completedSessions = ecosSessionsData.filter(session => {
-        const isCompleted = session && session.status === 'completed';
-        console.log(`📊 Session ${session?.id} completed check:`, isCompleted, 'status:', session?.status);
-        return isCompleted;
-      });
-      
-      // Count unique students from all sessions
-      const validEmails = ecosSessionsData
-        .map(session => session.studentEmail)
-        .filter(email => {
-          const isValid = email && email.trim() !== '';
-          console.log('📊 Email validation:', email, 'valid:', isValid);
-          return isValid;
-        });
-      
-      const allStudentEmails = new Set(validEmails);
-      
-      console.log('📊 Final counts:');
-      console.log('📊 Active sessions count:', activeSessions.length);
-      console.log('📊 Completed sessions count:', completedSessions.length);
-      console.log('📊 Valid emails:', validEmails);
-      console.log('📊 Unique student emails:', Array.from(allStudentEmails));
-      console.log('📊 Total unique students:', allStudentEmails.size);
-
-      const dashboardData = {
+      return res.status(200).json({
         scenarios,
         sessions: ecosSessionsData,
         stats: {
           totalScenarios: scenarios.length,
           activeSessions: activeSessions.length,
           completedSessions: completedSessions.length,
-          totalStudents: allStudentEmails.size
+          totalStudents: uniqueStudents.size
         }
-      };
-
-      console.log('✅ Dashboard data prepared:', {
-        scenariosCount: dashboardData.scenarios.length,
-        sessionsCount: dashboardData.sessions.length,
-        stats: dashboardData.stats
       });
-
-      return res.status(200).json(dashboardData);
     } catch (error) {
-      console.error("❌ Error fetching dashboard data:", error);
-      console.error("❌ Error details:", error instanceof Error ? error.message : String(error));
-      console.error("❌ Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
+      console.error("Error fetching dashboard data:", error);
+      console.error("Error details:", error instanceof Error ? error.message : String(error));
+      console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
       return res.status(500).json({ message: "Erreur lors de la récupération des données du tableau de bord" });
     }
   });

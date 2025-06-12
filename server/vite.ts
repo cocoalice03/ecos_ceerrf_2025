@@ -76,37 +76,10 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Secure static file serving with restrictions
-  app.use(express.static(distPath, {
-    dotfiles: 'deny', // Block access to dotfiles
-    index: ['index.html'],
-    setHeaders: (res, filePath) => {
-      // Additional security headers for static files
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      
-      // Block direct access to sensitive file types in static directory
-      const ext = path.extname(filePath).toLowerCase();
-      const sensitiveExtensions = ['.env', '.config', '.json', '.ts', '.js.map'];
-      
-      if (sensitiveExtensions.includes(ext) && !filePath.endsWith('index.html')) {
-        res.status(403);
-        return false;
-      }
-    }
-  }));
+  app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (req, res) => {
-    // Additional check for sensitive paths in catch-all
-    const sensitivePaths = ['/.env', '/config.json', '/.git', '/server', '/node_modules'];
-    
-    if (sensitivePaths.some(pattern => req.path.startsWith(pattern))) {
-      return res.status(403).json({ 
-        error: 'Forbidden',
-        message: 'Access to this resource is not allowed'
-      });
-    }
-    
+  app.use("*", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
