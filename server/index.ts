@@ -13,6 +13,22 @@ app.use(express.urlencoded({ extended: false }));
 
 // Security middleware - Block access to sensitive files and directories
 app.use((req, res, next) => {
+  // Skip security restrictions in development for Vite resources
+  if (app.get("env") === "development") {
+    // Allow Vite development resources
+    const viteResources = [
+      '/src/',
+      '/@vite/',
+      '/@fs/',
+      '/node_modules/.vite/',
+      '/__vite_ping'
+    ];
+    
+    if (viteResources.some(resource => req.path.startsWith(resource))) {
+      return next();
+    }
+  }
+  
   const sensitivePaths = [
     // Environment and config files
     '/.env',
@@ -34,7 +50,7 @@ app.use((req, res, next) => {
     '/.replit',
     '/replit.nix',
     
-    // Node modules and build artifacts
+    // Node modules and build artifacts (except in development for Vite)
     '/node_modules',
     '/dist',
     '/build',
@@ -56,7 +72,7 @@ app.use((req, res, next) => {
     // Shared schema
     '/shared',
     
-    // Any dotfiles
+    // Any dotfiles (except Vite development resources)
     '/.*',
     
     // Backup and temp files
