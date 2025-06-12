@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar, UserPlus, CheckCircle, Edit, Trash2, Plus, BookOpen, Users } from "lucide-react";
+import { Calendar, UserPlus, CheckCircle, Edit, Trash2, Plus, BookOpen, Users, UserMinus, X } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -27,6 +27,10 @@ interface TrainingSession {
     description: string;
   }>;
   studentCount: number;
+  students?: Array<{
+    studentEmail: string;
+    assignedAt: string;
+  }>;
 }
 
 interface CreateTrainingSessionFormProps {
@@ -35,6 +39,139 @@ interface CreateTrainingSessionFormProps {
   onSuccess: () => void;
   editingSession?: TrainingSession | null;
   onCancelEdit?: () => void;
+}
+
+interface RemoveStudentsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  trainingSession: TrainingSession;
+  email: string;
+  onSuccess: () => void;
+}
+
+function RemoveStudentsModal({ isOpen, onClose, trainingSession, email, onSuccess }: RemoveStudentsModalProps) {
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Fetch detailed training session to get students list
+  const { data: sessionDetails } = useQuery({
+    queryKey: ['training-session-details', trainingSession.id],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/training-sessions/${trainingSession.id}?email=${encodeURIComponent(email)}`);
+      return response.trainingSession;
+    },
+    enabled: isOpen && !!trainingSession.id,
+  });
+
+  const handleRemoveStudents = async () => {
+    if (selectedStudents.length === 0) {
+      alert("Veuillez sélectionner au moins un étudiant à supprimer");
+      return;
+    }
+
+    const confirmMessage = `Êtes-vous sûr de vouloir désinscrire ${selectedStudents.length} étudiant(s) de cette session de formation ?`;
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setIsRemoving(true);
+    try {
+      // Get current students and remove selected ones
+      const currentStudents = sessionDetails?.students || [];
+      const remainingStudents = currentStudents
+        .filter((student: any) => !selectedStudents.includes(student.studentEmail))
+        .map((student: any) => student.studentEmail);
+
+      await apiRequest('PUT', `/api/training-sessions/${trainingSession.id}`, {
+        email,
+        studentEmails: remainingStudents
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['training-session-details'] });
+      
+      alert(`${selectedStudents.length} étudiant(s) désincrit(s) avec succès !`);
+      setSelectedStudents([]);
+      onSuccess();
+      onClose();
+    } catch (error: any) {
+      alert("Erreur lors de la suppression : " + error.message);
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
+  const toggleStudent = (studentEmail: string) => {
+    setSelectedStudents(prev => 
+      prev.includes(studentEmail)
+        ? prev.filter(email => email !== studentEmail)
+        : [...prev, studentEmail]
+    );
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Supprimer des Utilisateurs</h3>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        <p className="text-gray-600 mb-4">
+          Sélectionnez les étudiants à désinscrire de la session "{trainingSession.title}"
+        </p>
+
+        {sessionDetails?.students && sessionDetails.students.length > 0 ? (
+          <div className="space-y-3 mb-6">
+            {sessionDetails.students.map((student: any) => (
+              <div key={student.studentEmail} className="flex items-center space-x-2 p-3 border rounded">
+                <Checkbox
+                  id={`student-${student.studentEmail}`}
+                  checked={selectedStudents.includes(student.studentEmail)}
+                  onCheckedChange={() => toggleStudent(student.studentEmail)}
+                />
+                <div className="flex-1">
+                  <label htmlFor={`student-${student.studentEmail}`} className="text-sm font-medium cursor-pointer">
+                    {student.studentEmail}
+                  </label>
+                  <p className="text-xs text-gray-500">
+                    Inscrit le {new Date(student.assignedAt).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-8">
+            Aucun étudiant inscrit à cette session
+          </p>
+        )}
+
+        <div className="flex gap-3 justify-end">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isRemoving}
+          >
+            Annuler
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleRemoveStudents}
+            disabled={isRemoving || selectedStudents.length === 0}
+          >
+            <UserMinus className="w-4 h-4 mr-2" />
+            {isRemoving ? "Suppression..." : `Supprimer (${selectedStudents.length})`}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function CreateTrainingSessionForm({ email, scenarios, onSuccess, editingSession, onCancelEdit }: CreateTrainingSessionFormProps) {
@@ -97,16 +234,29 @@ function CreateTrainingSessionForm({ email, scenarios, onSuccess, editingSession
     }
 
     // Parse student emails
-    const emails = studentEmailsText
+    const newEmails = studentEmailsText
       .split(/[,\n]/)
       .map(email => email.trim())
       .filter(email => email.length > 0);
 
-    createMutation.mutate({
+    // Si on modifie une session existante, on ne met à jour que les nouveaux emails
+    // Les utilisateurs existants sont préservés
+    let submitData = {
       ...formData,
       scenarioIds: formData.selectedScenarios,
-      studentEmails: emails,
-    });
+    };
+
+    if (editingSession) {
+      // En mode modification, on n'envoie les emails que s'il y en a de nouveaux à ajouter
+      if (newEmails.length > 0) {
+        submitData.studentEmails = newEmails;
+      }
+    } else {
+      // En mode création, on envoie tous les emails
+      submitData.studentEmails = newEmails;
+    }
+
+    createMutation.mutate(submitData);
   };
 
   const toggleScenario = (scenarioId: number) => {
@@ -217,6 +367,19 @@ function CreateTrainingSessionForm({ email, scenarios, onSuccess, editingSession
           </p>
         </div>
 
+        {editingSession && (
+          <div className="mb-4">
+            <Button
+              variant="outline"
+              onClick={() => setRemovingStudentsSession(editingSession)}
+              className="w-full"
+            >
+              <UserMinus className="w-4 h-4 mr-2" />
+              Supprimer des Utilisateurs
+            </Button>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <Button
             onClick={handleSubmit}
@@ -248,6 +411,7 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingSession, setEditingSession] = useState<TrainingSession | null>(null);
   const [deletingSession, setDeletingSession] = useState<TrainingSession | null>(null);
+  const [removingStudentsSession, setRemovingStudentsSession] = useState<TrainingSession | null>(null);
 
   // Fetch training sessions
   const { data: trainingSessions, isLoading: sessionsLoading } = useQuery({
@@ -456,6 +620,19 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
           )}
         </CardContent>
       </Card>
+
+      {/* Remove Students Modal */}
+      {removingStudentsSession && (
+        <RemoveStudentsModal
+          isOpen={!!removingStudentsSession}
+          onClose={() => setRemovingStudentsSession(null)}
+          trainingSession={removingStudentsSession}
+          email={email}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {deletingSession && (

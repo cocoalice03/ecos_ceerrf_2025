@@ -1673,15 +1673,23 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         }
 
         // Update students if provided
-        if (updateData.studentEmails) {
-          // Delete existing students
-          await tx.delete(trainingSessionStudents)
+        if (updateData.studentEmails && updateData.studentEmails.length > 0) {
+          // Get existing students
+          const existingStudents = await tx
+            .select({ studentEmail: trainingSessionStudents.studentEmail })
+            .from(trainingSessionStudents)
             .where(eq(trainingSessionStudents.trainingSessionId, parseInt(id)));
 
-          // Insert new students
-          if (updateData.studentEmails.length > 0) {
+          const existingEmails = existingStudents.map(s => s.studentEmail);
+          
+          // Only add new students (avoid duplicates)
+          const newStudents = updateData.studentEmails.filter(
+            email => !existingEmails.includes(email)
+          );
+
+          if (newStudents.length > 0) {
             await tx.insert(trainingSessionStudents).values(
-              updateData.studentEmails.map(studentEmail => ({
+              newStudents.map(studentEmail => ({
                 trainingSessionId: parseInt(id),
                 studentEmail,
               }))
