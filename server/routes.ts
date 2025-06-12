@@ -19,7 +19,7 @@ import { eq, and, between, inArray, sql, lte, gte } from 'drizzle-orm';
 const MAX_DAILY_QUESTIONS = 20;
 
 // Admin emails authorized to access admin features
-const ADMIN_EMAILS: string[] = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com', 'romain.guillevic@gmail.com'];
+const ADMIN_EMAILS: string[] = ['cherubindavid@gmail.com', 'colombemadoungou@gmail.com', 'romain.guillevic@gmail.com', 'romainguillevic@gmail.com'];
 
 // Configure multer for file uploads
 const upload = multer({
@@ -1491,7 +1491,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         return res.status(403).json({ message: "Accès non autorisé" });
       }
 
-      // Get training sessions with scenarios and student count
+      // Get all training sessions (system-wide for administrators)
       const sessions = await db
         .select({
           id: trainingSessions.id,
@@ -1503,7 +1503,6 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
           createdAt: trainingSessions.createdAt,
         })
         .from(trainingSessions)
-        .where(eq(trainingSessions.createdBy, decodedEmail))
         .orderBy(trainingSessions.createdAt);
 
       // Get scenarios and students for each session
