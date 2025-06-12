@@ -1,11 +1,11 @@
 import { useState } from "react";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Clock, CheckCircle2, AlertCircle, BarChart3, FileText, Calendar, CheckCircle, BookOpen } from "lucide-react";
+import { Play, Clock, CheckCircle2, AlertCircle, BarChart3, FileText, Calendar, CheckCircle, BookOpen, TrendingUp } from "lucide-react";
 import PatientSimulator from "@/components/ecos/PatientSimulator";
 import EvaluationReport from "@/components/ecos/EvaluationReport";
 import StudentDiagnostic from "@/components/debug/StudentDiagnostic";
@@ -28,18 +28,21 @@ export default function StudentPage({ email }: StudentPageProps) {
   // Decode email if it comes from URL (in case it's URL encoded)
   const decodedEmail = email ? decodeURIComponent(email) : email;
 
-  // Fetch available scenarios
-  const { data: scenarios, isLoading: scenariosLoading } = useQuery({
-    queryKey: ['available-scenarios', decodedEmail],
+  // Fetch available scenarios from student endpoint (filtered by training sessions)
+  const { data: studentData, isLoading: scenariosLoading } = useQuery({
+    queryKey: ['student-scenarios', decodedEmail],
     queryFn: async () => {
       console.log('Fetching available scenarios for email:', decodedEmail);
-      const response = await apiRequest('GET', `/api/ecos/available-scenarios?email=${encodeURIComponent(decodedEmail)}`);
+      const response = await apiRequest('GET', `/api/student/available-scenarios?email=${encodeURIComponent(decodedEmail)}`);
       console.log('Available scenarios response:', response);
       console.log('Number of scenarios received:', response.scenarios?.length || 0);
-      return response.scenarios || [];
+      return response;
     },
     enabled: !!decodedEmail,
   });
+
+  const scenarios = studentData?.scenarios || [];
+  const activeTrainingSessions = studentData?.trainingSessions || [];
 
   // Fetch student sessions
   const { data: sessions, isLoading: sessionsLoading, refetch: refetchSessions } = useQuery({
@@ -48,35 +51,6 @@ export default function StudentPage({ email }: StudentPageProps) {
       const response = await apiRequest('GET', `/api/ecos/sessions?email=${decodedEmail}`);
       return response.sessions || [];
     }
-  });
-
-    // Fetch training sessions
-    const { data: trainingSessions, isLoading: trainingSessionsLoading } = useQuery({
-      queryKey: ['training-sessions', decodedEmail],
-      queryFn: async () => {
-        const response = await apiRequest('GET', `/api/ecos/training-sessions?email=${decodedEmail}`);
-        return response.sessions || [];
-      },
-    });
-
-    const { data: scenariosData, isLoading: scenariosDataLoading } = useQuery({
-      queryKey: ['scenarios-data', decodedEmail],
-      queryFn: async () => {
-          try {
-              const response = await apiRequest('GET', `/api/ecos/available-scenarios?email=${encodeURIComponent(decodedEmail)}`);
-              return {
-                  scenarios: response.scenarios || [],
-                  message: response.message || null,
-              };
-          } catch (error) {
-              console.error("Failed to fetch scenarios data:", error);
-              return {
-                  scenarios: [],
-                  message: "Failed to load scenarios.",
-              };
-          }
-      },
-      enabled: !!decodedEmail,
   });
   
 
