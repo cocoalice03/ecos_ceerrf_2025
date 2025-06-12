@@ -87,7 +87,7 @@ Fournir une évaluation détaillée incluant:
 Retourne le résultat en format JSON structuré avec les champs: scores, comments, strengths, weaknesses, recommendations.`;
 
       const response = await openaiService.createCompletion({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
         messages: [
           {
             role: "system",
@@ -99,7 +99,7 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
           }
         ],
         temperature: 0.3,
-        max_tokens: 2000
+        max_tokens: 1500
       });
 
       const evaluationText = response.choices[0].message.content;
@@ -122,7 +122,7 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
   }
 
   private async getSessionWithData(sessionId: number): Promise<any> {
-    // Get session data
+    // Get session data first
     const session = await db
       .select()
       .from(ecosSessions)
@@ -133,19 +133,24 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
       return null;
     }
 
-    // Get scenario data
-    const scenario = await db
-      .select()
-      .from(ecosScenarios)
-      .where(eq(ecosScenarios.id, session[0].scenarioId))
-      .limit(1);
-
-    // Get messages
-    const messages = await db
-      .select()
-      .from(ecosMessages)
-      .where(eq(ecosMessages.sessionId, sessionId))
-      .orderBy(ecosMessages.timestamp);
+    // Get scenario and messages in parallel for better performance
+    const [scenario, messages] = await Promise.all([
+      db
+        .select()
+        .from(ecosScenarios)
+        .where(eq(ecosScenarios.id, session[0].scenarioId))
+        .limit(1),
+      
+      db
+        .select({
+          role: ecosMessages.role,
+          content: ecosMessages.content,
+          timestamp: ecosMessages.timestamp,
+        })
+        .from(ecosMessages)
+        .where(eq(ecosMessages.sessionId, sessionId))
+        .orderBy(ecosMessages.timestamp)
+    ]);
 
     return {
       ...session[0],
