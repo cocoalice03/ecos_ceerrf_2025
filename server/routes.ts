@@ -12,7 +12,7 @@ import multer from 'multer';
 import { ecosService } from './services/ecos.service';
 import { promptGenService } from './services/promptGen.service';
 import { evaluationService } from './services/evaluation.service';
-import { ecosScenarios, ecosSessions, trainingSessions, trainingSessionScenarios, trainingSessionStudents } from '@shared/schema';
+import { ecosScenarios, ecosSessions, trainingSessions, trainingSessionScenarios, trainingSessionStudents, users } from '@shared/schema';
 import { eq, and, between, inArray, sql, lte, gte } from 'drizzle-orm';
 
 // Max questions per day per user
@@ -1755,13 +1755,22 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
 
       // Auto-create user if they don't exist (for student URL access)
       try {
-        await storage.upsertUser({
-          email: decodedEmail,
-          firstName: null,
-          lastName: null,
-          profileImageUrl: null
-        });
-        console.log(`User auto-created/verified for email: ${decodedEmail}`);
+        // Check if user exists first
+        const existingUser = await db.select().from(users).where(eq(users.email, decodedEmail)).limit(1);
+        
+        if (existingUser.length === 0) {
+          // Create new user with email as ID
+          await db.insert(users).values({
+            id: decodedEmail,
+            email: decodedEmail,
+            firstName: null,
+            lastName: null,
+            profileImageUrl: null
+          });
+          console.log(`User auto-created for email: ${decodedEmail}`);
+        } else {
+          console.log(`User already exists for email: ${decodedEmail}`);
+        }
       } catch (error) {
         console.log(`User creation info for ${decodedEmail}:`, error);
       }
