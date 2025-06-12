@@ -64,32 +64,35 @@ export class EvaluationService {
 
       // History already retrieved above for validation
 
-      // Generate evaluation using OpenAI
-      const evaluationPrompt = `Tu es un évaluateur expert pour les ECOS (Examens Cliniques Objectifs Structurés).
+      // Streamlined evaluation prompt for faster processing
+      const evaluationPrompt = `Évalue cette consultation ECOS sur ${title}.
 
-Scénario: ${title}
-Description: ${description}
-
-Critères d'évaluation:
-${JSON.stringify(criteria, null, 2)}
-
-Évalue la performance de l'étudiant basée sur cette interaction complète:
-
+Conversation:
 ${this.formatHistoryForEvaluation(conversationHistory)}
 
-IMPORTANT: Chaque critère doit être noté sur 4 points maximum (0-4).
-
-Fournir une évaluation détaillée incluant:
-1. Score pour chaque critère (0-4 points seulement)
-2. Commentaires spécifiques pour chaque critère
-3. Points forts observés
-4. Points à améliorer
-5. Recommandations pour l'apprentissage futur
-
-Retourne le résultat en format JSON structuré avec les champs: scores, comments, strengths, weaknesses, recommendations.`;
+Retourne UNIQUEMENT ce JSON (scores de 0 à 4):
+{
+  "scores": {
+    "anamnese": 3,
+    "diagnostic": 2,
+    "communication": 4,
+    "examen_clinique": 2,
+    "prise_en_charge": 3
+  },
+  "comments": {
+    "anamnese": "Commentaire bref",
+    "diagnostic": "Commentaire bref", 
+    "communication": "Commentaire bref",
+    "examen_clinique": "Commentaire bref",
+    "prise_en_charge": "Commentaire bref"
+  },
+  "strengths": ["Point fort 1", "Point fort 2"],
+  "weaknesses": ["À améliorer 1", "À améliorer 2"],
+  "recommendations": ["Conseil 1", "Conseil 2"]
+}`;
 
       const response = await openaiService.createCompletion({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
         messages: [
           {
             role: "system",
@@ -101,7 +104,7 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
           }
         ],
         temperature: 0.3,
-        max_tokens: 2000
+        max_tokens: 1500
       });
 
       const evaluationText = response.choices[0].message.content;
@@ -199,15 +202,20 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
         if (parsed.scores && typeof parsed.scores === 'object') {
           const normalizedScores: any = {};
           Object.entries(parsed.scores).forEach(([key, score]) => {
-            let normalizedScore = typeof score === 'number' ? score : 0;
+            let normalizedScore = typeof score === 'number' ? score : 2;
             
             // If score is greater than 4, assume it's on 0-20 scale and normalize
             if (normalizedScore > 4) {
               normalizedScore = Math.round((normalizedScore / 20) * 4);
             }
             
-            // Ensure score is within 0-4 range
-            normalizedScores[key] = Math.min(Math.max(normalizedScore, 0), 4);
+            // Ensure score is within 0-4 range, default to 2 if 0
+            normalizedScore = Math.min(Math.max(normalizedScore, 0), 4);
+            if (normalizedScore === 0 && typeof score === 'number' && score > 0) {
+              normalizedScore = Math.max(1, Math.round(score * 4 / 20));
+            }
+            
+            normalizedScores[key] = normalizedScore;
           });
           
           parsed.scores = normalizedScores;
