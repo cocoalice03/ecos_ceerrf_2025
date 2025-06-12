@@ -81,6 +81,7 @@ export const ecosSessions = pgTable("ecos_sessions", {
   id: serial("id").primaryKey(),
   scenarioId: integer("scenario_id").references(() => ecosScenarios.id),
   studentEmail: varchar("student_email", { length: 255 }).notNull(),
+  trainingSessionId: integer("training_session_id").references(() => trainingSessions.id),
   startTime: timestamp("start_time").defaultNow(),
   endTime: timestamp("end_time"),
   status: varchar("status", { length: 50 }).default("in_progress"),

@@ -1,8 +1,8 @@
 
 import { pineconeService } from './pinecone.service';
 import { db } from '../db';
-import { ecosSessions, ecosScenarios, ecosMessages, ecosEvaluations, ecosReports } from '@shared/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { ecosSessions, ecosScenarios, ecosMessages, ecosEvaluations, ecosReports, trainingSessions, trainingSessionStudents, trainingSessionScenarios } from '@shared/schema';
+import { eq, and, desc, lte, gte } from 'drizzle-orm';
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -134,10 +134,31 @@ RAPPEL CRITIQUE: Ce scénario concerne spécifiquement "${sessionResult[0].descr
   }
 
   async startSession(scenarioId: number, studentEmail: string): Promise<number> {
+    // Trouver la session de formation active correspondante
+    const trainingSessionQuery = await db
+      .select({
+        trainingSessionId: trainingSessions.id
+      })
+      .from(trainingSessionStudents)
+      .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
+      .innerJoin(trainingSessionScenarios, eq(trainingSessions.id, trainingSessionScenarios.trainingSessionId))
+      .where(
+        and(
+          eq(trainingSessionStudents.studentEmail, studentEmail),
+          eq(trainingSessionScenarios.scenarioId, scenarioId),
+          lte(trainingSessions.startDate, new Date()),
+          gte(trainingSessions.endDate, new Date())
+        )
+      )
+      .limit(1);
+
+    const trainingSessionId = trainingSessionQuery.length > 0 ? trainingSessionQuery[0].trainingSessionId : null;
+
     const result = await db.insert(ecosSessions).values({
       scenarioId,
       studentEmail,
       status: 'in_progress',
+      trainingSessionId, // Lier à la session de formation
     }).returning({ id: ecosSessions.id });
 
     return result[0].id;

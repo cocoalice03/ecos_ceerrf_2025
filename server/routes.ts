@@ -13,7 +13,7 @@ import { ecosService } from './services/ecos.service';
 import { promptGenService } from './services/promptGen.service';
 import { evaluationService } from './services/evaluation.service';
 import { ecosScenarios, ecosSessions, trainingSessions, trainingSessionScenarios, trainingSessionStudents } from '@shared/schema';
-import { eq, and, between, inArray, sql } from 'drizzle-orm';
+import { eq, and, between, inArray, sql, lte, gte } from 'drizzle-orm';
 
 // Max questions per day per user
 const MAX_DAILY_QUESTIONS = 20;
@@ -994,6 +994,29 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       });
 
       const { email, scenarioId } = sessionSchema.parse(req.body);
+
+      // Vérifier que l'étudiant a accès à ce scénario via une session de formation
+      const availableScenarios = await db
+        .select({
+          scenarioId: trainingSessionScenarios.scenarioId
+        })
+        .from(trainingSessionStudents)
+        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
+        .innerJoin(trainingSessionScenarios, eq(trainingSessions.id, trainingSessionScenarios.trainingSessionId))
+        .where(
+          and(
+            eq(trainingSessionStudents.studentEmail, email),
+            lte(trainingSessions.startDate, new Date()),
+            gte(trainingSessions.endDate, new Date()),
+            eq(trainingSessionScenarios.scenarioId, scenarioId)
+          )
+        );
+
+      if (availableScenarios.length === 0 && !isAdminAuthorized(email)) {
+        return res.status(403).json({ 
+          message: "Accès refusé. Ce scénario n'est pas disponible dans vos sessions de formation actives." 
+        });
+      }
 
       const sessionId = await ecosService.startSession(scenarioId, email);
 
