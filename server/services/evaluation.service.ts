@@ -44,7 +44,7 @@ export class EvaluationService {
       }
 
       // Check if there are actual student questions (user messages)
-      const studentMessages = conversationHistory.filter(msg => msg.role === 'user');
+      const studentMessages = conversationHistory.filter((msg: any) => msg.role === 'user');
       if (studentMessages.length === 0) {
         console.log(`⚠️ No student questions found for session ${sessionId}`);
         throw new Error('Aucune question d\'étudiant trouvée dans cette session. Une évaluation nécessite au moins une interaction.');
@@ -64,27 +64,23 @@ export class EvaluationService {
 
       // History already retrieved above for validation
 
-      // Generate evaluation using OpenAI
-      const evaluationPrompt = `Tu es un évaluateur expert pour les ECOS (Examens Cliniques Objectifs Structurés).
+      // Optimized evaluation prompt for faster generation
+      const evaluationPrompt = `Évalue cette consultation ECOS rapidement:
 
 Scénario: ${title}
-Description: ${description}
+Critères: ${Object.keys(criteria).join(', ')}
 
-Critères d'évaluation:
-${JSON.stringify(criteria, null, 2)}
-
-Évalue la performance de l'étudiant basée sur cette interaction complète:
-
+Conversation:
 ${this.formatHistoryForEvaluation(conversationHistory)}
 
-Fournir une évaluation détaillée incluant:
-1. Score pour chaque critère (0-4 points)
-2. Commentaires spécifiques pour chaque critère
-3. Points forts observés
-4. Points à améliorer
-5. Recommandations pour l'apprentissage futur
-
-Retourne le résultat en format JSON structuré avec les champs: scores, comments, strengths, weaknesses, recommendations.`;
+Retourne seulement un JSON avec:
+{
+  "scores": {"anamnese": 0-20, "diagnostic": 0-20, "communication": 0-20, "examen_clinique": 0-20, "prise_en_charge": 0-20},
+  "comments": {"anamnese": "bref", "diagnostic": "bref", "communication": "bref", "examen_clinique": "bref", "prise_en_charge": "bref"},
+  "strengths": ["point fort 1", "point fort 2"],
+  "weaknesses": ["point faible 1", "point faible 2"],
+  "recommendations": ["conseil 1", "conseil 2"]
+}`;
 
       const response = await openaiService.createCompletion({
         model: "gpt-3.5-turbo",
@@ -122,41 +118,47 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
   }
 
   private async getSessionWithData(sessionId: number): Promise<any> {
-    // Get session data first
-    const session = await db
-      .select()
-      .from(ecosSessions)
-      .where(eq(ecosSessions.id, sessionId))
-      .limit(1);
+    try {
+      // Get session data first
+      const session = await db
+        .select()
+        .from(ecosSessions)
+        .where(eq(ecosSessions.id, sessionId))
+        .limit(1);
 
-    if (!session[0]) {
+      if (!session[0]) {
+        return null;
+      }
+
+      // Get scenario and messages in parallel for better performance
+      const [scenario, messages] = await Promise.all([
+        // Fixed: Use proper type casting for scenario ID comparison
+        db
+          .select()
+          .from(ecosScenarios)
+          .where(eq(ecosScenarios.id, session[0].scenarioId as number))
+          .limit(1),
+        
+        db
+          .select({
+            role: ecosMessages.role,
+            content: ecosMessages.content,
+            timestamp: ecosMessages.timestamp,
+          })
+          .from(ecosMessages)
+          .where(eq(ecosMessages.sessionId, sessionId))
+          .orderBy(ecosMessages.timestamp)
+      ]);
+
+      return {
+        ...session[0],
+        scenario: scenario[0] || null,
+        messages: messages || []
+      };
+    } catch (error) {
+      console.error('Error fetching session data:', error);
       return null;
     }
-
-    // Get scenario and messages in parallel for better performance
-    const [scenario, messages] = await Promise.all([
-      db
-        .select()
-        .from(ecosScenarios)
-        .where(eq(ecosScenarios.id, session[0].scenarioId))
-        .limit(1),
-      
-      db
-        .select({
-          role: ecosMessages.role,
-          content: ecosMessages.content,
-          timestamp: ecosMessages.timestamp,
-        })
-        .from(ecosMessages)
-        .where(eq(ecosMessages.sessionId, sessionId))
-        .orderBy(ecosMessages.timestamp)
-    ]);
-
-    return {
-      ...session[0],
-      scenario: scenario[0] || null,
-      messages: messages || []
-    };
   }
 
   private async getCompleteSessionHistory(sessionId: number) {
@@ -172,7 +174,7 @@ Retourne le résultat en format JSON structuré avec les champs: scores, comment
   }
 
   private formatHistoryForEvaluation(history: any[]): string {
-    return history.map((msg, index) => {
+    return history.map((msg: any, index: number) => {
       const speaker = msg.role === 'user' ? 'ÉTUDIANT' : 'PATIENT';
       return `[${index + 1}] ${speaker}: ${msg.content}`;
     }).join('\n\n');
