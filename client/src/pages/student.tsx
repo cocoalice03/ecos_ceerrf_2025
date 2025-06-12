@@ -42,7 +42,7 @@ export default function StudentPage({ email }: StudentPageProps) {
   });
 
   const scenarios = studentData?.scenarios || [];
-  const activeTrainingSessions = studentData?.trainingSessions || [];
+  const trainingSessions = studentData?.trainingSessions || [];
 
   // Fetch student sessions
   const { data: sessions, isLoading: sessionsLoading, refetch: refetchSessions } = useQuery({
@@ -282,7 +282,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                       <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
                       <p className="text-gray-600">
-                        {scenariosData?.message || "Aucun scénario ECOS n'est actuellement disponible pour vous."}
+                        {studentData?.message || "Aucun scénario ECOS n'est actuellement disponible pour vous."}
                       </p>
                       {trainingSessions?.length === 0 && (
                         <p className="text-sm text-gray-500 mt-2">
