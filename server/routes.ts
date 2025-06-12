@@ -1381,29 +1381,23 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       const ecosSessionsData = await db.select().from(ecosSessions);
       console.log('📊 ECOS sessions found:', ecosSessionsData.length);
       
-      // Get all unique students assigned to training sessions created by this teacher
-      console.log('📊 Fetching training session students...');
-      const studentsInTrainingSessions = await db
-        .select({ studentEmail: trainingSessionStudents.studentEmail })
-        .from(trainingSessionStudents)
-        .innerJoin(trainingSessions, eq(trainingSessionStudents.trainingSessionId, trainingSessions.id))
-        .where(eq(trainingSessions.createdBy, decodedEmail));
-      
-      console.log('📊 Students in training sessions:', studentsInTrainingSessions.length);
-      
-      const uniqueStudents = new Set(studentsInTrainingSessions.map(s => s.studentEmail));
-      console.log('📊 Unique students:', uniqueStudents.size);
-      
-      // Filter ECOS sessions to only include those from students in training sessions
-      const activeSessions = ecosSessionsData.filter(session => 
-        session.status === 'in_progress' && 
-        uniqueStudents.has(session.studentEmail || '')
+      // For admin users, count all students who have ECOS sessions
+      console.log('📊 Calculating statistics for admin user...');
+      const allStudentEmails = new Set(
+        ecosSessionsData
+          .map(session => session.studentEmail)
+          .filter(email => email) // Remove null/undefined emails
       );
       
-      const completedSessions = ecosSessionsData.filter(session => 
-        session.status === 'completed' && 
-        uniqueStudents.has(session.studentEmail || '')
-      );
+      console.log('📊 All student emails from sessions:', Array.from(allStudentEmails));
+      
+      // Count sessions by status
+      const activeSessions = ecosSessionsData.filter(session => session.status === 'in_progress');
+      const completedSessions = ecosSessionsData.filter(session => session.status === 'completed');
+      
+      console.log('📊 Active sessions:', activeSessions.length);
+      console.log('📊 Completed sessions:', completedSessions.length);
+      console.log('📊 Total unique students:', allStudentEmails.size);
 
       const dashboardData = {
         scenarios,
@@ -1412,7 +1406,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
           totalScenarios: scenarios.length,
           activeSessions: activeSessions.length,
           completedSessions: completedSessions.length,
-          totalStudents: uniqueStudents.size
+          totalStudents: allStudentEmails.size
         }
       };
 
