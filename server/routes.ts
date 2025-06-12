@@ -1753,6 +1753,19 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       const decodedEmail = decodeURIComponent(email);
       const now = new Date();
 
+      // Auto-create user if they don't exist (for student URL access)
+      try {
+        await storage.upsertUser({
+          email: decodedEmail,
+          firstName: null,
+          lastName: null,
+          profileImageUrl: null
+        });
+        console.log(`User auto-created/verified for email: ${decodedEmail}`);
+      } catch (error) {
+        console.log(`User creation info for ${decodedEmail}:`, error);
+      }
+
       // Check if user is admin - if so, return all scenarios
       if (isAdminAuthorized(decodedEmail)) {
         const allScenarios = await db
