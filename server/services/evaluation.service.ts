@@ -64,26 +64,32 @@ export class EvaluationService {
 
       // History already retrieved above for validation
 
-      // Optimized evaluation prompt for faster generation
-      const evaluationPrompt = `Évalue cette consultation ECOS rapidement:
+      // Generate evaluation using OpenAI
+      const evaluationPrompt = `Tu es un évaluateur expert pour les ECOS (Examens Cliniques Objectifs Structurés).
 
 Scénario: ${title}
-Critères: ${Object.keys(criteria).join(', ')}
+Description: ${description}
 
-Conversation:
+Critères d'évaluation:
+${JSON.stringify(criteria, null, 2)}
+
+Évalue la performance de l'étudiant basée sur cette interaction complète:
+
 ${this.formatHistoryForEvaluation(conversationHistory)}
 
-Retourne seulement un JSON avec:
-{
-  "scores": {"anamnese": 0-20, "diagnostic": 0-20, "communication": 0-20, "examen_clinique": 0-20, "prise_en_charge": 0-20},
-  "comments": {"anamnese": "bref", "diagnostic": "bref", "communication": "bref", "examen_clinique": "bref", "prise_en_charge": "bref"},
-  "strengths": ["point fort 1", "point fort 2"],
-  "weaknesses": ["point faible 1", "point faible 2"],
-  "recommendations": ["conseil 1", "conseil 2"]
-}`;
+IMPORTANT: Chaque critère doit être noté sur 4 points maximum (0-4).
+
+Fournir une évaluation détaillée incluant:
+1. Score pour chaque critère (0-4 points seulement)
+2. Commentaires spécifiques pour chaque critère
+3. Points forts observés
+4. Points à améliorer
+5. Recommandations pour l'apprentissage futur
+
+Retourne le résultat en format JSON structuré avec les champs: scores, comments, strengths, weaknesses, recommendations.`;
 
       const response = await openaiService.createCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -95,7 +101,7 @@ Retourne seulement un JSON avec:
           }
         ],
         temperature: 0.3,
-        max_tokens: 1500
+        max_tokens: 2000
       });
 
       const evaluationText = response.choices[0].message.content;
@@ -187,7 +193,27 @@ Retourne seulement un JSON avec:
       // Try to parse as JSON first
       const jsonMatch = evaluationText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0]);
+        
+        // Normalize scores if they're on a 0-20 scale instead of 0-4
+        if (parsed.scores && typeof parsed.scores === 'object') {
+          const normalizedScores: any = {};
+          Object.entries(parsed.scores).forEach(([key, score]) => {
+            let normalizedScore = typeof score === 'number' ? score : 0;
+            
+            // If score is greater than 4, assume it's on 0-20 scale and normalize
+            if (normalizedScore > 4) {
+              normalizedScore = Math.round((normalizedScore / 20) * 4);
+            }
+            
+            // Ensure score is within 0-4 range
+            normalizedScores[key] = Math.min(Math.max(normalizedScore, 0), 4);
+          });
+          
+          parsed.scores = normalizedScores;
+        }
+        
+        return parsed;
       }
     } catch (error) {
       // If JSON parsing fails, extract information using regex
@@ -218,9 +244,22 @@ Retourne seulement un JSON avec:
   }
 
   private extractScore(text: string, criterion: string): number {
-    const regex = new RegExp(`${criterion}[\\s\\S]*?(\\d+)[\\s\\/]*4`, 'i');
-    const match = text.match(regex);
-    return match ? parseInt(match[1]) : 2; // Default score of 2
+    // Look for scores in format "criterion: X/4" or "criterion": X
+    const regex1 = new RegExp(`${criterion}[\\s\\S]*?(\\d+)[\\s\\/]*4`, 'i');
+    const regex2 = new RegExp(`"${criterion}"\\s*:\\s*(\\d+)`, 'i');
+    const regex3 = new RegExp(`${criterion}[\\s\\S]*?(\\d+)`, 'i');
+    
+    let match = text.match(regex1) || text.match(regex2) || text.match(regex3);
+    let score = match ? parseInt(match[1]) : 2;
+    
+    // If score is greater than 4, normalize it to 0-4 scale
+    if (score > 4) {
+      // Assume it's on a 0-20 scale and convert to 0-4
+      score = Math.round((score / 20) * 4);
+    }
+    
+    // Ensure score is within 0-4 range
+    return Math.min(Math.max(score, 0), 4);
   }
 
   private extractComment(text: string, criterion: string): string {
