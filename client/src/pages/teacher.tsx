@@ -508,7 +508,9 @@ function TeacherPage({ email }: TeacherPageProps) {
                         <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
                             <p className="font-medium">Session #{session.id}</p>
-                            <p className="text-sm text-gray-600">Étudiant: {session.studentEmail || session.student_id || 'Non défini'}</p>
+                            <p className="text-sm text-gray-600">
+                              Étudiant: {session.studentEmail || 'Non défini'}
+                            </p>
                           </div>
                           <Badge variant={session.status === 'completed' ? 'default' : 'secondary'}>
                             {session.status === 'completed' ? 'Terminée' : 'En cours'}

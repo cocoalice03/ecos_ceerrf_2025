@@ -116,26 +116,9 @@ export const useDashboardData = (email: string) => {
       console.log('🔄 Fetching dashboard data for:', email);
 
       try {
-        const [scenariosResponse, sessionsResponse] = await Promise.allSettled([
-          apiRequest('GET', `/api/ecos/scenarios?email=${encodeURIComponent(email)}`),
-          apiRequest('GET', `/api/ecos/sessions?email=${encodeURIComponent(email)}`)
-        ]);
-
-        const scenarios = scenariosResponse.status === 'fulfilled' ? 
-          scenariosResponse.value.scenarios : [];
-
-        const sessions = sessionsResponse.status === 'fulfilled' ? 
-          sessionsResponse.value.sessions : [];
-
-        console.log('📊 Dashboard data loaded:', { scenarios: scenarios.length, sessions: sessions.length });
-
-        const hasErrors = scenariosResponse.status === 'rejected' || sessionsResponse.status === 'rejected';
-
-        return {
-          scenarios,
-          sessions,
-          partial: hasErrors
-        };
+        const response = await apiRequest('GET', `/api/teacher/dashboard?email=${encodeURIComponent(email)}`);
+        console.log('📊 Dashboard data loaded:', response);
+        return response;
       } catch (error) {
         console.error('❌ Dashboard data error:', error);
         throw error;
