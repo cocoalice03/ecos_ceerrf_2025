@@ -263,8 +263,20 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
   const { data: scenarios } = useQuery({
     queryKey: ['ecos-scenarios', email],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/ecos/scenarios?email=${encodeURIComponent(email)}`);
-      return response.scenarios || [];
+      try {
+        // Try admin endpoint first
+        const response = await apiRequest('GET', `/api/ecos/scenarios?email=${encodeURIComponent(email)}`);
+        return response.scenarios || [];
+      } catch (error) {
+        // Fallback to student endpoint
+        try {
+          const fallbackResponse = await apiRequest('GET', `/api/student/available-scenarios?email=${encodeURIComponent(email)}`);
+          return fallbackResponse.scenarios || [];
+        } catch (fallbackError) {
+          console.error('Both scenario endpoints failed:', error, fallbackError);
+          return [];
+        }
+      }
     },
     enabled: !!email,
   });

@@ -321,6 +321,21 @@ function TeacherPage({ email }: TeacherPageProps) {
 
   const { data: dashboardData, error: dashboardError, isLoading: isDashboardLoading } = useDashboardData(email || '');
 
+  // Fallback: try to get scenarios from student endpoint if dashboard fails
+  const { data: studentScenarios } = useQuery({
+    queryKey: ['student-scenarios-fallback', email],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', `/api/student/available-scenarios?email=${encodeURIComponent(email || '')}`);
+        return response.scenarios || [];
+      } catch (error) {
+        console.error('Fallback scenarios fetch failed:', error);
+        return [];
+      }
+    },
+    enabled: !!email && (dashboardError || !dashboardData?.scenarios?.length),
+  });
+
   // Check if we have actual errors vs just partial data
   const hasRealError = dashboardError || (dashboardData?.partial && dashboardData?.scenarios?.length === 0);
 
@@ -329,7 +344,7 @@ function TeacherPage({ email }: TeacherPageProps) {
   console.log('Dashboard error:', dashboardError);
 
   // Provide fallback data structure
-  const scenarios = dashboardData?.scenarios || [];
+  const scenarios = dashboardData?.scenarios || studentScenarios || [];
   const sessions = dashboardData?.sessions || [];
 
   console.log('Scenarios:', scenarios);

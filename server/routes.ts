@@ -1656,6 +1656,24 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
       const decodedEmail = decodeURIComponent(email);
       const now = new Date();
 
+      // Check if user is admin - if so, return all scenarios
+      if (isAdminAuthorized(decodedEmail)) {
+        const allScenarios = await db
+          .select({
+            id: ecosScenarios.id,
+            title: ecosScenarios.title,
+            description: ecosScenarios.description,
+            createdAt: ecosScenarios.createdAt,
+          })
+          .from(ecosScenarios)
+          .orderBy(ecosScenarios.createdAt);
+
+        return res.status(200).json({ 
+          scenarios: allScenarios,
+          message: "Tous les scénarios disponibles (mode admin)"
+        });
+      }
+
       // Get active training sessions for this student
       const activeTrainingSessions = await db
         .select({
@@ -1669,8 +1687,22 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
           between(sql`NOW()`, trainingSessions.startDate, trainingSessions.endDate)
         ));
 
+      // If no active training sessions, return all scenarios as fallback for compatibility
       if (activeTrainingSessions.length === 0) {
-        return res.status(200).json({ scenarios: [], message: "Aucune session active pour cet étudiant" });
+        const allScenarios = await db
+          .select({
+            id: ecosScenarios.id,
+            title: ecosScenarios.title,
+            description: ecosScenarios.description,
+            createdAt: ecosScenarios.createdAt,
+          })
+          .from(ecosScenarios)
+          .orderBy(ecosScenarios.createdAt);
+
+        return res.status(200).json({ 
+          scenarios: allScenarios, 
+          message: "Aucune session de formation active - tous les scénarios disponibles" 
+        });
       }
 
       // Get scenarios from active training sessions
