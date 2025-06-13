@@ -126,6 +126,9 @@ async function createStudentAccount(email: string) {
     // Check if user exists
     const existingUser = await db.select().from(users).where(eq(users.email, decodedEmail)).limit(1);
     
+    let user;
+    let isNewUser = false;
+    
     if (existingUser.length === 0) {
       // Create new user
       const newUser = await db.insert(users).values({
@@ -136,21 +139,65 @@ async function createStudentAccount(email: string) {
         profileImageUrl: null
       }).returning();
       
+      user = newUser[0];
+      isNewUser = true;
       console.log(`✅ New student account created for: ${decodedEmail}`);
-      
-      return { 
-        user: newUser[0], 
-        isNewUser: true 
-      };
     } else {
-      // User already exists - just return the existing user without updating
+      // User already exists
+      user = existingUser[0];
       console.log(`✅ Existing student account accessed: ${decodedEmail}`);
-      
-      return { 
-        user: existingUser[0], 
-        isNewUser: false 
-      };
     }
+
+    // Auto-assign to active training session if not already assigned
+    try {
+      // Check if user is already assigned to any training session
+      const existingAssignment = await db
+        .select({ trainingSessionId: trainingSessionStudents.trainingSessionId })
+        .from(trainingSessionStudents)
+        .where(eq(trainingSessionStudents.studentEmail, decodedEmail))
+        .limit(1);
+
+      if (existingAssignment.length === 0) {
+        // Find the most recent active training session
+        const now = new Date();
+        const activeSession = await db
+          .select({
+            id: trainingSessions.id,
+            title: trainingSessions.title
+          })
+          .from(trainingSessions)
+          .where(
+            and(
+              lte(trainingSessions.startDate, now),
+              gte(trainingSessions.endDate, now)
+            )
+          )
+          .orderBy(trainingSessions.createdAt)
+          .limit(1);
+
+        if (activeSession.length > 0) {
+          // Auto-assign student to the active session
+          await db.insert(trainingSessionStudents).values({
+            trainingSessionId: activeSession[0].id,
+            studentEmail: decodedEmail,
+          });
+          
+          console.log(`🎓 Auto-assigned ${decodedEmail} to training session: ${activeSession[0].title}`);
+        } else {
+          console.log(`⚠️ No active training session found for auto-assignment of ${decodedEmail}`);
+        }
+      } else {
+        console.log(`📚 ${decodedEmail} already assigned to training session ID: ${existingAssignment[0].trainingSessionId}`);
+      }
+    } catch (assignmentError) {
+      console.error(`❌ Error auto-assigning ${decodedEmail} to training session:`, assignmentError);
+      // Don't throw error - user creation should still succeed
+    }
+    
+    return { 
+      user, 
+      isNewUser 
+    };
   } catch (error) {
     console.error(`❌ Error creating/updating student account for ${email}:`, error);
     throw error;

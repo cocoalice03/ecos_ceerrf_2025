@@ -41,6 +41,19 @@ export default function StudentPage({ email }: StudentPageProps) {
           });
 
           console.log('✅ Student account created/updated:', response);
+          
+          // If this is a new user, also create webhook session for integration
+          if (response.isNewUser) {
+            try {
+              await apiRequest('POST', '/api/webhook', {
+                email: decodedEmail
+              });
+              console.log('🔗 Webhook session created for new user:', decodedEmail);
+            } catch (webhookError) {
+              console.log('⚠️ Webhook integration warning:', webhookError);
+            }
+          }
+          
           setAccountCreated(true);
         } catch (error) {
           console.error('❌ Error auto-creating student account:', error);
