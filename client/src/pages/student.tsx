@@ -326,6 +326,12 @@ export default function StudentPage({ email }: StudentPageProps) {
                               className="feature-header-image"
                               alt="Consultation d'urgence - Douleur thoracique"
                             />
+                          ) : scenario.id === 2 ? (
+                            <img 
+                              src="/images/douleur_thoracic.png"
+                              className="feature-header-image"
+                              alt="Examen de l'épaule douloureuse"
+                            />
                           ) : (
                             <div 
                               className="feature-header-image"
