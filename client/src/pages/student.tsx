@@ -52,7 +52,7 @@ export default function StudentPage({ email }: StudentPageProps) {
       return response.sessions || [];
     }
   });
-  
+
 
   // Start session mutation
   const startSessionMutation = useMutation({
@@ -185,7 +185,7 @@ export default function StudentPage({ email }: StudentPageProps) {
             <div className="hero-content flex items-center gap-12">
               <div className="flex-1">
                 <div className="hero-text">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Lorem Ipsum Dolor Sit</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">L'Avenir de la Formation Médicale</h2>
                   <p className="text-gray-600 text-lg leading-relaxed mb-6">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                   </p>
@@ -342,7 +342,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                               <BookOpen className="w-12 h-12 text-white opacity-80" />
                             </div>
                           )}
-                          
+
                           {/* Overlay qui apparaît au hover */}
                           <div className="feature-overlay-content">
                             <div className="feature-overlay-text">
