@@ -35,11 +35,11 @@ export default function StudentPage({ email }: StudentPageProps) {
       if (decodedEmail && !accountCreated) {
         try {
           console.log('🚀 Auto-creating student account for:', decodedEmail);
-          
+
           const response = await apiRequest('POST', '/api/student/auto-register', {
             email: decodedEmail
           });
-          
+
           console.log('✅ Student account created/updated:', response);
           setAccountCreated(true);
         } catch (error) {

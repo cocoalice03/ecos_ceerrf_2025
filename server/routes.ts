@@ -143,14 +143,7 @@ async function createStudentAccount(email: string) {
         isNewUser: true 
       };
     } else {
-      // User already exists, update last access
-      const updatedUser = await db.update(users)
-        .set({ 
-          // Keep existing data, could add lastAccessAt field if needed
-        })
-        .where(eq(users.email, decodedEmail))
-        .returning();
-      
+      // User already exists - just return the existing user without updating
       console.log(`✅ Existing student account accessed: ${decodedEmail}`);
       
       return { 

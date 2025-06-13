@@ -38,7 +38,7 @@ export function preventCustomElementConflicts() {
   };
   
   // Pre-emptively handle known problematic elements
-  const problematicElements = ['vite-error-overlay', 'autosize-textarea'];
+  const problematicElements = ['vite-error-overlay', 'autosize-textarea', 'mce-autosize-textarea'];
   
   // Check if any problematic elements are already defined
   problematicElements.forEach(elementName => {
