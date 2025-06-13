@@ -195,10 +195,11 @@ export default function StudentPage({ email }: StudentPageProps) {
                 </div>
               </div>
               <div className="flex-1">
-                {/* Image placeholder - you can replace this with your image later */}
-                <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-400">
-                  <span className="text-gray-500 text-lg">Image à intégrer ici</span>
-                </div>
+                <img 
+                  src="/images/happy_student.jpg"
+                  alt="Étudiant heureux"
+                  className="w-full h-64 object-cover rounded-lg shadow-lg"
+                />
               </div>
             </div>
           </div>
