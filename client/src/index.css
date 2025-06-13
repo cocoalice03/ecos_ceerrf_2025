@@ -375,43 +375,23 @@
     -webkit-line-clamp: 3;
   }
 
-  /* Enhanced TabsTrigger overlay effect */
+  /* Enhanced TabsTrigger avec effet bordure dégradée au hover */
   .tabs-trigger-enhanced {
     position: relative;
-    overflow: hidden;
+    border: 2px solid transparent;
     transition: all 0.3s ease;
   }
 
-  .tabs-trigger-enhanced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.2));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 0;
-  }
-
-  .tabs-trigger-enhanced[data-state="active"]::before {
-    opacity: 1;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.25));
-  }
-
-  .tabs-trigger-enhanced:hover::before {
-    opacity: 0.7;
-  }
-
-  .tabs-trigger-enhanced > * {
-    position: relative;
-    z-index: 1;
+  .tabs-trigger-enhanced:hover {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7)) border-box;
   }
 
   .tabs-trigger-enhanced[data-state="active"] {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7)) border-box;
     color: hsl(var(--primary));
     font-weight: 600;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px hsl(var(--primary) / 0.2);
   }
