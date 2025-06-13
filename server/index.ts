@@ -86,7 +86,8 @@ app.use((req, res, next) => {
       '/student/',
       '/admin',
       '/diagnostic',
-      '/favicon.ico'
+      '/favicon.ico',
+      '/images/'
     ];
 
     // Check if it's a legitimate route first
