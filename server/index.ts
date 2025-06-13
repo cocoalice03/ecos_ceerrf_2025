@@ -5,75 +5,13 @@ import { db } from "./db";
 import { addDiagnosticRoutes } from "./diagnostic-endpoint";
 import { createDebugMiddleware, createDatabaseErrorHandler } from "./debug.middleware";
 import { createTrainingSessionsTables } from "./db";
-import { Server } from "http";
 
-// Environment variable validation
+// Simplified environment validation
 function validateEnvironment() {
-  console.log('🔍 Validating environment variables...');
-  
-  const requiredEnvVars = [
-    'DATABASE_URL',
-    'OPENAI_API_KEY',
-    'PINECONE_API_KEY'
-  ];
-
-  const missing = requiredEnvVars.filter(varName => !process.env[varName]);
-  
+  const missing = ['DATABASE_URL', 'OPENAI_API_KEY', 'PINECONE_API_KEY'].filter(v => !process.env[v]);
   if (missing.length > 0) {
-    console.warn(`⚠️ Missing environment variables: ${missing.join(', ')}`);
-    console.warn('Application may not function correctly without these variables');
-  } else {
-    console.log('✅ All required environment variables are present');
+    console.warn(`Missing environment variables: ${missing.join(', ')}`);
   }
-
-  // Log environment info
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 Port: ${process.env.PORT || 5000}`);
-  console.log(`💾 Database configured: ${!!process.env.DATABASE_URL}`);
-}
-
-// Graceful shutdown handler
-let httpServer: Server | null = null;
-
-function setupGracefulShutdown() {
-  const gracefulShutdown = (signal: string) => {
-    console.log(`📡 Received ${signal}. Starting graceful shutdown...`);
-    
-    if (httpServer) {
-      httpServer.close((err) => {
-        if (err) {
-          console.error('❌ Error during server shutdown:', err instanceof Error ? err.message : String(err));
-          process.exit(1);
-        }
-        console.log('✅ Server shut down gracefully');
-        process.exit(0);
-      });
-
-      // Force shutdown after 30 seconds
-      setTimeout(() => {
-        console.error('⏰ Forced shutdown after timeout');
-        process.exit(1);
-      }, 30000);
-    } else {
-      process.exit(0);
-    }
-  };
-
-  // Handle various shutdown signals
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // Nodemon restart
-  
-  // Handle uncaught exceptions
-  process.on('uncaughtException', (err) => {
-    console.error('💥 Uncaught Exception:', err);
-    gracefulShutdown('uncaughtException');
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
-    gracefulShutdown('unhandledRejection');
-  });
 }
 
 const app = express();
@@ -360,97 +298,101 @@ app.use((req, res, next) => {
   // Store server reference for graceful shutdown
   httpServer = server;
   
-  // Enhanced server startup with production/development port handling
-  const startServer = async (targetPort: number): Promise<void> => {
-    // In production, strictly use the specified port (no fallback)
-    if (isProduction) {
-      return new Promise<void>((resolve, reject) => {
-        const serverInstance = server.listen({
-          port: targetPort,
-          host,
-        }, (err?: Error) => {
-          if (err) {
-            console.error('❌ Production server failed to start:', err.message);
-            reject(err);
-            return;
-          }
-          
-          console.log('✅ Production server started successfully');
-          console.log(`🌐 Listening on http://${host}:${targetPort}`);
-          console.log(`🏥 Health check: http://${host}:${targetPort}/health`);
-          console.log(`🚀 Ready check: http://${host}:${targetPort}/ready`);
-          console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-          console.log(`⏰ Started at: ${new Date().toISOString()}`);
-          
-          resolve();
-        });
+  // Port cleanup and server startup
+  const cleanupPort = async (port: number): Promise<void> => {
+    try {
+      console.log(`🧹 Checking for processes using port ${port}...`);
+      
+      // Use ss command as alternative to netstat
+      const { stdout } = await execAsync(`ss -tlnp 2>/dev/null | grep :${port} || echo "no_process"`);
+      
+      if (stdout.includes('no_process')) {
+        console.log(`✅ Port ${port} is free`);
+        return;
+      }
 
-        serverInstance.on('error', (error: Error) => {
-          console.error('❌ Production server error:', error.message);
-          reject(error);
-        });
-
-        // Shorter timeout for production
-        setTimeout(() => {
-          reject(new Error('Production server startup timeout'));
-        }, 5000);
-      });
-    }
-    
-    // Development mode: Allow port fallback
-    const maxAttempts = 5;
-    let attemptPort = targetPort;
-    
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      // Extract PID from ss output
+      const pidMatch = stdout.match(/pid=(\d+)/);
+      if (pidMatch) {
+        const pid = pidMatch[1];
+        console.log(`🧹 Found process ${pid} using port ${port}, terminating...`);
+        await execAsync(`kill -9 ${pid}`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log(`✅ Process ${pid} terminated`);
+      }
+      
+      // Additional cleanup: kill any remaining tsx/node processes
       try {
-        await new Promise<void>((resolve, reject) => {
-          const serverInstance = server.listen({
-            port: attemptPort,
-            host,
-          }, (err?: Error) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            
-            console.log('✅ Development server started successfully');
-            console.log(`🌐 Listening on http://${host}:${attemptPort}`);
-            console.log(`🏥 Health check: http://${host}:${attemptPort}/health`);
-            console.log(`🚀 Ready check: http://${host}:${attemptPort}/ready`);
-            console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`⏰ Started at: ${new Date().toISOString()}`);
-            
-            resolve();
-          });
+        await execAsync(`pkill -f "tsx server/index.ts" || true`);
+        await execAsync(`pkill -f "node.*server/index.ts" || true`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log(`✅ Additional process cleanup completed`);
+      } catch (e) {
+        // Ignore errors in additional cleanup
+      }
+      
+    } catch (error) {
+      console.log(`🧹 Port cleanup completed (${error instanceof Error ? error.message : 'unknown error'})`);
+    }
+  };
 
-          serverInstance.on('error', (error: Error) => {
-            reject(error);
-          });
+  const startServer = async (targetPort: number): Promise<void> => {
+    // Clean up any existing processes on the target port
+    await cleanupPort(targetPort);
+    
+    // Increase max listeners to prevent warnings
+    server.setMaxListeners(20);
+    
+    return new Promise<void>((resolve, reject) => {
+      let resolved = false;
+      
+      const cleanup = () => {
+        if (!resolved) {
+          resolved = true;
+          server.removeAllListeners();
+        }
+      };
 
-          // Timeout for development
-          setTimeout(() => {
-            reject(new Error('Development server startup timeout'));
-          }, 10000);
-        });
+      const serverInstance = server.listen({
+        port: targetPort,
+        host,
+      }, (err?: Error) => {
+        if (resolved) return;
         
-        return; // Success
-        
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        
-        if (errorMessage.includes('EADDRINUSE') && attempt < maxAttempts) {
-          console.warn(`⚠️ Port ${attemptPort} in use, trying port ${attemptPort + 1} (attempt ${attempt}/${maxAttempts})`);
-          attemptPort++;
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          continue;
+        if (err) {
+          console.error('❌ Server failed to start on port', targetPort, ':', err.message);
+          cleanup();
+          reject(err);
+          return;
         }
         
-        console.error(`❌ Failed to start development server after ${attempt} attempts:`, errorMessage);
-        throw error;
-      }
-    }
-    
-    throw new Error(`Failed to start server after ${maxAttempts} attempts`);
+        console.log('✅ Server started successfully');
+        console.log(`🌐 Listening on http://${host}:${targetPort}`);
+        console.log(`🏥 Health check: http://${host}:${targetPort}/health`);
+        console.log(`🚀 Ready check: http://${host}:${targetPort}/ready`);
+        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`⏰ Started at: ${new Date().toISOString()}`);
+        
+        resolved = true;
+        resolve();
+      });
+
+      serverInstance.once('error', (error: Error) => {
+        if (resolved) return;
+        
+        console.error('❌ Server startup error:', error.message);
+        cleanup();
+        reject(error);
+      });
+
+      // Set startup timeout
+      setTimeout(() => {
+        if (!resolved) {
+          cleanup();
+          reject(new Error('Server startup timeout'));
+        }
+      }, 10000);
+    });
   };
 
   try {
