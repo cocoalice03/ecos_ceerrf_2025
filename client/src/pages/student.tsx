@@ -300,23 +300,18 @@ export default function StudentPage({ email }: StudentPageProps) {
                           {scenario.id === 1 ? (
                             <>
                               <img 
-                                src="/images/ChatGPT Image 13 juin 2025 à 11_27_11.png"
+                                src="/images/medical-consultation.png"
                                 className="feature-header-image w-full h-40 object-cover"
                                 alt="Consultation d'urgence - Douleur thoracique"
                                 onError={(e) => {
-                                  console.error('Image failed to load, trying encoded URL:', e.target.src);
-                                  // Try with encoded URL first
-                                  if (!e.target.src.includes('%20')) {
-                                    e.target.src = "/images/ChatGPT%20Image%2013%20juin%202025%20%C3%A0%2011_27_11.png";
-                                  } else {
-                                    // If encoded URL also fails, hide image and show fallback
-                                    e.target.style.display = 'none';
-                                    const fallback = e.target.parentElement.querySelector('.fallback-background');
-                                    if (fallback) fallback.style.display = 'flex';
-                                  }
+                                  console.error('Image failed to load:', e.target.src);
+                                  // Hide image and show fallback
+                                  e.target.style.display = 'none';
+                                  const fallback = e.target.parentElement.querySelector('.fallback-background');
+                                  if (fallback) fallback.style.display = 'flex';
                                 }}
                                 onLoad={() => {
-                                  console.log('Image loaded successfully');
+                                  console.log('Medical consultation image loaded successfully');
                                 }}
                               />
                               {/* Fallback gradient background - hidden by default */}
