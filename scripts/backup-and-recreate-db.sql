@@ -84,7 +84,7 @@ CREATE TABLE training_session_students (
   assigned_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
 
--- Table ecos_sessions avec training_session_id
+-- Table ecos_sessions avec TOUS les champs corrects
 CREATE TABLE ecos_sessions (
   id SERIAL PRIMARY KEY,
   scenario_id INTEGER REFERENCES ecos_scenarios(id) ON DELETE CASCADE NOT NULL,
@@ -153,30 +153,47 @@ CREATE TABLE daily_counters (
 
 -- 4. Restaurer les données des scénarios
 INSERT INTO ecos_scenarios (id, title, description, patient_prompt, evaluation_criteria, pinecone_index, image_url, created_by, created_at, updated_at)
-SELECT id, title, description, patient_prompt, evaluation_criteria, pinecone_index, image_url, created_by, created_at, COALESCE(updated_at, created_at)
+SELECT id, title, description, patient_prompt, evaluation_criteria, pinecone_index, 
+       COALESCE(image_url, NULL) as image_url, 
+       created_by, created_at, COALESCE(updated_at, created_at)
 FROM backup_scenarios;
 
--- Restaurer les sessions (sans training_session_id pour l'instant)
-INSERT INTO ecos_sessions (id, scenario_id, student_email, status, start_time, end_time, created_at, updated_at)
-SELECT id, scenario_id, student_email, status, start_time, end_time, created_at, COALESCE(updated_at, created_at)
+-- Restaurer les sessions avec tous les champs
+INSERT INTO ecos_sessions (id, scenario_id, student_email, training_session_id, status, start_time, end_time, created_at, updated_at)
+SELECT id, scenario_id, student_email, 
+       NULL as training_session_id, -- Set to NULL initially since training sessions might not exist yet
+       COALESCE(status, 'in_progress'), 
+       COALESCE(start_time, created_at, NOW()) as start_time,
+       end_time, 
+       COALESCE(created_at, NOW()),
+       COALESCE(updated_at, created_at, NOW())
 FROM backup_sessions
 WHERE EXISTS (SELECT 1 FROM backup_scenarios WHERE id = backup_sessions.scenario_id);
 
 -- Restaurer les messages
 INSERT INTO ecos_messages (id, session_id, role, content, timestamp)
-SELECT id, session_id, role, content, timestamp
+SELECT id, session_id, 
+       CASE 
+         WHEN role = 'user' THEN 'student'
+         WHEN role = 'assistant' THEN 'patient'
+         ELSE role
+       END as role,
+       content, timestamp
 FROM backup_messages
 WHERE session_id IN (SELECT id FROM ecos_sessions);
 
 -- Restaurer les évaluations
 INSERT INTO ecos_evaluations (id, session_id, criterion_id, score, max_score, feedback, created_at)
-SELECT id, session_id, criterion_id, score, max_score, feedback, created_at
+SELECT id, session_id, 
+       COALESCE(criterion_id, criterion_name, 'general') as criterion_id,
+       score, max_score, feedback, 
+       COALESCE(created_at, NOW())
 FROM backup_evaluations
 WHERE session_id IN (SELECT id FROM ecos_sessions);
 
 -- Restaurer les exchanges
 INSERT INTO exchanges (id, utilisateur_email, question, reponse, timestamp)
-SELECT id, utilisateur_email, question, reponse, timestamp
+SELECT COALESCE(id, nextval('exchanges_id_seq')), utilisateur_email, question, reponse, timestamp
 FROM backup_exchanges;
 
 -- 5. Réinitialiser les séquences
