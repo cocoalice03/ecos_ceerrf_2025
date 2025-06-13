@@ -9,6 +9,7 @@ import { Play, Clock, CheckCircle2, AlertCircle, BarChart3, FileText, Calendar, 
 import PatientSimulator from "@/components/ecos/PatientSimulator";
 import EvaluationReport from "@/components/ecos/EvaluationReport";
 import StudentDiagnostic from "@/components/debug/StudentDiagnostic";
+import ImageDiagnostic from "@/components/debug/ImageDiagnostic";
 import { apiRequest } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 
@@ -20,6 +21,7 @@ export default function StudentPage({ email }: StudentPageProps) {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
+  const [showImageDiagnostic, setShowImageDiagnostic] = useState(false);
 
   // Check for scenario parameter in URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -121,6 +123,31 @@ export default function StudentPage({ email }: StudentPageProps) {
     );
   }
 
+  // If viewing image diagnostic
+  if (showImageDiagnostic) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200 mb-6">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">Diagnostic d'Image</h1>
+              <Button variant="outline" onClick={() => setShowImageDiagnostic(false)}>
+                Retour au Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6">
+          <ImageDiagnostic
+            imageUrl="https://replit.com/t/ceerrf/repls/130625-ECOS-bot-design-dashboard-Student#client/public/images/imagegpt.png"
+            altText="Consultation d'urgence - Douleur thoracique"
+            className="feature-header-image"
+          />
+        </div>
+      </div>
+    );
+  }
+
   // If viewing report
   if (viewingReport) {
     return (
@@ -170,6 +197,14 @@ export default function StudentPage({ email }: StudentPageProps) {
               <p className="text-gray-600">Bienvenue, {decodedEmail}</p>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowImageDiagnostic(true)}
+                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                🔍 Diagnostic Image
+              </Button>
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                 Mode Étudiant
               </Badge>
