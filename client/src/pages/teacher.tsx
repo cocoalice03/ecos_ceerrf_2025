@@ -1132,7 +1132,6 @@ function TeacherPage({ email }: TeacherPageProps) {
           </div>
         )}
       </div>
-    </div>
     </>
   );
 }
