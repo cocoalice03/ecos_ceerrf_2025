@@ -356,6 +356,12 @@ export default function StudentPage({ email }: StudentPageProps) {
                               className="feature-header-image"
                               alt="Arthrose de la main"
                             />
+                          ) : scenario.id === 5 ? (
+                            <img 
+                              src="/images/syndrome_du_canal_carpien.png"
+                              className="feature-header-image"
+                              alt="Syndrome du canal carpien"
+                            />
                           ) : (
                             <img 
                               src="/images/cahier.png"
