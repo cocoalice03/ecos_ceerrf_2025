@@ -166,12 +166,6 @@ export default function StudentPage({ email }: StudentPageProps) {
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="hero-content flex items-center gap-12">
             <div className="flex-1">
-              {/* Image placeholder - you can replace this with your image later */}
-              <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-400">
-                <span className="text-gray-500 text-lg">Image à intégrer ici</span>
-              </div>
-            </div>
-            <div className="flex-1">
               <div className="hero-text">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Lorem Ipsum Dolor Sit</h2>
                 <p className="text-gray-600 text-lg leading-relaxed mb-6">
@@ -180,6 +174,12 @@ export default function StudentPage({ email }: StudentPageProps) {
                 <p className="text-gray-600 leading-relaxed">
                   Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                 </p>
+              </div>
+            </div>
+            <div className="flex-1">
+              {/* Image placeholder - you can replace this with your image later */}
+              <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-400">
+                <span className="text-gray-500 text-lg">Image à intégrer ici</span>
               </div>
             </div>
           </div>
