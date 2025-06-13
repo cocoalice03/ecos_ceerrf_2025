@@ -350,6 +350,12 @@ export default function StudentPage({ email }: StudentPageProps) {
                               className="feature-header-image"
                               alt="Traumatisme du poignet"
                             />
+                          ) : scenario.id === 4 ? (
+                            <img 
+                              src="/images/arthrose_de_la_main.png"
+                              className="feature-header-image"
+                              alt="Arthrose de la main"
+                            />
                           ) : (
                             <img 
                               src="/images/cahier.png"
