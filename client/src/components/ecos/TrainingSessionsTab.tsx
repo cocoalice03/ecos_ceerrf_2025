@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,7 +91,7 @@ function EnrolledStudentsModal({ isOpen, onClose, trainingSession, email, onSucc
 
       queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['training-session-details'] });
-      
+
       alert(`${studentEmail} a été désinscrit avec succès !`);
       onSuccess();
     } catch (error: any) {
@@ -113,7 +112,7 @@ function EnrolledStudentsModal({ isOpen, onClose, trainingSession, email, onSucc
             <X className="w-4 h-4" />
           </Button>
         </div>
-        
+
         <p className="text-gray-600 mb-4">
           Session de formation : "{trainingSession.title}"
         </p>
@@ -202,7 +201,7 @@ function RemoveStudentsModal({ isOpen, onClose, trainingSession, email, onSucces
 
       queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['training-session-details'] });
-      
+
       alert(`${selectedStudents.length} étudiant(s) désincrit(s) avec succès !`);
       setSelectedStudents([]);
       onSuccess();
@@ -233,7 +232,7 @@ function RemoveStudentsModal({ isOpen, onClose, trainingSession, email, onSucces
             <X className="w-4 h-4" />
           </Button>
         </div>
-        
+
         <p className="text-gray-600 mb-4">
           Sélectionnez les étudiants à désinscrire de la session "{trainingSession.title}"
         </p>
@@ -402,7 +401,7 @@ function CreateTrainingSessionForm({ email, scenarios, onSuccess, editingSession
               className="mt-1"
             />
           </div>
-          
+
           <div>
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -427,7 +426,7 @@ function CreateTrainingSessionForm({ email, scenarios, onSuccess, editingSession
               className="mt-1"
             />
           </div>
-          
+
           <div>
             <Label htmlFor="endDate">Date et Heure de Fin *</Label>
             <Input
@@ -585,7 +584,7 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
     const now = new Date();
     const start = new Date(session.startDate);
     const end = new Date(session.endDate);
-    
+
     if (now < start) return 'planned';
     if (now > end) return 'completed';
     return 'active';
@@ -706,7 +705,7 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Scenarios list */}
                     {session.scenarios.length > 0 && (
                       <div className="mt-3">

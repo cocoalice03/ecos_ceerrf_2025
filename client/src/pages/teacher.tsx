@@ -954,7 +954,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                                 {Object.entries(reportData.report.scores).map(([criterion, score]: [string, any]) => (
                                   <div key={criterion} className="flex justify-between items-center p-2 bg-white rounded border">
                                     <span className="text-sm font-medium">{criterion}</span>
-                                    <span className="text-sm font-bold text-blue-600">{score}/100</span>
+                                    <span className="text-sm font-bold text-blue-600">{score}/4</span>
                                   </div>
                                 ))}
                               </div>
