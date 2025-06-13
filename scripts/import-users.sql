@@ -22,3 +22,6 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Vérification de l'insertion
 SELECT * FROM users WHERE email = 'cherubindavid@gmail.com';
+
+-- Affichage du nombre total d'utilisateurs
+SELECT COUNT(*) as total_users FROM users;
