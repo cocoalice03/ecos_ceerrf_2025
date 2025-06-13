@@ -554,60 +554,69 @@ function TeacherPage({ email }: TeacherPageProps) {
 
           <TabsContent value="overview">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Activité Récente</CardTitle>
-                  <CardDescription>Dernières sessions des étudiants</CardDescription>
+              <Card className="border-0 shadow-sm bg-white">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900">Activité Récente</CardTitle>
+                  <CardDescription className="text-sm text-gray-500">Dernières sessions des étudiants</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   {sessions.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {sessions.slice(0, 5).map((session: any) => (
                         <div 
                           key={session.id} 
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                          className="flex items-center justify-between py-3 px-0 border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer transition-colors rounded-sm"
                           onClick={() => session.status === 'completed' && setViewingReport(session.id)}
                         >
-                          <div>
-                            <p className="font-medium">Consultation #{session.id}</p>
-                            <p className="text-sm text-gray-600">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 text-sm">Consultation #{session.id}</p>
+                            <p className="text-xs text-gray-500 mt-1">
                               Étudiant: {session.studentEmail || 'Non défini'}
                             </p>
                           </div>
-                          <Badge variant={session.status === 'completed' ? 'default' : 'secondary'}>
+                          <Badge 
+                            variant={session.status === 'completed' ? 'default' : 'secondary'}
+                            className={`ml-3 px-3 py-1 text-xs font-medium rounded-full ${
+                              session.status === 'completed' 
+                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                                : 'bg-gray-100 text-gray-600'
+                            }`}
+                          >
                             {session.status === 'completed' ? 'Terminée' : 'En cours'}
                           </Badge>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-center py-8">Aucune consultation récente</p>
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 text-sm">Aucune consultation récente</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Performances</CardTitle>
-                  <CardDescription>Statistiques des évaluations</CardDescription>
+              <Card className="border-0 shadow-sm bg-white">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900">Performances</CardTitle>
+                  <CardDescription className="text-sm text-gray-500">Statistiques des évaluations</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Taux de completion</span>
-                      <span className="font-bold">
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Taux de completion</span>
+                      <span className="text-lg font-bold text-gray-900">
                         {sessions.length > 0 
                           ? Math.round((stats.completedSessions / sessions.length) * 100)
                           : 0}%
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Sessions actives</span>
-                      <span className="font-bold">{stats.activeSessions}</span>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Sessions actives</span>
+                      <span className="text-lg font-bold text-gray-900">{stats.activeSessions}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Étudiants engagés</span>
-                      <span className="font-bold">{stats.totalStudents}</span>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Étudiants engagés</span>
+                      <span className="text-lg font-bold text-gray-900">{stats.totalStudents}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -616,13 +625,16 @@ function TeacherPage({ email }: TeacherPageProps) {
           </TabsContent>
 
           <TabsContent value="scenarios">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <Card className="border-0 shadow-sm bg-white">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div>
-                  <CardTitle>Gestion des Scénarios</CardTitle>
-                  <CardDescription>Créez et gérez vos scénarios ECOS</CardDescription>
+                  <CardTitle className="text-lg font-semibold text-gray-900">Gestion des Scénarios</CardTitle>
+                  <CardDescription className="text-sm text-gray-500 mt-1">Créez et gérez vos scénarios ECOS</CardDescription>
                 </div>
-                <Button onClick={() => setActiveTab('create')}>
+                <Button 
+                  onClick={() => setActiveTab('create')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                >
                   <BookOpen className="h-4 w-4 mr-2" />
                   Nouveau Scénario
                 </Button>
@@ -738,12 +750,12 @@ function TeacherPage({ email }: TeacherPageProps) {
 
           <TabsContent value="create">
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>
+              <Card className="border-0 shadow-sm bg-white">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900">
                     {editingScenario ? "Modifier le Scénario ECOS" : "Créer un Nouveau Scénario ECOS"}
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm text-gray-500 mt-1">
                     {editingScenario 
                       ? "Modifiez les détails de votre scénario d'examen clinique structuré"
                       : "Définissez un nouveau scénario d'examen clinique structuré"
@@ -773,10 +785,10 @@ function TeacherPage({ email }: TeacherPageProps) {
           </TabsContent>
 
           <TabsContent value="sessions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Sessions ECOS des Étudiants</CardTitle>
-                <CardDescription>Suivez les sessions d'examen en cours et terminées</CardDescription>
+            <Card className="border-0 shadow-sm bg-white">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900">Sessions ECOS des Étudiants</CardTitle>
+                <CardDescription className="text-sm text-gray-500 mt-1">Suivez les sessions d'examen en cours et terminées</CardDescription>
               </CardHeader>
               <CardContent>
                 {isStudentsLoading ? (
@@ -796,15 +808,18 @@ function TeacherPage({ email }: TeacherPageProps) {
                         return acc;
                       }, {})
                     ).map(([studentEmail, studentSessions]: [string, any]) => (
-                      <div key={studentEmail} className="border rounded-lg p-4">
+                      <div key={studentEmail} className="border border-gray-100 rounded-lg p-4 bg-white shadow-sm">
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h4 className="font-medium text-lg">{studentEmail}</h4>
-                            <p className="text-sm text-gray-600">
+                            <h4 className="font-medium text-gray-900">{studentEmail}</h4>
+                            <p className="text-sm text-gray-500">
                               Session de formation: {studentSessions[0].trainingSessionTitle}
                             </p>
                           </div>
-                          <Badge variant="outline">
+                          <Badge 
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200"
+                          >
                             <UserPlus className="w-3 h-3 mr-1" />
                             Assigné
                           </Badge>
