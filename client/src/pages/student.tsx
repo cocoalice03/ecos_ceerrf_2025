@@ -439,8 +439,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                         </div>
                       </div>
                     ))}
-                  </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
