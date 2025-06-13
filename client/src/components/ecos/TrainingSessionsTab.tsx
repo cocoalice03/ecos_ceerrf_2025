@@ -49,6 +49,118 @@ interface RemoveStudentsModalProps {
   onSuccess: () => void;
 }
 
+interface EnrolledStudentsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  trainingSession: TrainingSession;
+  email: string;
+  onSuccess: () => void;
+}
+
+function EnrolledStudentsModal({ isOpen, onClose, trainingSession, email, onSuccess }: EnrolledStudentsModalProps) {
+  const [removingStudent, setRemovingStudent] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  // Fetch detailed training session to get students list
+  const { data: sessionDetails } = useQuery({
+    queryKey: ['training-session-details', trainingSession.id],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/training-sessions/${trainingSession.id}?email=${encodeURIComponent(email)}`);
+      return response.trainingSession;
+    },
+    enabled: isOpen && !!trainingSession.id,
+  });
+
+  const handleRemoveStudent = async (studentEmail: string) => {
+    const confirmMessage = `Êtes-vous sûr de vouloir désinscrire ${studentEmail} de cette session de formation ?`;
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setRemovingStudent(studentEmail);
+    try {
+      // Get current students and remove the selected one
+      const currentStudents = sessionDetails?.students || [];
+      const remainingStudents = currentStudents
+        .filter((student: any) => student.studentEmail !== studentEmail)
+        .map((student: any) => student.studentEmail);
+
+      await apiRequest('PUT', `/api/training-sessions/${trainingSession.id}`, {
+        email,
+        studentEmails: remainingStudents
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['training-session-details'] });
+      
+      alert(`${studentEmail} a été désinscrit avec succès !`);
+      onSuccess();
+    } catch (error: any) {
+      alert("Erreur lors de la suppression : " + error.message);
+    } finally {
+      setRemovingStudent(null);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Étudiants Inscrits</h3>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        <p className="text-gray-600 mb-4">
+          Session de formation : "{trainingSession.title}"
+        </p>
+
+        {sessionDetails?.students && sessionDetails.students.length > 0 ? (
+          <div className="space-y-3 mb-6">
+            {sessionDetails.students.map((student: any) => (
+              <div key={student.studentEmail} className="flex items-center justify-between p-3 border rounded">
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    {student.studentEmail}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Inscrit le {new Date(student.assignedAt).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleRemoveStudent(student.studentEmail)}
+                  disabled={removingStudent === student.studentEmail}
+                >
+                  <UserMinus className="w-4 h-4 mr-1" />
+                  {removingStudent === student.studentEmail ? "Suppression..." : "Désinscrire"}
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-8">
+            Aucun étudiant inscrit à cette session
+          </p>
+        )}
+
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            onClick={onClose}
+          >
+            Fermer
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RemoveStudentsModal({ isOpen, onClose, trainingSession, email, onSuccess }: RemoveStudentsModalProps) {
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -412,6 +524,7 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
   const [editingSession, setEditingSession] = useState<TrainingSession | null>(null);
   const [deletingSession, setDeletingSession] = useState<TrainingSession | null>(null);
   const [removingStudentsSession, setRemovingStudentsSession] = useState<TrainingSession | null>(null);
+  const [enrolledStudentsSession, setEnrolledStudentsSession] = useState<TrainingSession | null>(null);
 
   // Fetch training sessions
   const { data: trainingSessions, isLoading: sessionsLoading } = useQuery({
@@ -569,6 +682,14 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          variant="secondary"
+                          onClick={() => setEnrolledStudentsSession(session)}
+                        >
+                          <Users className="w-4 h-4 mr-1" />
+                          Inscrits
+                        </Button>
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => setEditingSession(session)}
                         >
@@ -620,6 +741,19 @@ export default function TrainingSessionsTab({ email }: TrainingSessionsTabProps)
           )}
         </CardContent>
       </Card>
+
+      {/* Enrolled Students Modal */}
+      {enrolledStudentsSession && (
+        <EnrolledStudentsModal
+          isOpen={!!enrolledStudentsSession}
+          onClose={() => setEnrolledStudentsSession(null)}
+          trainingSession={enrolledStudentsSession}
+          email={email}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+          }}
+        />
+      )}
 
       {/* Remove Students Modal */}
       {removingStudentsSession && (
