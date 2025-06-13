@@ -442,9 +442,77 @@ export default function StudentPage({ email }: StudentPageProps) {
                 </div>
               )}
             </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </Card>
+        )}
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Historique des Sessions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {sessionsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : sessions?.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Aucune session trouvée</p>
+              ) : (
+                <div className="space-y-4">
+                  {sessions?.map((session: any) => (
+                    <div key={session.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-medium">{session.scenarioTitle}</h4>
+                          <p className="text-sm text-gray-500">
+                            {session.status === 'completed' ? 'Terminée' : 'En cours'} • {' '}
+                            {new Date(session.startTime).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge 
+                            variant="outline" 
+                            className={session.status === 'completed' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}
+                          >
+                            {session.status === 'completed' ? 'Terminée' : 'En cours'}
+                          </Badge>
+                          {session.status === 'completed' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewReport(session.id)}
+                            >
+                              <TrendingUp className="w-4 h-4 mr-1" />
+                              Voir Résultats
+                            </Button>
+                          )}
+                          {session.status === 'in_progress' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setActiveSessionId(session.id)}
+                            >
+                              <Play className="w-4 h-4 mr-1" />
+                              Reprendre
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
       </div>
     </div>
   );
