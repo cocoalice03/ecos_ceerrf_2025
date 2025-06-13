@@ -11,7 +11,6 @@ import { Users, BookOpen, TrendingUp, Clock, Play, Pause, RotateCcw, Wand2, Cale
 import { useDashboardData, useAvailableIndexes, useTeacherStudents } from '@/lib/api';
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import TeacherAssistant from "@/components/ecos/TeacherAssistant";
-import EcosDebugger from "@/components/debug/EcosDebugger";
 import { AdminButton } from "@/components/layout/AdminButton";
 import { apiRequest } from "@/lib/queryClient";
 import TrainingSessionsTab from "@/components/ecos/TrainingSessionsTab";
@@ -430,21 +429,16 @@ function TeacherPage({ email }: TeacherPageProps) {
     <>
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-700 border-b border-blue-200 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Tableau de bord Enseignant ECOS</h1>
-              <p className="text-gray-600">Gérez vos scénarios et suivez les progrès de vos étudiants</p>
-              {email && <p className="text-sm text-blue-600 mt-1">Connecté en tant que: {email}</p>}
-              {hasRealError && (
-                <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 text-sm">
-                  ⚠️ Données partiellement disponibles (mode dégradé)
-                </div>
-              )}
+              <h1 className="text-3xl font-bold text-white mb-2">Tableau de bord Enseignant ECOS</h1>
+              <p className="text-blue-100 text-lg">Gérez vos scénarios et suivez les progrès de vos étudiants</p>
+              {email && <p className="text-sm text-blue-200 mt-2 font-medium">Connecté en tant que: {email}</p>}
             </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="bg-white/10 text-white border-white/20 backdrop-blur-sm px-4 py-2 text-sm font-medium">
                 Mode Enseignant
               </Badge>
               <AdminButton email={email || ''} />
@@ -455,7 +449,7 @@ function TeacherPage({ email }: TeacherPageProps) {
 
       {/* Hero Section - Main Section */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <section className="hero bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg mb-8">
+        <section className="hero bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl mb-8 border border-blue-100 shadow-sm">
           <div className="px-6 py-12">
             <div className="hero-content flex items-center gap-12">
               <div className="flex-1">
@@ -550,13 +544,12 @@ function TeacherPage({ email }: TeacherPageProps) {
 
         {/* Tabs for different sections */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-fit">
-            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-            <TabsTrigger value="scenarios">Scénarios</TabsTrigger>
-            <TabsTrigger value="create">Créer</TabsTrigger>
-            <TabsTrigger value="training-sessions">Sessions Formation</TabsTrigger>
-            <TabsTrigger value="sessions">Sessions ECOS</TabsTrigger>
-            <TabsTrigger value="debug">Debug</TabsTrigger>
+          <TabsList className="grid grid-cols-5 w-fit bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="scenarios" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Scénarios</TabsTrigger>
+            <TabsTrigger value="create" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Créer</TabsTrigger>
+            <TabsTrigger value="training-sessions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Sessions Formation</TabsTrigger>
+            <TabsTrigger value="sessions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Sessions ECOS</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -868,17 +861,7 @@ function TeacherPage({ email }: TeacherPageProps) {
             </Card>
           </TabsContent>
 
-          <TabsContent value="debug">
-            <Card>
-              <CardHeader>
-                <CardTitle>Debug ECOS</CardTitle>
-                <CardDescription>Diagnostiquer les problèmes d'autorisation</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EcosDebugger email={email || ''} />
-              </CardContent>
-            </Card>
-          </TabsContent>
+          
         </Tabs>
       </div>
 
