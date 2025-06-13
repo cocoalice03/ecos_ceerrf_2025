@@ -257,27 +257,28 @@
 --ring: 20 14.3% 4.1%;
 --radius: 0.5rem;
   }
+  
   .dark {
-      --background: 240 10% 3.9%;
---foreground: 0 0% 98%;
---muted: 240 3.7% 15.9%;
---muted-foreground: 240 5% 64.9%;
---popover: 240 10% 3.9%;
---popover-foreground: 0 0% 98%;
---card: 240 10% 3.9%;
---card-foreground: 0 0% 98%;
---border: 240 3.7% 15.9%;
---input: 240 3.7% 15.9%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 240 3.7% 15.9%;
---secondary-foreground: 0 0% 98%;
---accent: 240 3.7% 15.9%;
---accent-foreground: 0 0% 98%;
---destructive: 0 62.8% 30.6%;
---destructive-foreground: 0 0% 98%;
---ring: 240 4.9% 83.9%;
---radius: 0.5rem;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 211 100% 99%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --ring: 240 4.9% 83.9%;
+    --radius: 0.5rem;
   }
 
 @layer base {
@@ -292,78 +293,6 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
-}
-
-/* Feature cards styles */
-  .feature-card {
-    background: white;
-    border: 2px solid hsl(var(--border));
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    position: relative;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-    border-color: hsl(var(--primary) / 0.3);
-  }
-
-  .feature-header-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px 8px 0 0;
-  }
-
-  .feature-content {
-    padding: 1.5rem;
-  }
-
-  .feature-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: hsl(var(--foreground));
-    margin-bottom: 0.5rem;
-    line-height: 1.4;
-  }
-
-  .feature-description {
-    font-size: 0.875rem;
-    color: hsl(var(--muted-foreground));
-    line-height: 1.5;
-    margin-bottom: 1rem;
-  }
-
-  .feature-card-overlay {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .feature-overlay-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 2;
-  }
-
-  .feature-card-overlay:hover .feature-overlay-content {
-    opacity: 1;
-  }
-
-  .feature-overlay-text {
-    @apply text-white text-center;
-  }
 
   /* Enhanced tabs styling */
   .tabs-trigger-enhanced {
@@ -371,4 +300,5 @@
     @apply transition-all duration-200;
     @apply hover:bg-gray-100 data-[state=active]:hover:bg-primary;
   }
+}
 }
