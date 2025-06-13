@@ -694,54 +694,6 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
     }
   });
 
-  // Upload scenario image
-  app.post("/api/ecos/upload-scenario-image", upload.single('image'), async (req: Request, res: Response) => {
-    try {
-      const { email } = req.body;
-
-      if (!email || !isAdminAuthorized(email)) {
-        return res.status(403).json({ message: "Accès non autorisé" });
-      }
-
-      if (!req.file) {
-        return res.status(400).json({ message: "Aucune image fournie" });
-      }
-
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!allowedTypes.includes(req.file.mimetype)) {
-        return res.status(400).json({ message: "Type de fichier non supporté. Utilisez JPG, PNG, GIF ou WebP." });
-      }
-
-      // Generate unique filename
-      const fileExtension = req.file.originalname.split('.').pop();
-      const fileName = `scenario-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
-      const filePath = `/images/scenarios/${fileName}`;
-
-      // Save file to public directory
-      const fs = await import('fs');
-      const path = await import('path');
-      
-      const uploadsDir = path.join(process.cwd(), 'client/public/images/scenarios');
-      
-      // Create directory if it doesn't exist
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-
-      const fullPath = path.join(uploadsDir, fileName);
-      fs.writeFileSync(fullPath, req.file.buffer);
-
-      return res.status(200).json({ 
-        message: "Image uploadée avec succès",
-        imageUrl: filePath
-      });
-    } catch (error) {
-      console.error("Error uploading scenario image:", error);
-      return res.status(500).json({ message: "Erreur lors de l'upload de l'image" });
-    }
-  });
-
   // Admin: Upload and process PDF documents
   app.post("/api/admin/upload-pdf", upload.single('pdf'), async (req: Request, res: Response) => {
     try {
@@ -838,10 +790,9 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         patientPrompt: z.string().optional(),
         evaluationCriteria: z.any().optional(),
         pineconeIndex: z.string().optional(),
-        imageUrl: z.string().optional(),
       });
 
-      const { email, title, description, patientPrompt, evaluationCriteria, pineconeIndex, imageUrl } = createSchema.parse(req.body);
+      const { email, title, description, patientPrompt, evaluationCriteria, pineconeIndex } = createSchema.parse(req.body);
 
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
@@ -880,7 +831,6 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         patientPrompt: finalPatientPrompt,
         evaluationCriteria: finalCriteria,
         createdBy: email,
-        imageUrl,
       }).returning();
 
       return res.status(201).json({ 
@@ -964,7 +914,6 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         description: z.string().min(1).optional(),
         patientPrompt: z.string().optional(),
         evaluationCriteria: z.any().optional(),
-        imageUrl: z.string().optional(),
       });
 
       const { email, ...updateData } = updateSchema.parse(req.body);
@@ -1337,7 +1286,6 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
           title: ecosScenarios.title,
           description: ecosScenarios.description,
           createdAt: ecosScenarios.createdAt,
-          imageUrl: ecosScenarios.imageUrl,
         })
         .from(ecosScenarios)
         .orderBy(ecosScenarios.createdAt);

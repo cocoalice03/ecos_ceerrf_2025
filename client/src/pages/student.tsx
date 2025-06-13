@@ -332,15 +332,43 @@ export default function StudentPage({ email }: StudentPageProps) {
                       <div key={scenario.id} className="feature-card feature-card-overlay">
                         {/* Photo panoramique en haut */}
                         <div className="relative">
-                          <img 
-                            src={scenario.imageUrl || "/images/cahier.png"}
-                            className="feature-header-image"
-                            alt={scenario.title}
-                            onError={(e) => {
-                              // Fallback to default image if custom image fails to load
-                              e.currentTarget.src = "/images/cahier.png";
-                            }}
-                          />
+                          {scenario.id === 1 ? (
+                            <img 
+                              src="/images/douleur_thoracique.png"
+                              className="feature-header-image"
+                              alt="Consultation d'urgence - Douleur thoracique"
+                            />
+                          ) : scenario.id === 2 ? (
+                            <img 
+                              src="/images/douleur_thoracic.png"
+                              className="feature-header-image"
+                              alt="Examen de l'épaule douloureuse"
+                            />
+                          ) : scenario.id === 3 ? (
+                            <img 
+                              src="/images/trauma_poignet.png"
+                              className="feature-header-image"
+                              alt="Traumatisme du poignet"
+                            />
+                          ) : scenario.id === 4 ? (
+                            <img 
+                              src="/images/arthrose_de_la_main.png"
+                              className="feature-header-image"
+                              alt="Arthrose de la main"
+                            />
+                          ) : scenario.id === 5 ? (
+                            <img 
+                              src="/images/syndrome_du_canal_carpien.png"
+                              className="feature-header-image"
+                              alt="Syndrome du canal carpien"
+                            />
+                          ) : (
+                            <img 
+                              src="/images/cahier.png"
+                              className="feature-header-image"
+                              alt="Scénario d'examen"
+                            />
+                          )}
 
                           {/* Overlay qui apparaît au hover */}
                           <div className="feature-overlay-content">
