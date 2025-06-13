@@ -349,48 +349,112 @@ app.use((req, res, next) => {
   console.log('🌐 Starting HTTP server...');
   
   // Determine port and host for Cloud Run compatibility
-  const port = parseInt(process.env.PORT || '5000', 10);
-  const host = process.env.HOST || '0.0.0.0';
+  // Always use port 5000 for Replit deployment compatibility
+  const isProduction = process.env.NODE_ENV === 'production';
+  const port = 5000; // Fixed port for Replit deployment
+  const host = '0.0.0.0';
+  
+  console.log(`🎯 Target port: ${port} (production: ${isProduction})`);
+  console.log(`🎯 Target host: ${host}`);
   
   // Store server reference for graceful shutdown
   httpServer = server;
   
-  // Enhanced server startup with better error handling
-  const startServer = () => {
-    return new Promise<void>((resolve, reject) => {
-      const serverInstance = server.listen({
-        port,
-        host,
-        reusePort: true,
-      }, (err?: Error) => {
-        if (err) {
-          console.error('❌ Failed to start server:', err.message);
-          reject(err);
-          return;
-        }
-        
-        console.log('✅ Server started successfully');
-        console.log(`🌐 Listening on http://${host}:${port}`);
-        console.log(`🏥 Health check: http://${host}:${port}/health`);
-        console.log(`🚀 Ready check: http://${host}:${port}/ready`);
-        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-        console.log(`⏰ Started at: ${new Date().toISOString()}`);
-        
-        resolve();
-      });
+  // Enhanced server startup with production/development port handling
+  const startServer = async (targetPort: number): Promise<void> => {
+    // In production, strictly use the specified port (no fallback)
+    if (isProduction) {
+      return new Promise<void>((resolve, reject) => {
+        const serverInstance = server.listen({
+          port: targetPort,
+          host,
+        }, (err?: Error) => {
+          if (err) {
+            console.error('❌ Production server failed to start:', err.message);
+            reject(err);
+            return;
+          }
+          
+          console.log('✅ Production server started successfully');
+          console.log(`🌐 Listening on http://${host}:${targetPort}`);
+          console.log(`🏥 Health check: http://${host}:${targetPort}/health`);
+          console.log(`🚀 Ready check: http://${host}:${targetPort}/ready`);
+          console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+          console.log(`⏰ Started at: ${new Date().toISOString()}`);
+          
+          resolve();
+        });
 
-      serverInstance.on('error', (error: Error) => {
-        console.error('❌ Server error:', error.message);
-        if (error.message.includes('EADDRINUSE')) {
-          console.error(`Port ${port} is already in use. Trying to resolve...`);
-        }
-        reject(error);
+        serverInstance.on('error', (error: Error) => {
+          console.error('❌ Production server error:', error.message);
+          reject(error);
+        });
+
+        // Shorter timeout for production
+        setTimeout(() => {
+          reject(new Error('Production server startup timeout'));
+        }, 5000);
       });
-    });
+    }
+    
+    // Development mode: Allow port fallback
+    const maxAttempts = 5;
+    let attemptPort = targetPort;
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const serverInstance = server.listen({
+            port: attemptPort,
+            host,
+          }, (err?: Error) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            
+            console.log('✅ Development server started successfully');
+            console.log(`🌐 Listening on http://${host}:${attemptPort}`);
+            console.log(`🏥 Health check: http://${host}:${attemptPort}/health`);
+            console.log(`🚀 Ready check: http://${host}:${attemptPort}/ready`);
+            console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+            console.log(`⏰ Started at: ${new Date().toISOString()}`);
+            
+            resolve();
+          });
+
+          serverInstance.on('error', (error: Error) => {
+            reject(error);
+          });
+
+          // Timeout for development
+          setTimeout(() => {
+            reject(new Error('Development server startup timeout'));
+          }, 10000);
+        });
+        
+        return; // Success
+        
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        if (errorMessage.includes('EADDRINUSE') && attempt < maxAttempts) {
+          console.warn(`⚠️ Port ${attemptPort} in use, trying port ${attemptPort + 1} (attempt ${attempt}/${maxAttempts})`);
+          attemptPort++;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
+        
+        console.error(`❌ Failed to start development server after ${attempt} attempts:`, errorMessage);
+        throw error;
+      }
+    }
+    
+    throw new Error(`Failed to start server after ${maxAttempts} attempts`);
   };
 
   try {
-    await startServer();
+    await startServer(port);
     
     // Perform initial health check
     setTimeout(async () => {
