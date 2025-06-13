@@ -362,36 +362,13 @@
   }
 
   .feature-overlay-text {
-    text-align: center;
-    font-weight: 600;
-    font-size: 1.1rem;
+    @apply text-white text-center;
   }
 
-  /* Line clamp utility */
-  .line-clamp-3 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-  }
-
-  /* Enhanced TabsTrigger avec effet bordure dégradée au hover */
+  /* Enhanced tabs styling */
   .tabs-trigger-enhanced {
-    position: relative;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
+    @apply data-[state=active]:bg-primary data-[state=active]:text-primary-foreground;
+    @apply transition-all duration-200;
+    @apply hover:bg-gray-100 data-[state=active]:hover:bg-primary;
   }
-
-  .tabs-trigger-enhanced:hover {
-    border: 2px solid transparent;
-    background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7)) border-box;
-  }
-
-  .tabs-trigger-enhanced[data-state="active"] {
-    border: 2px solid transparent;
-    background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7)) border-box;
-    color: hsl(var(--primary));
-    font-weight: 600;
-  }
+}

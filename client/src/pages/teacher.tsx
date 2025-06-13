@@ -428,68 +428,121 @@ function TeacherPage({ email }: TeacherPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-6">
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Tableau de bord Enseignant</h1>
-              <p className="text-gray-600 mt-2">Gérez vos scénarios ECOS et suivez les progrès de vos étudiants</p>
+              <h1 className="text-2xl font-bold text-gray-900">Tableau de bord Enseignant ECOS</h1>
+              <p className="text-gray-600">Gérez vos scénarios et suivez les progrès de vos étudiants</p>
               {email && <p className="text-sm text-blue-600 mt-1">Connecté en tant que: {email}</p>}
-          {hasRealError && (
-            <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 text-sm">
-              ⚠️ Données partiellement disponibles (mode dégradé)
+              {hasRealError && (
+                <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 text-sm">
+                  ⚠️ Données partiellement disponibles (mode dégradé)
+                </div>
+              )}
             </div>
-          )}
-            </div>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                Mode Enseignant
+              </Badge>
               <AdminButton email={email || ''} />
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Hero Section - Main Section */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <section className="hero bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg mb-8">
+          <div className="px-6 py-12">
+            <div className="hero-content flex items-center gap-12">
+              <div className="flex-1">
+                <div className="hero-text">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Plateforme Pédagogique Avancée</h2>
+                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                    Créez des scénarios ECOS immersifs, organisez vos sessions de formation et évaluez vos étudiants avec notre système intelligent basé sur l'IA
+                  </p>
+                </div>
+              </div>
+              <div className="flex-1">
+                <img 
+                  src="/images/happy_student.jpg"
+                  alt="Enseignant avec étudiant"
+                  className="w-full h-64 object-cover rounded-lg shadow-lg"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Scénarios Actifs</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalScenarios}</div>
-              <p className="text-xs text-muted-foreground">scénarios disponibles</p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Scénarios Actifs</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalScenarios}</p>
+                </div>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/images/cahier.png"
+                    alt="Scénarios actifs"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sessions Actives</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.activeSessions}</div>
-              <p className="text-xs text-muted-foreground">en cours</p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Sessions Actives</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.activeSessions}</p>
+                </div>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/images/horloge.png"
+                    alt="Sessions actives"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sessions Complétées</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completedSessions}</div>
-              <p className="text-xs text-muted-foreground">terminées</p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Sessions Complétées</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.completedSessions}</p>
+                </div>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/images/vraie.png"
+                    alt="Sessions complétées"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Étudiants Uniques</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalStudents}</div>
-              <p className="text-xs text-muted-foreground">participants</p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Étudiants Uniques</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
+                </div>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-blue-50">
+                  <Users className="w-8 h-8 text-blue-600" />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -582,27 +635,78 @@ function TeacherPage({ email }: TeacherPageProps) {
               </CardHeader>
               <CardContent>
                 {scenarios.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {scenarios.map((scenario: any) => (
-                      <Card key={scenario.id} className="hover:shadow-md transition-shadow">
-                        <CardHeader>
-                          <CardTitle className="text-lg">{scenario.title || `Scénario ${scenario.id}`}</CardTitle>
-                          <CardDescription>{scenario.description || 'Description non disponible'}</CardDescription>
+                      <div key={scenario.id} className="feature-card feature-card-overlay">
+                        {/* Photo panoramique en haut */}
+                        <div className="relative">
+                          {scenario.id === 1 ? (
+                            <img 
+                              src="/images/douleur_thoracique.png"
+                              className="feature-header-image"
+                              alt="Consultation d'urgence - Douleur thoracique"
+                            />
+                          ) : scenario.id === 2 ? (
+                            <img 
+                              src="/images/douleur_thoracic.png"
+                              className="feature-header-image"
+                              alt="Examen de l'épaule douloureuse"
+                            />
+                          ) : scenario.id === 3 ? (
+                            <img 
+                              src="/images/trauma_poignet.png"
+                              className="feature-header-image"
+                              alt="Traumatisme du poignet"
+                            />
+                          ) : scenario.id === 4 ? (
+                            <img 
+                              src="/images/arthrose_de_la_main.png"
+                              className="feature-header-image"
+                              alt="Arthrose de la main"
+                            />
+                          ) : scenario.id === 5 ? (
+                            <img 
+                              src="/images/syndrome_du_canal_carpien.png"
+                              className="feature-header-image"
+                              alt="Syndrome du canal carpien"
+                            />
+                          ) : (
+                            <img 
+                              src="/images/cahier.png"
+                              className="feature-header-image"
+                              alt="Scénario d'examen"
+                            />
+                          )}
+
+                          {/* Overlay qui apparaît au hover */}
+                          <div className="feature-overlay-content">
+                            <div className="feature-overlay-text">
+                              <Play className="w-8 h-8 mx-auto mb-2" />
+                              Tester le Scénario
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contenu de la carte */}
+                        <div className="feature-content">
+                          <h3 className="feature-title">{scenario.title || `Scénario ${scenario.id}`}</h3>
+                          <p className="feature-description line-clamp-3">
+                            {scenario.description || 'Description non disponible'}
+                          </p>
                           {scenario.pineconeIndex && (
                             <Badge variant="outline" className="w-fit mt-2">
                               Index: {scenario.pineconeIndex}
                             </Badge>
                           )}
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 mt-4">
                             <Button 
                               size="sm" 
                               variant="outline"
                               onClick={() => window.open(`/student/${encodeURIComponent(email || '')}?scenario=${scenario.id}`, '_blank')}
+                              className="flex-1"
                             >
                               <Play className="h-4 w-4 mr-1" />
-                              Lancer
+                              Tester
                             </Button>
                             <Button 
                               size="sm" 
@@ -619,8 +723,8 @@ function TeacherPage({ email }: TeacherPageProps) {
                               Supprimer
                             </Button>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -775,6 +879,7 @@ function TeacherPage({ email }: TeacherPageProps) {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
 
         {/* Delete Confirmation Dialog */}
         {deletingScenario && (
