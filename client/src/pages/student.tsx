@@ -299,7 +299,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                         <div className="relative">
                           {scenario.id === 1 ? (
                             <img 
-                              src="/images/consultation-urgence.png"
+                              src="/images/ChatGPT Image 13 juin 2025 à 11_27_11.png"
                               className="feature-header-image"
                               alt="Consultation d'urgence - Douleur thoracique"
                             />
