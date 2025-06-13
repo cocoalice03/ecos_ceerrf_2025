@@ -333,17 +333,11 @@ export default function StudentPage({ email }: StudentPageProps) {
                               alt="Examen de l'épaule douloureuse"
                             />
                           ) : (
-                            <div 
+                            <img 
+                              src="/images/cahier.png"
                               className="feature-header-image"
-                              style={{
-                                background: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7))`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}
-                            >
-                              <BookOpen className="w-12 h-12 text-white opacity-80" />
-                            </div>
+                              alt="Scénario d'examen"
+                            />
                           )}
 
                           {/* Overlay qui apparaît au hover */}
