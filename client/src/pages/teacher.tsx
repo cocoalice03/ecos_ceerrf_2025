@@ -462,8 +462,8 @@ function TeacherPage({ email }: TeacherPageProps) {
               </div>
               <div className="flex-1">
                 <img 
-                  src="/images/happy_student.jpg"
-                  alt="Enseignant avec étudiant"
+                  src="/images/teacher_professional.jpg"
+                  alt="Enseignante professionnelle"
                   className="w-full h-64 object-cover rounded-lg shadow-lg"
                 />
               </div>
