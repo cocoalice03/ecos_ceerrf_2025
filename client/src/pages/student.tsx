@@ -299,7 +299,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                         <div className="relative">
                           {scenario.id === 1 ? (
                             <img 
-                              src="/images/consultation-urgence.png"
+                              src="https://replit.com/t/ceerrf/repls/130625-ECOS-bot-design-dashboard-Student#client/public/images/imagegpt.png"
                               className="feature-header-image"
                               alt="Consultation d'urgence - Douleur thoracique"
                             />
