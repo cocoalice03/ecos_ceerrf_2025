@@ -226,7 +226,7 @@ export default function StudentPage({ email }: StudentPageProps) {
 
         {/* Main Content */}
         <Tabs defaultValue="scenarios" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 p-6">
             <TabsTrigger value="scenarios">Nouveaux Examens</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
           </TabsList>
