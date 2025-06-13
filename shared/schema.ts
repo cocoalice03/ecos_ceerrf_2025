@@ -65,15 +65,16 @@ export const insertCounterSchema = createInsertSchema(dailyCounters).pick({
 });
 
 // ECOS Scenarios table
-export const ecosScenarios = pgTable("ecos_scenarios", {
-  id: serial("id").primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description").notNull(),
-  patientPrompt: text("patient_prompt").notNull(),
-  evaluationCriteria: jsonb("evaluation_criteria").notNull(),
-  pineconeIndex: varchar("pinecone_index", { length: 255 }),
-  createdBy: varchar("created_by", { length: 255 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+export const ecosScenarios = pgTable('ecos_scenarios', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  patientPrompt: text('patient_prompt'),
+  evaluationCriteria: jsonb('evaluation_criteria'),
+  createdBy: varchar('created_by', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  pineconeIndex: varchar('pinecone_index', { length: 255 }),
+  imageUrl: varchar('image_url', { length: 500 }),
 });
 
 // ECOS Sessions table

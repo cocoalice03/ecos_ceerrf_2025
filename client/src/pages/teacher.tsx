@@ -31,8 +31,12 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
     patientPrompt: editingScenario?.patientPrompt || "",
     evaluationCriteria: editingScenario?.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : "",
     pineconeIndex: editingScenario?.pineconeIndex || "",
-    criteriaText: editingScenario?.criteriaText || ""
+    criteriaText: editingScenario?.criteriaText || "",
+    imageUrl: editingScenario?.imageUrl || ""
   });
+
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(editingScenario?.imageUrl || null);
 
   // Update form data when editing scenario changes
   useEffect(() => {
@@ -43,8 +47,11 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
         patientPrompt: editingScenario.patientPrompt || "",
         evaluationCriteria: editingScenario.evaluationCriteria ? JSON.stringify(editingScenario.evaluationCriteria, null, 2) : "",
         pineconeIndex: editingScenario.pineconeIndex || "",
-        criteriaText: editingScenario?.criteriaText || ""
+        criteriaText: editingScenario?.criteriaText || "",
+        imageUrl: editingScenario?.imageUrl || ""
       });
+      setImagePreview(editingScenario?.imageUrl || null);
+      setSelectedImage(null);
     }
   }, [editingScenario]);
 
@@ -118,8 +125,57 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
     }
   });
 
+  // Upload image mutation
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('email', email);
+
+      const response = await fetch('/api/ecos/upload-scenario-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de l\'upload');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setFormData(prev => ({ ...prev, imageUrl: data.imageUrl }));
+      setImagePreview(data.imageUrl);
+    },
+    onError: (error) => {
+      console.error('Error uploading image:', error);
+      alert('Erreur lors de l\'upload de l\'image: ' + error.message);
+    }
+  });
+
   const handleGenerateCriteria = () => {
     generateCriteriaMutation.mutate();
+  };
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadImage = () => {
+    if (selectedImage) {
+      uploadImageMutation.mutate(selectedImage);
+    }
   };
 
   const handleCreateScenario = () => {
@@ -144,12 +200,15 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
       description: formData.description,
       patientPrompt: formData.patientPrompt || undefined,
       evaluationCriteria: criteria,
-      pineconeIndex: formData.pineconeIndex || undefined
+      pineconeIndex: formData.pineconeIndex || undefined,
+      imageUrl: formData.imageUrl || undefined
     });
   };
 
   const handleCancel = () => {
-    setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "", criteriaText: "" });
+    setFormData({ title: "", description: "", patientPrompt: "", evaluationCriteria: "", pineconeIndex: "", criteriaText: "", imageUrl: "" });
+    setSelectedImage(null);
+    setImagePreview(null);
     if (onCancelEdit) onCancelEdit();
   };
 
@@ -205,6 +264,44 @@ function ScenarioCreationForm({ email, onSuccess, editingScenario, onCancelEdit 
         </Select>
         <p className="text-xs text-gray-500 mt-1">
           Choisissez l'index Pinecone contenant les connaissances spécifiques pour ce scénario.
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="scenarioImage">Image du Scénario (Optionnel)</Label>
+        <div className="mt-1 space-y-3">
+          <input
+            id="scenarioImage"
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          
+          {selectedImage && !formData.imageUrl && (
+            <Button
+              onClick={handleUploadImage}
+              disabled={uploadImageMutation.isPending}
+              variant="outline"
+              size="sm"
+            >
+              {uploadImageMutation.isPending ? "Upload en cours..." : "Uploader l'image"}
+            </Button>
+          )}
+
+          {imagePreview && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-600 mb-2">Aperçu de l'image :</p>
+              <img
+                src={imagePreview}
+                alt="Aperçu du scénario"
+                className="max-w-xs max-h-40 object-cover rounded-lg border"
+              />
+            </div>
+          )}
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Cette image sera affichée dans la liste des scénarios disponibles pour les étudiants.
         </p>
       </div>
 
