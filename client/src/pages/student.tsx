@@ -20,6 +20,7 @@ export default function StudentPage({ email }: StudentPageProps) {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
 
   // Check for scenario parameter in URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -27,6 +28,30 @@ export default function StudentPage({ email }: StudentPageProps) {
 
   // Decode email if it comes from URL (in case it's URL encoded)
   const decodedEmail = email ? decodeURIComponent(email) : email;
+
+  // Auto-create student account when accessing via URL
+  React.useEffect(() => {
+    const autoCreateAccount = async () => {
+      if (decodedEmail && !accountCreated) {
+        try {
+          console.log('🚀 Auto-creating student account for:', decodedEmail);
+          
+          const response = await apiRequest('POST', '/api/student/auto-register', {
+            email: decodedEmail
+          });
+          
+          console.log('✅ Student account created/updated:', response);
+          setAccountCreated(true);
+        } catch (error) {
+          console.error('❌ Error auto-creating student account:', error);
+          // Continue anyway - the existing fallback in available-scenarios will handle it
+          setAccountCreated(true);
+        }
+      }
+    };
+
+    autoCreateAccount();
+  }, [decodedEmail, accountCreated]);
 
   // Fetch available scenarios from student endpoint (filtered by training sessions)
   const { data: studentData, isLoading: scenariosLoading } = useQuery({
