@@ -790,9 +790,10 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         patientPrompt: z.string().optional(),
         evaluationCriteria: z.any().optional(),
         pineconeIndex: z.string().optional(),
+        imageUrl: z.string().optional(),
       });
 
-      const { email, title, description, patientPrompt, evaluationCriteria, pineconeIndex } = createSchema.parse(req.body);
+      const { email, title, description, patientPrompt, evaluationCriteria, pineconeIndex, imageUrl } = createSchema.parse(req.body);
 
       if (!isAdminAuthorized(email)) {
         return res.status(403).json({ message: "Accès non autorisé" });
@@ -830,6 +831,8 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         description,
         patientPrompt: finalPatientPrompt,
         evaluationCriteria: finalCriteria,
+        pineconeIndex,
+        imageUrl,
         createdBy: email,
       }).returning();
 
@@ -914,6 +917,7 @@ app.post('/api/ecos/generate-criteria', async (req, res) => {
         description: z.string().min(1).optional(),
         patientPrompt: z.string().optional(),
         evaluationCriteria: z.any().optional(),
+        imageUrl: z.string().optional(),
       });
 
       const { email, ...updateData } = updateSchema.parse(req.body);
