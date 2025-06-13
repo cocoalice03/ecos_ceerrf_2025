@@ -96,11 +96,6 @@ app.use((req, res, next) => {
       return next();
     }
 
-    // Allow access to public images directory
-    if (req.path.startsWith('/images/')) {
-      return next();
-    }
-
     const sensitivePaths = [
       // Environment and config files
       '/.env',
@@ -141,8 +136,6 @@ app.use((req, res, next) => {
       '/scripts',
       '/docs',
       '/documentation',
-      '/media',
-      '/uploads',
 
       // Test files
       '/test',

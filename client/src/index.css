@@ -153,15 +153,6 @@
     transform: translateY(10px); /* Légèrement décalé vers le bas */
 }
 
-/* STYLES POUR LES IMAGES */
-.object-cover {
-    object-fit: cover;
-}
-
-.feature-header-image img {
-    border-radius: 18px 18px 0 0;
-}
-
 /* ANIMATION DU TEXTE AU HOVER */
 .feature-card-overlay:hover .feature-overlay-text {
     transform: translateY(0); /* Remonte à sa position */

@@ -296,40 +296,16 @@ export default function StudentPage({ email }: StudentPageProps) {
                     {scenarios?.map((scenario: any) => (
                       <div key={scenario.id} className="feature-card feature-card-overlay">
                         {/* Photo panoramique en haut */}
-                        <div className="relative overflow-hidden rounded-t-lg">
+                        <div className="relative">
                           {scenario.id === 1 ? (
-                            <>
-                              <img 
-                                src="/images/medical-consultation.png"
-                                className="feature-header-image w-full h-40 object-cover"
-                                alt="Consultation d'urgence - Douleur thoracique"
-                                onError={(e) => {
-                                  console.error('Image failed to load:', e.target.src);
-                                  // Hide image and show fallback
-                                  e.target.style.display = 'none';
-                                  const fallback = e.target.parentElement.querySelector('.fallback-background');
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                                onLoad={() => {
-                                  console.log('Medical consultation image loaded successfully');
-                                }}
-                              />
-                              {/* Fallback gradient background - hidden by default */}
-                              <div 
-                                className="fallback-background feature-header-image absolute inset-0 w-full h-40"
-                                style={{
-                                  background: `linear-gradient(135deg, #e74c3c, #c0392b)`,
-                                  display: 'none',
-                                  alignItems: 'center',
-                                  justifyContent: 'center'
-                                }}
-                              >
-                                <BookOpen className="w-12 h-12 text-white opacity-90" />
-                              </div>
-                            </>
+                            <img 
+                              src="/images/consultation-urgence.png"
+                              className="feature-header-image"
+                              alt="Consultation d'urgence - Douleur thoracique"
+                            />
                           ) : (
                             <div 
-                              className="feature-header-image w-full h-40"
+                              className="feature-header-image"
                               style={{
                                 background: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7))`,
                                 display: 'flex',
