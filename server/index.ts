@@ -136,6 +136,8 @@ app.use((req, res, next) => {
       '/scripts',
       '/docs',
       '/documentation',
+      '/media',
+      '/uploads',
 
       // Test files
       '/test',
