@@ -103,13 +103,11 @@
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    @apply font-sans antialiased bg-background text-foreground;
   }
 }
 
