@@ -139,7 +139,7 @@ export default function StudentPage({ email }: StudentPageProps) {
         </div>
         <div className="max-w-7xl mx-auto px-6">
           <ImageDiagnostic
-            imageUrl="https://replit.com/t/ceerrf/repls/130625-ECOS-bot-design-dashboard-Student#client/public/images/imagegpt.png"
+            imageUrl="/images/imagegpt.png"
             altText="Consultation d'urgence - Douleur thoracique"
             className="feature-header-image"
           />

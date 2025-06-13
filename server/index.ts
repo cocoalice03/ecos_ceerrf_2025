@@ -71,7 +71,8 @@ app.use((req, res, next) => {
         '/node_modules/.vite/',
         '/__vite_ping',
         '/@react-refresh',
-        '/__open-in-editor'
+        '/__open-in-editor',
+        '/images/'
       ];
 
       if (viteResources.some(resource => req.path.startsWith(resource))) {
