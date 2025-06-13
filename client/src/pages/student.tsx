@@ -189,9 +189,6 @@ export default function StudentPage({ email }: StudentPageProps) {
                   <p className="text-gray-600 text-lg leading-relaxed mb-6">
                     Plateforme d'apprentissage nouvelle génération avec simulations IA, évaluations intelligentes et suivi personnalisé pour les professionnels de santé
                   </p>
-                  <p className="text-gray-600 leading-relaxed">
-                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                  </p>
                 </div>
               </div>
               <div className="flex-1">
