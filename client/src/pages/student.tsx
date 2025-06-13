@@ -211,8 +211,12 @@ export default function StudentPage({ email }: StudentPageProps) {
                   <p className="text-sm font-medium text-gray-600">Scénarios Disponibles</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.availableScenarios}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/images/cahier.png"
+                    alt="Scénarios disponibles"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
             </CardContent>
