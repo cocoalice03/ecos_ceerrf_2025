@@ -297,17 +297,25 @@ export default function StudentPage({ email }: StudentPageProps) {
                       <div key={scenario.id} className="feature-card feature-card-overlay">
                         {/* Photo panoramique en haut */}
                         <div className="relative">
-                          <div 
-                            className="feature-header-image"
-                            style={{
-                              background: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7))`,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            <BookOpen className="w-12 h-12 text-white opacity-80" />
-                          </div>
+                          {scenario.id === 1 ? (
+                            <img 
+                              src="/images/ChatGPT Image 13 juin 2025 à 11_27_11.png"
+                              className="feature-header-image"
+                              alt="Consultation d'urgence - Douleur thoracique"
+                            />
+                          ) : (
+                            <div 
+                              className="feature-header-image"
+                              style={{
+                                background: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7))`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <BookOpen className="w-12 h-12 text-white opacity-80" />
+                            </div>
+                          )}
                           
                           {/* Overlay qui apparaît au hover */}
                           <div className="feature-overlay-content">
