@@ -1,0 +1,799 @@
+
+> rest-express@1.0.0 dev
+Connected to Pinecone index: arthrologie-du-membre-superieur
+✅ Training sessions tables created successfully
+10:22:05 AM [express] serving on port 5000
+🔄 GET / { query: {}, body: [], timestamp: '2025-06-13T10:22:06.819Z' }
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+🔄 GET /src/main.tsx {
+  query: { v: 'b0JFmR7dvJStTZ1tj4kKi' },
+  body: [],
+  timestamp: '2025-06-13T10:22:07.771Z'
+}
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:22:07.798Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:22:08.784Z' }
+🔄 GET /src/App.tsx {
+  query: { v: 'b0JFmR7dvJStTZ1tj4kKi' },
+  body: [],
+  timestamp: '2025-06-13T10:22:08.879Z'
+}
+🔄 GET /src/index.css {
+  query: { v: 'b0JFmR7dvJStTZ1tj4kKi' },
+  body: [],
+  timestamp: '2025-06-13T10:22:08.881Z'
+}
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'b0JFmR7dvJStTZ1tj4kKi' },
+  body: [],
+  timestamp: '2025-06-13T10:22:09.264Z'
+}
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.266Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.269Z' }
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:09.271Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.372Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.373Z' }
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.374Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.541Z' }
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.542Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:09.543Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:22:09.544Z'
+}
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.720Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:09.721Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:22:09.722Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:09.723Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.776Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.896Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.897Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.897Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.898Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:09.899Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.070Z' }
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.072Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.073Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.074Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.074Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.075Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.249Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.249Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.250Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.251Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.251Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.253Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.424Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.425Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.426Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.427Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.428Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.429Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.598Z' }
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.599Z' }
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.601Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:22:10.601Z'
+}
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x2)
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:10.609Z' }
+🔄 GET /src/pages/student.tsx {
+  query: { t: '1749810121102' },
+  body: [],
+  timestamp: '2025-06-13T10:22:13.075Z'
+}
+🔄 GET / { query: {}, body: [], timestamp: '2025-06-13T10:22:13.380Z' }
+🔄 GET /src/index.css {
+  query: { t: '1749810121102', v: 'a0o21JNTN4w_xiYKX5llr' },
+  body: [],
+  timestamp: '2025-06-13T10:22:13.432Z'
+}
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:22:13.653Z' }
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:22:14.150Z' }
+🔄 GET /src/main.tsx {
+  query: { v: 'oazJP67fo_0pZ0MXIhOoL' },
+  body: [],
+  timestamp: '2025-06-13T10:22:14.451Z'
+}
+🔄 GET /src/App.tsx {
+  query: { v: 'oazJP67fo_0pZ0MXIhOoL' },
+  body: [],
+  timestamp: '2025-06-13T10:22:14.553Z'
+}
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:22:14.606Z' }
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:22:14.608Z' }
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:14.655Z' }
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.710Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.751Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.810Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.852Z' }
+🔄 GET /src/index.css {
+  query: { v: 'oazJP67fo_0pZ0MXIhOoL' },
+  body: [],
+  timestamp: '2025-06-13T10:22:14.853Z'
+}
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.908Z' }
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'oazJP67fo_0pZ0MXIhOoL' },
+  body: [],
+  timestamp: '2025-06-13T10:22:14.909Z'
+}
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.941Z' }
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.955Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:14.996Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:15.003Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.044Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.092Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:15.095Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.100Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.144Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.159Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.190Z' }
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.192Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.196Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.232Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.241Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.258Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.293Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:15.296Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.297Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:22:15.335Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.349Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.355Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.390Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.395Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.397Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.432Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.451Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.452Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.487Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.490Z' }
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.494Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.532Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.550Z' }
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.552Z' }
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:15.585Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WOOG5QLI.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.773Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/react.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.774Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/react-dom_client.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.776Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/react_jsx-dev-runtime.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.776Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-QCHXOAYK.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.777Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KBTYAULA.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.778Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.872Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-P6AUOPGQ.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.873Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YN3QL25T.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.878Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-EVLBUYTV.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.880Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-UBQ2LXDH.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.881Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-TNY366QT.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.883Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LXWIESXB.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.977Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BOL2CCOG.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.977Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-toast.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.978Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.979Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U7P2NEEE.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.981Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/class-variance-authority.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:15.991Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/clsx.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.075Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/tailwind-merge.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.077Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4DO6V6VF.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.083Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXHEV2X6.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.084Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.084Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IIGUYIAY.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.090Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXVMYYWC.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.173Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.177Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-slot.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.207Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-label.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.208Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/date-fns.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.209Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-43G6IMPT.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.210Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4RO2SXZU.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.284Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.302Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.306Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-checkbox.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.309Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-progress.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.310Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/date-fns_locale.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.324Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/lucide-react.js.map { query: {}, body: [], timestamp: '2025-06-13T10:22:16.382Z' }
+🔄 POST /api/webhook { query: {}, body: [ 'email' ], timestamp: '2025-06-13T10:22:16.418Z' }
+10:22:16 AM [express] POST /api/webhook 200 in 1ms :: {"message":"Session created successfully","sess…
+🔄 GET /api/student/available-scenarios {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:22:16.595Z'
+}
+🔄 GET /api/ecos/sessions {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:22:16.602Z'
+}
+User already exists for email: colombemadoungou@gmail.com
+10:22:16 AM [express] GET /api/ecos/sessions 200 in 134ms :: {"sessions":[{"id":11,"status":"complete…
+10:22:16 AM [express] GET /api/student/available-scenarios 304 in 161ms :: {"scenarios":[{"id":1,"tit…
+🔄 GET /images/ChatGPT%20Image%2013%20juin%202025%20%C3%A0%2011_27_11.png { query: {}, body: [], timestamp: '2025-06-13T10:22:16.868Z' }
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:22:47.397Z' }
+🔄 GET /src/main.tsx {
+  query: { v: 'vpWmHyG08OorEbaFiWok0' },
+  body: [],
+  timestamp: '2025-06-13T10:22:47.689Z'
+}
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:22:47.808Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:22:48.447Z' }
+🔄 GET /src/index.css {
+  query: { v: 'vpWmHyG08OorEbaFiWok0' },
+  body: [],
+  timestamp: '2025-06-13T10:22:48.473Z'
+}
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:22:48.477Z' }
+🔄 GET /src/App.tsx {
+  query: { v: 'vpWmHyG08OorEbaFiWok0' },
+  body: [],
+  timestamp: '2025-06-13T10:22:48.478Z'
+}
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:48.670Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.671Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.672Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.673Z' }
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'vpWmHyG08OorEbaFiWok0' },
+  body: [],
+  timestamp: '2025-06-13T10:22:48.763Z'
+}
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.765Z' }
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.766Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.767Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.769Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.863Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.865Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:48.866Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:48.874Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.950Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.958Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.963Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.964Z' }
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.964Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:48.968Z' }
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.047Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.051Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.059Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.059Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.060Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.063Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.142Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.144Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.155Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.155Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.156Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.157Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.237Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.239Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.249Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.250Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.251Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:22:49.251Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.331Z' }
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.334Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:22:49.348Z'
+}
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.349Z' }
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x3)
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:22:49.350Z' }
+🔄 GET / { query: {}, body: [], timestamp: '2025-06-13T10:24:02.284Z' }
+🔄 GET /src/main.tsx {
+  query: { v: 'GcHk4Zo1Q4TC66RFSw-vi' },
+  body: [],
+  timestamp: '2025-06-13T10:24:02.605Z'
+}
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:24:02.849Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:24:03.466Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:24:03.508Z' }
+🔄 GET /src/index.css {
+  query: { v: 'GcHk4Zo1Q4TC66RFSw-vi' },
+  body: [],
+  timestamp: '2025-06-13T10:24:03.509Z'
+}
+🔄 GET /src/App.tsx {
+  query: { v: 'GcHk4Zo1Q4TC66RFSw-vi' },
+  body: [],
+  timestamp: '2025-06-13T10:24:03.511Z'
+}
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:24:03.774Z' }
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.775Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.776Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.776Z' }
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'GcHk4Zo1Q4TC66RFSw-vi' },
+  body: [],
+  timestamp: '2025-06-13T10:24:03.797Z'
+}
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.870Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.870Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.871Z' }
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.872Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.965Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:03.966Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:24:03.967Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:24:03.967Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:24:03.983Z'
+}
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x4)
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.060Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.061Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.063Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.064Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.072Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.080Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.159Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.160Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.166Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.174Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.178Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.178Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.255Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.256Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.268Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:24:04.269Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.273Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.273Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.352Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.353Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.368Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.370Z' }
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.371Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.372Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:24:04.447Z'
+}
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.448Z' }
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x5)
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.465Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.471Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:24:04.472Z' }
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:28:00.936Z' }
+🔄 GET /src/main.tsx {
+  query: { v: '3Dptvt2KCRmeHG3HE5BmK' },
+  body: [],
+  timestamp: '2025-06-13T10:28:01.244Z'
+}
+🔄 GET /src/App.tsx {
+  query: { v: '3Dptvt2KCRmeHG3HE5BmK' },
+  body: [],
+  timestamp: '2025-06-13T10:28:01.348Z'
+}
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:28:01.388Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.449Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:28:01.466Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.488Z' }
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.545Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.563Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.585Z' }
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.646Z' }
+🔄 GET /src/index.css {
+  query: { v: '3Dptvt2KCRmeHG3HE5BmK' },
+  body: [],
+  timestamp: '2025-06-13T10:28:01.650Z'
+}
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.661Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.681Z' }
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: '3Dptvt2KCRmeHG3HE5BmK' },
+  body: [],
+  timestamp: '2025-06-13T10:28:01.697Z'
+}
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:28:01.744Z' }
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:28:01.746Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.766Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:28:01.777Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.842Z' }
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.844Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.864Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.873Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.885Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.937Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.940Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.961Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:28:01.968Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:01.982Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:28:02.027Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.035Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.037Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.057Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.063Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.079Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.125Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.134Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.137Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.154Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.158Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.180Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.223Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.229Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.232Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.250Z' }
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.254Z' }
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.277Z' }
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:28:02.320Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WOOG5QLI.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.509Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/react-dom_client.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.510Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/react.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.512Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/react_jsx-dev-runtime.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.514Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.515Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-QCHXOAYK.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.515Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KBTYAULA.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.608Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-P6AUOPGQ.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.610Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-EVLBUYTV.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.615Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YN3QL25T.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.615Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.617Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-UBQ2LXDH.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.622Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-TNY366QT.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.705Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BOL2CCOG.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.709Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LXWIESXB.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.710Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U7P2NEEE.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.714Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-toast.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.716Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/class-variance-authority.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.720Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/clsx.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.803Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXHEV2X6.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.805Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/tailwind-merge.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.808Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4DO6V6VF.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.811Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.812Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IIGUYIAY.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.816Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.899Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXVMYYWC.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.902Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-slot.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.905Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-label.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.909Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-4RO2SXZU.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.913Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-43G6IMPT.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.941Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:02.997Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-checkbox.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:03.000Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:03.002Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-progress.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:03.008Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/date-fns.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:03.009Z' }
+🔄 POST /api/webhook { query: {}, body: [ 'email' ], timestamp: '2025-06-13T10:28:03.038Z' }
+10:28:03 AM [express] POST /api/webhook 200 in 1ms :: {"message":"Session created successfully","sess…
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/date-fns_locale.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:03.093Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/lucide-react.js.map { query: {}, body: [], timestamp: '2025-06-13T10:28:03.097Z' }
+🔄 GET /api/ecos/sessions {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:28:03.171Z'
+}
+🔄 GET /api/student/available-scenarios {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:28:03.175Z'
+}
+User already exists for email: colombemadoungou@gmail.com
+10:28:03 AM [express] GET /api/ecos/sessions 304 in 137ms :: {"sessions":[{"id":11,"status":"complete…
+10:28:03 AM [express] GET /api/student/available-scenarios 304 in 152ms :: {"scenarios":[{"id":1,"tit…
+🔄 GET /images/ChatGPT%20Image%2013%20juin%202025%20%C3%A0%2011_27_11.png { query: {}, body: [], timestamp: '2025-06-13T10:28:03.427Z' }
+🔄 GET /src/index.css {
+  query: { t: '1749810121102', v: 'a0o21JNTN4w_xiYKX5llr' },
+  body: [],
+  timestamp: '2025-06-13T10:32:26.675Z'
+}
+🔄 GET /src/pages/student.tsx {
+  query: { t: '1749810121102' },
+  body: [],
+  timestamp: '2025-06-13T10:32:26.958Z'
+}
+🔄 GET / { query: {}, body: [], timestamp: '2025-06-13T10:32:26.966Z' }
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:32:27.075Z' }
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:32:27.185Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:32:27.204Z' }
+🔄 GET /src/main.tsx {
+  query: { v: 'NPqNvDa8HLYW1qJfEB-IC' },
+  body: [],
+  timestamp: '2025-06-13T10:32:27.205Z'
+}
+🔄 GET /src/App.tsx {
+  query: { v: 'NPqNvDa8HLYW1qJfEB-IC' },
+  body: [],
+  timestamp: '2025-06-13T10:32:27.302Z'
+}
+🔄 GET /src/index.css {
+  query: { v: 'NPqNvDa8HLYW1qJfEB-IC' },
+  body: [],
+  timestamp: '2025-06-13T10:32:27.303Z'
+}
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.401Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.502Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.574Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.601Z' }
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.604Z' }
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.669Z' }
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'NPqNvDa8HLYW1qJfEB-IC' },
+  body: [],
+  timestamp: '2025-06-13T10:32:27.674Z'
+}
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.705Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:27.706Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.711Z' }
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:27.754Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:32:27.802Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.803Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:27.806Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.851Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.870Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.872Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.898Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.901Z' }
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.903Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.948Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.967Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.968Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.996Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:27.999Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:28.002Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.045Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.063Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.065Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.094Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.096Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.097Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.140Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.158Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.160Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.190Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.192Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.193Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.235Z' }
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.254Z' }
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.257Z' }
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:28.290Z' }
+🔄 POST /api/webhook { query: {}, body: [ 'email' ], timestamp: '2025-06-13T10:32:28.472Z' }
+10:32:28 AM [express] POST /api/webhook 200 in 0ms :: {"message":"Session created successfully","sess…
+🔄 GET /api/ecos/sessions {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:32:28.590Z'
+}
+🔄 GET /api/student/available-scenarios {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:32:28.592Z'
+}
+User already exists for email: colombemadoungou@gmail.com
+10:32:28 AM [express] GET /api/ecos/sessions 304 in 138ms :: {"sessions":[{"id":11,"status":"complete…
+10:32:28 AM [express] GET /api/student/available-scenarios 304 in 154ms :: {"scenarios":[{"id":1,"tit…
+🔄 GET /images/ChatGPT%20Image%2013%20juin%202025%20%C3%A0%2011_27_11.png { query: {}, body: [], timestamp: '2025-06-13T10:32:28.845Z' }
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:32:43.266Z' }
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:32:43.386Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:32:43.387Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:32:43.486Z' }
+🔄 GET /src/main.tsx {
+  query: { v: 'ZPclRD3BqG0ZAagG5NrE-' },
+  body: [],
+  timestamp: '2025-06-13T10:32:43.558Z'
+}
+🔄 GET /src/App.tsx {
+  query: { v: 'ZPclRD3BqG0ZAagG5NrE' },
+  body: [],
+  timestamp: '2025-06-13T10:32:43.662Z'
+}
+🔄 GET /src/index.css {
+  query: { v: 'ZPclRD3BqG0ZAagG5NrE' },
+  body: [],
+  timestamp: '2025-06-13T10:32:43.663Z'
+}
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'ZPclRD3BqG0ZAagG5NrE' },
+  body: [],
+  timestamp: '2025-06-13T10:32:43.664Z'
+}
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:43.858Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.860Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.860Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.861Z' }
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.861Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.953Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.954Z' }
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.955Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.956Z' }
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:43.959Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.032Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:44.055Z' }
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.056Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.057Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.059Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.059Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.127Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.152Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.152Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:44.154Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:32:44.155Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.155Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.223Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.251Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.251Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.252Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.252Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.254Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.318Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.349Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.351Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.352Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.354Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.354Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.414Z' }
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.446Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.450Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.450Z' }
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.454Z' }
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:32:44.455Z' }
+🔄 POST /api/webhook { query: {}, body: [ 'email' ], timestamp: '2025-06-13T10:32:44.591Z' }
+10:32:44 AM [express] POST /api/webhook 200 in 0ms :: {"message":"Session created successfully","sess…
+🔄 GET /api/student/available-scenarios {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:32:44.699Z'
+}
+🔄 GET /api/ecos/sessions {
+  query: { email: 'colombemadoungou@gmail.com' },
+  body: [],
+  timestamp: '2025-06-13T10:32:44.705Z'
+}
+User already exists for email: colombemadoungou@gmail.com
+10:32:44 AM [express] GET /api/ecos/sessions 304 in 112ms :: {"sessions":[{"id":11,"status":"complete…
+10:32:44 AM [express] GET /api/student/available-scenarios 304 in 129ms :: {"scenarios":[{"id":1,"tit…
+🔄 GET /images/ChatGPT%20Image%2013%20juin%202025%20%C3%A0%2011_27_11.png { query: {}, body: [], timestamp: '2025-06-13T10:32:44.927Z' }
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:34:01.099Z' }
+🔄 GET /src/main.tsx {
+  query: { v: 'eEIaI4Pm8pl-4596ln67C' },
+  body: [],
+  timestamp: '2025-06-13T10:34:01.382Z'
+}
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:34:01.575Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:34:02.147Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:34:02.180Z' }
+🔄 GET /src/App.tsx {
+  query: { v: 'eEIaI4Pm8pl-4596ln67C' },
+  body: [],
+  timestamp: '2025-06-13T10:34:02.182Z'
+}
+🔄 GET /src/index.css {
+  query: { v: 'eEIaI4Pm8pl-4596ln67C' },
+  body: [],
+  timestamp: '2025-06-13T10:34:02.183Z'
+}
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:02.375Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.376Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.376Z' }
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.380Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.469Z' }
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'eEIaI4Pm8pl-4596ln67C' },
+  body: [],
+  timestamp: '2025-06-13T10:34:02.472Z'
+}
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.473Z' }
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.474Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.475Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.569Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.569Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:02.570Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:02.571Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:34:02.660Z'
+}
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x6)
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.664Z' }
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.664Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.666Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.667Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.668Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.757Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.758Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.758Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:02.761Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.762Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.762Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.853Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.854Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.854Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.855Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.856Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.857Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.948Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.949Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.950Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.951Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.952Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:02.953Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:34:03.042Z'
+}
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x7)
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:03.043Z' }
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:03.044Z' }
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:03.047Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:03.049Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:03.050Z' }
+🔄 GET /student/colombemadoungou@gmail.com { query: {}, body: [], timestamp: '2025-06-13T10:34:43.924Z' }
+🔄 GET /src/main.tsx {
+  query: { v: 'yz290DPSoymr2zKDakkOT' },
+  body: [],
+  timestamp: '2025-06-13T10:34:44.268Z'
+}
+🔄 GET /@vite/client { query: {}, body: [], timestamp: '2025-06-13T10:34:44.339Z' }
+🔄 GET /@react-refresh { query: {}, body: [], timestamp: '2025-06-13T10:34:44.945Z' }
+🔄 GET /src/App.tsx {
+  query: { v: 'yz290DPSoymr2zKDakkOT' },
+  body: [],
+  timestamp: '2025-06-13T10:34:44.981Z'
+}
+🔄 GET /src/index.css {
+  query: { v: 'yz290DPSoymr2zKDakkOT' },
+  body: [],
+  timestamp: '2025-06-13T10:34:44.983Z'
+}
+🔄 GET /src/utils/customElementPrevention.ts {
+  query: { v: 'yz290DPSoymr2zKDakkOT' },
+  body: [],
+  timestamp: '2025-06-13T10:34:44.984Z'
+}
+🔄 GET /src/lib/queryClient.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:45.174Z' }
+🔄 GET /src/pages/admin.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.175Z' }
+🔄 GET /src/components/ui/tooltip.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.175Z' }
+🔄 GET /src/pages/chat.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.273Z' }
+🔄 GET /src/pages/teacher.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.274Z' }
+🔄 GET /src/pages/not-found.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.274Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs { query: {}, body: [], timestamp: '2025-06-13T10:34:45.343Z' }
+🔄 GET /src/pages/student.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.356Z' }
+🔄 GET /src/pages/diagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.367Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:34:45.368Z'
+}
+🔄 GET /src/components/ui/button.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.369Z' }
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x8)
+🔄 GET /src/components/ui/input.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.439Z' }
+🔄 GET /src/components/ui/label.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.451Z' }
+🔄 GET /src/components/ui/select.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.463Z' }
+🔄 GET /src/components/ui/card.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.463Z' }
+🔄 GET /src/components/ui/textarea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.465Z' }
+🔄 GET /src/components/ui/toaster.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.465Z' }
+🔄 GET /src/components/ui/tabs.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.538Z' }
+🔄 GET /src/hooks/use-toast.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:45.545Z' }
+🔄 GET /src/components/ui/badge.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.557Z' }
+🔄 GET /src/lib/utils.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:45.558Z' }
+🔄 GET /src/components/layout/Sidebar.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.559Z' }
+🔄 GET /src/components/chat/ChatArea.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.560Z' }
+🔄 GET /src/components/modals/LimitReachedModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.634Z' }
+🔄 GET /src/lib/api.ts { query: {}, body: [], timestamp: '2025-06-13T10:34:45.640Z' }
+🔄 GET /src/components/modals/ErrorModal.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.651Z' }
+🔄 GET /src/components/debug/EcosDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.655Z' }
+🔄 GET /src/components/layout/AdminButton.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.656Z' }
+🔄 GET /src/components/layout/MobileMenu.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.657Z' }
+🔄 GET /src/components/ecos/TrainingSessionsTab.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.730Z' }
+🔄 GET /src/components/ecos/PatientSimulator.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.735Z' }
+🔄 GET /src/components/ecos/EvaluationReport.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.745Z' }
+🔄 GET /src/components/debug/DeepDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.751Z' }
+🔄 GET /src/components/debug/StudentDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.751Z' }
+🔄 GET /src/components/debug/AuthDebugger.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.752Z' }
+🔄 GET /src/components/debug/CustomElementDiagnostic.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.826Z' }
+🔄 GET /src/components/ui/toast.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.829Z' }
+🔄 GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js {
+  query: { v: 'd84383a7' },
+  body: [],
+  timestamp: '2025-06-13T10:34:45.840Z'
+}
+The file does not exist at "/home/runner/workspace/node_modules/.vite/deps/chunk-XCPA3ORY.js?v=d84383a7" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`. (x9)
+🔄 GET /src/components/chat/DailyCounter.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.846Z' }
+🔄 GET /src/components/chat/ChatMessage.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.846Z' }
+🔄 GET /src/components/chat/ChatInput.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.847Z' }
+🔄 GET /src/components/ui/progress.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.923Z' }
+🔄 GET /src/components/ui/checkbox.tsx { query: {}, body: [], timestamp: '2025-06-13T10:34:45.925Z' }
