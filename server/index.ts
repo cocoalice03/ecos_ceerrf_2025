@@ -86,14 +86,18 @@ app.use((req, res, next) => {
       '/student/',
       '/admin',
       '/diagnostic',
-      '/favicon.ico',
-      '/images/'
+      '/favicon.ico'
     ];
 
     // Check if it's a legitimate route first
     const isLegitimateRoute = legitimateRoutes.some(route => req.path.startsWith(route));
 
     if (isLegitimateRoute) {
+      return next();
+    }
+
+    // Allow access to public images directory
+    if (req.path.startsWith('/images/')) {
       return next();
     }
 
