@@ -68,7 +68,11 @@ app.use((req, res, next) => {
         '/node_modules/.vite/',
         '/__vite_ping',
         '/@react-refresh',
-        '/__open-in-editor'
+        '/__open-in-editor',
+        '/@vite/client',
+        '/src/',
+        '/@fs/',
+        '/@vite/'
       ];
 
       // Autoriser les fichiers statiques (images, CSS, JS, etc.)
