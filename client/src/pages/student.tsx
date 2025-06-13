@@ -247,8 +247,12 @@ export default function StudentPage({ email }: StudentPageProps) {
                   <p className="text-sm font-medium text-gray-600">Sessions Terminées</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.completedSessions}</p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/images/vraie.png"
+                    alt="Sessions terminées"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
             </CardContent>
