@@ -63,17 +63,35 @@ app.use((req, res, next) => {
   app.use((req, res, next) => {
     // Skip security restrictions in development for Vite resources
     if (app.get("env") === "development") {
-      // Allow Vite development resources
+      // Liste des ressources Vite autorisées
       const viteResources = [
-        '/src/',
-        '/@vite/',
-        '/@fs/',
         '/node_modules/.vite/',
         '/__vite_ping',
-        '/@react-refresh'
+        '/@react-refresh',
+        '/__open-in-editor'
       ];
 
-      if (viteResources.some(resource => req.path.startsWith(resource))) {
+      // Autoriser les fichiers statiques (images, CSS, JS, etc.)
+      const staticResources = [
+        '/images/',
+        '/css/',
+        '/js/',
+        '/fonts/',
+        '/assets/',
+        '.css',
+        '.js',
+        '.png',
+        '.jpg',
+        '.jpeg',
+        '.gif',
+        '.svg',
+        '.ico',
+        '.woff',
+        '.woff2'
+      ];
+
+      if (viteResources.some(resource => req.path.startsWith(resource)) ||
+          staticResources.some(resource => req.path.startsWith(resource) || req.path.endsWith(resource))) {
         return next();
       }
     }
