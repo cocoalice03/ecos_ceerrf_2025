@@ -292,24 +292,49 @@ export default function StudentPage({ email }: StudentPageProps) {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {scenarios?.map((scenario: any) => (
-                      <Card key={scenario.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <h3 className="font-semibold text-lg mb-2">{scenario.title}</h3>
-                          <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                      <div key={scenario.id} className="feature-card feature-card-overlay">
+                        {/* Photo panoramique en haut */}
+                        <div className="relative">
+                          <div 
+                            className="feature-header-image"
+                            style={{
+                              background: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7))`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <BookOpen className="w-12 h-12 text-white opacity-80" />
+                          </div>
+                          
+                          {/* Overlay qui apparaît au hover */}
+                          <div className="feature-overlay-content">
+                            <div className="feature-overlay-text">
+                              <Play className="w-8 h-8 mx-auto mb-2" />
+                              Commencer l'Examen
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contenu de la carte */}
+                        <div className="feature-content">
+                          <h3 className="feature-title">{scenario.title}</h3>
+                          <p className="feature-description line-clamp-3">
                             {scenario.description}
                           </p>
                           <Button
                             onClick={() => handleStartSession(scenario.id)}
                             disabled={startSessionMutation.isPending}
-                            className="w-full"
+                            className="w-full mt-4"
+                            style={{ background: 'hsl(var(--primary) / 0.9)' }}
                           >
                             <Play className="w-4 h-4 mr-2" />
                             {startSessionMutation.isPending ? "Démarrage..." : "Commencer l'Examen"}
                           </Button>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
