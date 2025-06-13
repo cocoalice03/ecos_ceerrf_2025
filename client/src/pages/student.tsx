@@ -296,38 +296,55 @@ export default function StudentPage({ email }: StudentPageProps) {
                     {scenarios?.map((scenario: any) => (
                       <div key={scenario.id} className="feature-card feature-card-overlay">
                         {/* Photo panoramique en haut */}
-                        <div className="relative overflow-hidden">
+                        <div className="relative overflow-hidden rounded-t-lg">
                           {scenario.id === 1 ? (
-                            <img 
-                              src="/images/ChatGPT%20Image%2013%20juin%202025%20%C3%A0%2011_27_11.png"
-                              className="feature-header-image object-cover"
-                              alt="Consultation d'urgence - Douleur thoracique"
-                              style={{ 
-                                width: '100%', 
-                                height: '160px',
-                                objectFit: 'cover'
+                            <>
+                              <img 
+                                src="/images/ChatGPT Image 13 juin 2025 à 11_27_11.png"
+                                className="feature-header-image w-full h-40 object-cover"
+                                alt="Consultation d'urgence - Douleur thoracique"
+                                onError={(e) => {
+                                  console.error('Image failed to load, trying encoded URL:', e.target.src);
+                                  // Try with encoded URL first
+                                  if (!e.target.src.includes('%20')) {
+                                    e.target.src = "/images/ChatGPT%20Image%2013%20juin%202025%20%C3%A0%2011_27_11.png";
+                                  } else {
+                                    // If encoded URL also fails, hide image and show fallback
+                                    e.target.style.display = 'none';
+                                    const fallback = e.target.parentElement.querySelector('.fallback-background');
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }
+                                }}
+                                onLoad={() => {
+                                  console.log('Image loaded successfully');
+                                }}
+                              />
+                              {/* Fallback gradient background - hidden by default */}
+                              <div 
+                                className="fallback-background feature-header-image absolute inset-0 w-full h-40"
+                                style={{
+                                  background: `linear-gradient(135deg, #e74c3c, #c0392b)`,
+                                  display: 'none',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <BookOpen className="w-12 h-12 text-white opacity-90" />
+                              </div>
+                            </>
+                          ) : (
+                            <div 
+                              className="feature-header-image w-full h-40"
+                              style={{
+                                background: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7))`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
                               }}
-                              onError={(e) => {
-                                console.error('Image failed to load:', e.target.src);
-                                // Fallback to gradient background
-                                e.target.style.display = 'none';
-                                e.target.nextElementSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          
-                          {/* Fallback gradient background */}
-                          <div 
-                            className="feature-header-image"
-                            style={{
-                              background: `linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7))`,
-                              display: scenario.id === 1 ? 'none' : 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            <BookOpen className="w-12 h-12 text-white opacity-80" />
-                          </div>
+                            >
+                              <BookOpen className="w-12 h-12 text-white opacity-80" />
+                            </div>
+                          )}
                           
                           {/* Overlay qui apparaît au hover */}
                           <div className="feature-overlay-content">
