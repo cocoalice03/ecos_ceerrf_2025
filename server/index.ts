@@ -2,10 +2,79 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
-import { insertLog } from "./storage";
 import { addDiagnosticRoutes } from "./diagnostic-endpoint";
 import { createDebugMiddleware, createDatabaseErrorHandler } from "./debug.middleware";
 import { createTrainingSessionsTables } from "./db";
+import { Server } from "http";
+
+// Environment variable validation
+function validateEnvironment() {
+  console.log('🔍 Validating environment variables...');
+  
+  const requiredEnvVars = [
+    'DATABASE_URL',
+    'OPENAI_API_KEY',
+    'PINECONE_API_KEY'
+  ];
+
+  const missing = requiredEnvVars.filter(varName => !process.env[varName]);
+  
+  if (missing.length > 0) {
+    console.warn(`⚠️ Missing environment variables: ${missing.join(', ')}`);
+    console.warn('Application may not function correctly without these variables');
+  } else {
+    console.log('✅ All required environment variables are present');
+  }
+
+  // Log environment info
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Port: ${process.env.PORT || 5000}`);
+  console.log(`💾 Database configured: ${!!process.env.DATABASE_URL}`);
+}
+
+// Graceful shutdown handler
+let httpServer: Server | null = null;
+
+function setupGracefulShutdown() {
+  const gracefulShutdown = (signal: string) => {
+    console.log(`📡 Received ${signal}. Starting graceful shutdown...`);
+    
+    if (httpServer) {
+      httpServer.close((err) => {
+        if (err) {
+          console.error('❌ Error during server shutdown:', err instanceof Error ? err.message : String(err));
+          process.exit(1);
+        }
+        console.log('✅ Server shut down gracefully');
+        process.exit(0);
+      });
+
+      // Force shutdown after 30 seconds
+      setTimeout(() => {
+        console.error('⏰ Forced shutdown after timeout');
+        process.exit(1);
+      }, 30000);
+    } else {
+      process.exit(0);
+    }
+  };
+
+  // Handle various shutdown signals
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // Nodemon restart
+  
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (err) => {
+    console.error('💥 Uncaught Exception:', err);
+    gracefulShutdown('uncaughtException');
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+    gracefulShutdown('unhandledRejection');
+  });
+}
 
 const app = express();
 app.use(express.json());
@@ -14,6 +83,47 @@ app.use(express.urlencoded({ extended: false }));
 // Add debug middleware
 app.use(createDebugMiddleware());
 app.use(createDatabaseErrorHandler());
+
+// Startup health check endpoint
+app.get('/health', async (req: Request, res: Response) => {
+  try {
+    // Test database connection
+    await db.execute('SELECT 1 as test');
+    
+    const healthStatus = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 5000,
+      database: 'connected',
+      services: {
+        openai: !!process.env.OPENAI_API_KEY,
+        pinecone: !!process.env.PINECONE_API_KEY
+      }
+    };
+    
+    res.status(200).json(healthStatus);
+  } catch (error) {
+    const errorStatus = {
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'Unknown error',
+      database: 'disconnected'
+    };
+    
+    console.error('❌ Health check failed:', error);
+    res.status(503).json(errorStatus);
+  }
+});
+
+// Readiness probe endpoint
+app.get('/ready', (req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'ready',
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -46,17 +156,29 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Setup diagnostic routes first
+  console.log('🚀 Starting LearnWorlds RAG Application...');
+  
+  // Step 1: Validate environment
+  validateEnvironment();
+  
+  // Step 2: Setup graceful shutdown handlers
+  setupGracefulShutdown();
+  
+  // Step 3: Setup diagnostic routes first
+  console.log('📊 Setting up diagnostic routes...');
   addDiagnosticRoutes(app);
 
-  // Create training sessions tables if they don't exist
+  // Step 4: Create training sessions tables if they don't exist
+  console.log('🗄️ Initializing database tables...');
   try {
     await createTrainingSessionsTables();
+    console.log('✅ Database tables initialized successfully');
   } catch (error) {
-    console.error('Warning: Could not create training sessions tables:', error.message);
+    console.error('Warning: Could not create training sessions tables:', error instanceof Error ? error.message : String(error));
   }
 
-  // Setup routes
+  // Step 5: Setup routes
+  console.log('🛣️ Setting up application routes...');
   const server = await registerRoutes(app);
 
   // Security middleware - Block access to sensitive files and directories
@@ -213,29 +335,79 @@ app.use((req, res, next) => {
     }
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Step 6: Setup Vite or static serving
+  console.log('⚙️ Setting up frontend serving...');
   if (app.get("env") === "development") {
     await setupVite(app, server);
+    console.log('✅ Vite development server configured');
   } else {
     serveStatic(app);
+    console.log('✅ Static file serving configured');
   }
 
+  // Step 7: Start the server
+  console.log('🌐 Starting HTTP server...');
+  
+  // Determine port and host for Cloud Run compatibility
+  const port = parseInt(process.env.PORT || '5000', 10);
+  const host = process.env.HOST || '0.0.0.0';
+  
+  // Store server reference for graceful shutdown
+  httpServer = server;
+  
+  // Enhanced server startup with better error handling
+  const startServer = () => {
+    return new Promise<void>((resolve, reject) => {
+      const serverInstance = server.listen({
+        port,
+        host,
+        reusePort: true,
+      }, (err?: Error) => {
+        if (err) {
+          console.error('❌ Failed to start server:', err.message);
+          reject(err);
+          return;
+        }
+        
+        console.log('✅ Server started successfully');
+        console.log(`🌐 Listening on http://${host}:${port}`);
+        console.log(`🏥 Health check: http://${host}:${port}/health`);
+        console.log(`🚀 Ready check: http://${host}:${port}/ready`);
+        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`⏰ Started at: ${new Date().toISOString()}`);
+        
+        resolve();
+      });
 
+      serverInstance.on('error', (error: Error) => {
+        console.error('❌ Server error:', error.message);
+        if (error.message.includes('EADDRINUSE')) {
+          console.error(`Port ${port} is already in use. Trying to resolve...`);
+        }
+        reject(error);
+      });
+    });
+  };
 
-  // Add diagnostic routes
-  // addDiagnosticRoutes(app);
-
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
-})();
+  try {
+    await startServer();
+    
+    // Perform initial health check
+    setTimeout(async () => {
+      try {
+        console.log('🔍 Performing initial health check...');
+        await db.execute('SELECT 1 as test');
+        console.log('✅ Initial health check passed');
+      } catch (error) {
+        console.warn('⚠️ Initial health check failed:', error instanceof Error ? error.message : String(error));
+      }
+    }, 1000);
+    
+  } catch (error) {
+    console.error('💥 Failed to start server:', error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+})().catch((error) => {
+  console.error('💥 Application startup failed:', error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});
