@@ -52,7 +52,7 @@ export default function StudentPage({ email }: StudentPageProps) {
       return response.sessions || [];
     }
   });
-  
+
 
   // Start session mutation
   const startSessionMutation = useMutation({
@@ -180,28 +180,33 @@ export default function StudentPage({ email }: StudentPageProps) {
 
       {/* Hero Section - Main Section */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <section className="hero bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg mb-8">
-          <div className="px-6 py-12">
-            <div className="hero-content flex items-center gap-12">
-              <div className="flex-1">
-                <div className="hero-text">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Lorem Ipsum Dolor Sit</h2>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                  </p>
-                  <p className="text-gray-600 leading-relaxed">
-                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                  </p>
-                </div>
-              </div>
-              <div className="flex-1">
-                <img 
-                  src="/images/happy_student.jpg"
-                  alt="Étudiant heureux"
-                  className="w-full h-64 object-cover rounded-lg shadow-lg"
-                />
+        <section className="feature-card feature-card-overlay mb-8">
+          {/* Photo panoramique en haut */}
+          <div className="relative">
+            <img 
+              src="/images/happy_student.jpg"
+              alt="Étudiant heureux"
+              className="feature-header-image"
+            />
+
+            {/* Overlay qui apparaît au hover */}
+            <div className="feature-overlay-content">
+              <div className="feature-overlay-text">
+                <BookOpen className="w-8 h-8 mx-auto mb-2" />
+                Découvrir les ECOS
               </div>
             </div>
+          </div>
+
+          {/* Contenu de la carte */}
+          <div className="feature-content">
+            <h2 className="feature-title text-2xl">Lorem Ipsum Dolor Sit</h2>
+            <p className="feature-description">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+            <p className="text-gray-600 leading-relaxed mt-4">
+              Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
           </div>
         </section>
 
@@ -342,7 +347,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                               <BookOpen className="w-12 h-12 text-white opacity-80" />
                             </div>
                           )}
-                          
+
                           {/* Overlay qui apparaît au hover */}
                           <div className="feature-overlay-content">
                             <div className="feature-overlay-text">
