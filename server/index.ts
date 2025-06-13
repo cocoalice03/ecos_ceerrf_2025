@@ -70,7 +70,8 @@ app.use((req, res, next) => {
         '/@fs/',
         '/node_modules/.vite/',
         '/__vite_ping',
-        '/@react-refresh'
+        '/@react-refresh',
+        '/__open-in-editor'
       ];
 
       if (viteResources.some(resource => req.path.startsWith(resource))) {
