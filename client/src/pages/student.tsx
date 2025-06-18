@@ -9,6 +9,7 @@ import { Play, Clock, CheckCircle2, AlertCircle, BarChart3, FileText, Calendar, 
 import PatientSimulator from "@/components/ecos/PatientSimulator";
 import EvaluationReport from "@/components/ecos/EvaluationReport";
 import StudentDiagnostic from "@/components/debug/StudentDiagnostic";
+import QuickDiagnostic from "@/components/debug/QuickDiagnostic";
 import { apiRequest } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 
@@ -20,6 +21,7 @@ export default function StudentPage({ email }: StudentPageProps) {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [viewingReport, setViewingReport] = useState<number | null>(null);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
+  const [showQuickDiagnostic, setShowQuickDiagnostic] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
 
   // Check for scenario parameter in URL
@@ -123,6 +125,19 @@ export default function StudentPage({ email }: StudentPageProps) {
     }
   }, [scenarioParam, scenarios, activeSessionId]);
 
+  // Add keyboard shortcut for debugging (Ctrl+Shift+D)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        setShowQuickDiagnostic(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleSessionEnd = () => {
     setActiveSessionId(null);
     refetchSessions();
@@ -208,6 +223,14 @@ export default function StudentPage({ email }: StudentPageProps) {
               <p className="text-gray-600">Bienvenue, {decodedEmail}</p>
             </div>
             <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowQuickDiagnostic(true)}
+                className="text-xs"
+              >
+                Debug
+              </Button>
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                 Mode Étudiant
               </Badge>
@@ -506,6 +529,11 @@ export default function StudentPage({ email }: StudentPageProps) {
             </Card>
           </TabsContent>
       </Tabs>
+
+      {/* Quick Diagnostic Modal */}
+      {showQuickDiagnostic && (
+        <QuickDiagnostic onClose={() => setShowQuickDiagnostic(false)} />
+      )}
     </div>
   );
 }
