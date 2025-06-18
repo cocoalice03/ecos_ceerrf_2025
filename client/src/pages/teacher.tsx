@@ -473,83 +473,75 @@ function TeacherPage({ email }: TeacherPageProps) {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Scénarios Actifs</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalScenarios}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="/images/cahier.png"
-                    alt="Scénarios actifs"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+          <div className="stats-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="stats-card-title">Scénarios Actifs</p>
+                <p className="stats-card-value">{stats.totalScenarios}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="stats-card-icon">
+                <img 
+                  src="/images/cahier.png"
+                  alt="Scénarios actifs"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Sessions Actives</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.activeSessions}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="/images/horloge.png"
-                    alt="Sessions actives"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+          <div className="stats-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="stats-card-title">Sessions Actives</p>
+                <p className="stats-card-value">{stats.activeSessions}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="stats-card-icon">
+                <img 
+                  src="/images/horloge.png"
+                  alt="Sessions actives"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Sessions Complétées</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.completedSessions}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="/images/vraie.png"
-                    alt="Sessions complétées"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+          <div className="stats-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="stats-card-title">Sessions Complétées</p>
+                <p className="stats-card-value">{stats.completedSessions}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="stats-card-icon">
+                <img 
+                  src="/images/vraie.png"
+                  alt="Sessions complétées"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Étudiants Uniques</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-blue-50">
-                  <Users className="w-8 h-8 text-blue-600" />
-                </div>
+          <div className="stats-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="stats-card-title">Étudiants Uniques</p>
+                <p className="stats-card-value">{stats.totalStudents}</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="stats-card-icon bg-blue-50">
+                <Users className="w-8 h-8 text-blue-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Tabs for different sections */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-fit bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Vue d'ensemble</TabsTrigger>
-            <TabsTrigger value="scenarios" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Scénarios</TabsTrigger>
-            <TabsTrigger value="create" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Créer</TabsTrigger>
-            <TabsTrigger value="training-sessions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Sessions Formation</TabsTrigger>
-            <TabsTrigger value="sessions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">Sessions ECOS</TabsTrigger>
+          <TabsList className="tab-trigger-container grid-cols-5">
+            <TabsTrigger value="overview" className="tab-trigger-item">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="scenarios" className="tab-trigger-item">Scénarios</TabsTrigger>
+            <TabsTrigger value="create" className="tab-trigger-item">Créer</TabsTrigger>
+            <TabsTrigger value="training-sessions" className="tab-trigger-item">Sessions Formation</TabsTrigger>
+            <TabsTrigger value="sessions" className="tab-trigger-item">Sessions ECOS</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">

@@ -257,7 +257,7 @@
 --ring: 20 14.3% 4.1%;
 --radius: 0.5rem;
   }
-  
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -296,8 +296,108 @@
 
   /* Enhanced tabs styling */
   .tabs-trigger-enhanced {
+    @apply relative flex flex-col items-center justify-center text-center transition-all duration-300;
+    @apply bg-white shadow-sm border border-gray-200 rounded-lg;
+    @apply hover:bg-blue-50 hover:border-blue-200 hover:shadow-md;
     @apply data-[state=active]:bg-primary data-[state=active]:text-primary-foreground;
     @apply transition-all duration-200;
     @apply hover:bg-gray-100 data-[state=active]:hover:bg-primary;
   }
+}
+
+.tabs-trigger-enhanced[data-state="active"] {
+  @apply bg-blue-600 text-white border-blue-600 shadow-lg;
+}
+
+.feature-card {
+  @apply bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden;
+  @apply transition-all duration-300 hover:shadow-lg hover:border-blue-200;
+  @apply transform hover:-translate-y-1;
+}
+
+.feature-card-overlay {
+  @apply relative group cursor-pointer;
+}
+
+.feature-header-image {
+  @apply w-full h-48 object-cover transition-transform duration-300;
+  @apply group-hover:scale-105;
+}
+
+.feature-overlay-content {
+  @apply absolute inset-0 bg-blue-600 bg-opacity-90 flex items-center justify-center;
+  @apply opacity-0 group-hover:opacity-100 transition-opacity duration-300;
+  @apply backdrop-blur-sm;
+}
+
+.feature-overlay-text {
+  @apply text-white text-center font-semibold;
+}
+
+.feature-content {
+  @apply p-6;
+}
+
+.feature-title {
+  @apply text-lg font-semibold text-gray-900 mb-3 line-clamp-2;
+}
+
+.feature-description {
+  @apply text-gray-600 text-sm leading-relaxed mb-4;
+  @apply line-clamp-3;
+}
+
+/* Styles cohérents pour les sections hero */
+.hero {
+  @apply bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100 shadow-sm;
+}
+
+.hero-content {
+  @apply flex items-center gap-12;
+}
+
+.hero-text h2 {
+  @apply text-3xl font-bold text-gray-900 mb-4;
+}
+
+.hero-text p {
+  @apply text-gray-600 text-lg leading-relaxed mb-6;
+}
+
+/* Styles pour les cartes de statistiques */
+.stats-card {
+  @apply bg-white rounded-lg border border-gray-200 shadow-sm p-6;
+  @apply transition-all duration-200 hover:shadow-md hover:border-blue-200;
+}
+
+.stats-card-icon {
+  @apply w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden;
+}
+
+.stats-card-title {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.stats-card-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+/* Styles pour les boutons cohérents */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm transition-colors duration-200;
+}
+
+/* Styles pour les tabs cohérents */
+.tab-trigger-container {
+  @apply grid w-fit bg-white border border-gray-200 rounded-xl p-1 shadow-sm;
+}
+
+.tab-trigger-item {
+  @apply data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md;
+  @apply rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200;
+  @apply hover:bg-gray-100 data-[state=active]:hover:bg-primary;
 }
