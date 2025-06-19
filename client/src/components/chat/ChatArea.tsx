@@ -2,6 +2,8 @@ import { useRef, useEffect } from "react";
 import { UserStatus, ChatExchange } from "@/lib/api";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
+import { Card, CardContent } from "@/components/ui/card";
+import { MessageCircle, Bot } from "lucide-react";
 
 interface ChatAreaProps {
   messages: ChatExchange[];
@@ -28,75 +30,98 @@ export default function ChatArea({
   }, [messages, isTyping]);
 
   return (
-    <div className="flex-grow flex flex-col bg-neutral-50 p-4 md:p-6">
-      {/* Messages container */}
-      <div 
-        ref={messagesContainerRef}
-        className="flex-grow overflow-y-auto custom-scrollbar mb-4 space-y-6"
-      >
-        {/* Welcome message */}
-        {!isLoading && (
-          <div className="chat-bubble bg-white rounded-xl p-4 shadow-card message-transition">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
-                <span className="material-icons text-white text-sm">smart_toy</span>
-              </div>
-              <div>
-                <p className="text-neutral-600">
-                  Bonjour ! Je suis votre assistant de cours. Je peux répondre à vos questions sur le contenu de vos cours. N'hésitez pas à me demander de l'aide.
-                </p>
-                <p className="mt-2 text-neutral-400 text-sm">
-                  Vous avez droit à 20 questions par jour.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Loading indicator for initial load */}
-        {isLoading && (
-          <div className="flex justify-center items-center h-32">
-            <div className="w-8 h-8 border-t-4 border-primary border-solid rounded-full animate-spin"></div>
-          </div>
-        )}
-        
-        {/* Message history */}
-        {!isLoading && messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            question={message.question}
-            response={message.response}
-            timestamp={new Date(message.timestamp)}
-          />
-        ))}
-        
-        {/* Typing indicator */}
-        {isTyping && (
-          <div className="chat-bubble bg-white rounded-xl p-4 shadow-card message-transition animate-fade-in">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
-                <span className="material-icons text-white text-sm">smart_toy</span>
-              </div>
-              <div className="pt-2">
-                <div className="flex items-center space-x-1">
-                  <span className="text-sm text-neutral-500 mr-2">L'assistant rédige</span>
-                  <div className="typing-indicator">
-                    <span className="typing-dot"></span>
-                    <span className="typing-dot"></span>
-                    <span className="typing-dot"></span>
+    <div className="flex-grow flex flex-col p-6">
+      {/* Messages container - Card style similaire au dashboard */}
+      <Card className="flex-grow flex flex-col mb-6">
+        <CardContent className="flex-grow flex flex-col p-0">
+          <div 
+            ref={messagesContainerRef}
+            className="flex-grow overflow-y-auto custom-scrollbar p-6 space-y-6"
+          >
+            {/* Welcome message */}
+            {!isLoading && (
+              <div className="feature-card">
+                <div className="feature-content">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="feature-title text-lg mb-2">Bonjour ! Je suis votre assistant de cours</h3>
+                      <p className="text-gray-600 mb-3">
+                        Je peux répondre à vos questions sur le contenu de vos cours. N'hésitez pas à me demander de l'aide pour clarifier des concepts, obtenir des explications détaillées ou approfondir votre compréhension.
+                      </p>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div className="flex items-center space-x-2">
+                          <MessageCircle className="w-4 h-4 text-blue-600" />
+                          <span className="text-blue-700 text-sm font-medium">
+                            Vous avez droit à 20 questions par jour
+                          </span>
+                        </div>
+                        {userStatus && (
+                          <p className="text-blue-600 text-sm mt-1">
+                            Questions restantes : {userStatus.questionsRemaining || 0}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Loading indicator for initial load */}
+            {isLoading && (
+              <div className="flex justify-center items-center h-32">
+                <div className="w-8 h-8 border-t-4 border-primary border-solid rounded-full animate-spin"></div>
+              </div>
+            )}
+
+            {/* Message history */}
+            {!isLoading && messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                question={message.question}
+                response={message.response}
+                timestamp={new Date(message.timestamp)}
+              />
+            ))}
+
+            {/* Typing indicator */}
+            {isTyping && (
+              <div className="feature-card animate-fade-in">
+                <div className="feature-content">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="pt-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500 mr-2">L'assistant rédige sa réponse</span>
+                        <div className="typing-indicator">
+                          <span className="typing-dot"></span>
+                          <span className="typing-dot"></span>
+                          <span className="typing-dot"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      
-      {/* Input area */}
-      <ChatInput 
-        onSendQuestion={onSendQuestion}
-        isDisabled={isTyping || (userStatus?.limitReached ?? false)} 
-      />
+        </CardContent>
+      </Card>
+
+      {/* Input area - Card style */}
+      <Card>
+        <CardContent className="p-4">
+          <ChatInput 
+            onSendQuestion={onSendQuestion}
+            isDisabled={isTyping || (userStatus?.limitReached ?? false)} 
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

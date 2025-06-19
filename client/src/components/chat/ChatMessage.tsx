@@ -1,5 +1,8 @@
+
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
+import { User, Bot } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ChatMessageProps {
   question: string;
@@ -31,40 +34,47 @@ export default function ChatMessage({ question, response, timestamp }: ChatMessa
   const renderMarkdownLinks = (text: string): string => {
     // Basic markdown link regex
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    return text.replace(linkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    return text.replace(linkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">$1</a>');
   };
 
   return (
-    <>
+    <div className="space-y-4">
       {/* User message */}
       <div className="flex justify-end">
-        <div className="chat-bubble bg-primary text-white rounded-xl p-4 shadow-card">
-          <div className="flex items-start space-x-3">
-            <div>
-              <p>{question}</p>
-              <p className="mt-1 text-primary-light text-xs text-right">{formattedTime}</p>
+        <Card className="max-w-[75%] bg-primary border-primary">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-3">
+              <div className="flex-1">
+                <p className="text-white">{question}</p>
+                <p className="mt-1 text-primary-foreground/70 text-xs text-right">{formattedTime}</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-white" />
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Bot response */}
       <div className="flex justify-start">
-        <div className="chat-bubble bg-white rounded-xl p-4 shadow-card border border-neutral-100">
-          <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-primary flex items-center justify-center rounded-full flex-shrink-0 mt-0.5">
-              <span className="material-icons text-white text-sm">smart_toy</span>
+        <Card className="max-w-[85%] border-gray-200">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <div 
+                  className="text-gray-800 whitespace-pre-wrap leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdownLinks(response) }}
+                />
+                <p className="mt-2 text-gray-400 text-xs">{formattedTime}</p>
+              </div>
             </div>
-            <div>
-              <div 
-                className="text-neutral-800 whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: renderMarkdownLinks(response) }}
-              />
-              <p className="mt-1 text-neutral-400 text-xs">{formattedTime}</p>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-    </>
+    </div>
   );
 }
