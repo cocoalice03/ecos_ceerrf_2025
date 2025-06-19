@@ -523,11 +523,11 @@ export default function StudentPage({ email }: StudentPageProps) {
                         </div>
                       </div>
                     ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Quick Diagnostic Modal */}
