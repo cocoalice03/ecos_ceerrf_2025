@@ -441,18 +441,31 @@ export default function StudentPage({ email }: StudentPageProps) {
 
                       {/* Contenu de la carte */}
                       <div className="feature-content">
-                        <h3 className="feature-title">{scenario.title}</h3>
+                        <h3 className="feature-title">{scenario.title || `Scénario ${scenario.id}`}</h3>
                         <p className="feature-description line-clamp-3">
-                          {scenario.description}
+                          {scenario.description || 'Description non disponible'}
                         </p>
-                        <Button
-                          onClick={() => handleStartSession(scenario.id)}
+                        {scenario.pineconeIndex && (
+                          <Badge variant="outline" className="w-fit mt-2">
+                            Index: {scenario.pineconeIndex}
+                          </Badge>
+                        )}
+                        <Button 
+                          onClick={() => startScenario(scenario.id)} 
+                          className="w-full mt-4 group"
                           disabled={startSessionMutation.isPending}
-                          className="w-full mt-4"
-                          style={{ background: 'hsl(var(--primary) / 0.9)' }}
                         >
-                          <Play className="w-4 h-4 mr-2" />
-                          {startSessionMutation.isPending ? "Démarrage..." : "Commencer l'Examen"}
+                          {startSessionMutation.isPending ? (
+                            <div className="flex items-center">
+                              <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
+                              Initialisation...
+                            </div>
+                          ) : (
+                            <>
+                              <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                              Commencer l'Examen
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
