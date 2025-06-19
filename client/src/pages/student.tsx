@@ -29,17 +29,17 @@ export default function StudentPage({ email }: StudentPageProps) {
   const queryClient = useQueryClient();
 
   // Fetch available scenarios for the student
-  const { data: scenarios = [], isLoading: scenariosLoading } = useQuery({
+  const { data: scenarios = [], isLoading: scenariosLoading } = useQuery<any[]>({
     queryKey: [`/api/student/available-scenarios?email=${encodeURIComponent(email)}`],
   });
 
   // Fetch student's session history
-  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
+  const { data: sessions = [], isLoading: sessionsLoading } = useQuery<any[]>({
     queryKey: [`/api/ecos/sessions?email=${encodeURIComponent(email)}`],
   });
 
   // Fetch current session details if active
-  const { data: currentSession = {} } = useQuery({
+  const { data: currentSession = {} } = useQuery<any>({
     queryKey: [`/api/ecos/sessions/${activeSessionId}`],
     enabled: !!activeSessionId,
   });
