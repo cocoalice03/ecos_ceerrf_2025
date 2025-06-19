@@ -1,0 +1,103 @@
+[plugin:runtime-error-plugin] scenarios.map is not a function. (In 'scenarios.map(
+        (scenario) => /* @__PURE__ */ jsxDEV(Card, { "data-replit-metadata": "client/src/pages/student.tsx:331:12", "data-component-name": "Card", className: "hover:shadow-lg transition-shadow", children: [
+          /* @__PURE__ */ jsxDEV(CardHeader, { "data-replit-metadata": "client/src/pages/student.tsx:332:18", "data-component-name": "CardHeader", children: [
+            /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/pages/student.tsx:333:20", "data-component-name": "div", className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ jsxDEV(Badge, { "data-replit-metadata": "client/src/pages/student.tsx:334:22", "data-component-name": "Badge", variant: "outline", className: "text-xs", children: scenario.difficulty || "Standard" }, void 0, false, {
+                fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+                lineNumber: 334,
+                columnNumber: 23
+              }, this),
+              /* @__PURE__ */ jsxDEV(Badge, { "data-replit-metadata": "client/src/pages/student.tsx:337:22", "data-component-name": "Badge", variant: "secondary", className: "text-xs", children: [
+                scenario.duration || "30",
+                " min"
+              ] }, void 0, true, {
+                fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+                lineNumber: 337,
+                columnNumber: 23
+              }, this)
+            ] }, void 0, true, {
+              fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+              lineNumber: 333,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV(CardTitle, { "data-replit-metadata": "client/src/pages/student.tsx:341:20", "data-component-name": "CardTitle", className: "text-lg", children: scenario.title }, void 0, false, {
+              fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+              lineNumber: 341,
+              columnNumber: 21
+            }, this),
+            /* @__PURE__ */ jsxDEV(CardDescription, { "data-replit-metadata": "client/src/pages/student.tsx:342:20", "data-component-name": "CardDescription", className: "text-sm", children: scenario.description }, void 0, false, {
+              fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+              lineNumber: 342,
+              columnNumber: 21
+            }, this)
+          ] }, void 0, true, {
+            fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+            lineNumber: 332,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV(CardContent, { "data-replit-metadata": "client/src/pages/student.tsx:346:18", "data-component-name": "CardContent", children: /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/pages/student.tsx:347:20", "data-component-name": "div", className: "space-y-3", children: [
+            /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/pages/student.tsx:348:22", "data-component-name": "div", className: "text-sm text-gray-600", children: [
+              /* @__PURE__ */ jsxDEV("strong", { "data-replit-metadata": "client/src/pages/student.tsx:349:24", "data-component-name": "strong", children: "Objectifs:" }, void 0, false, {
+                fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+                lineNumber: 349,
+                columnNumber: 25
+              }, this),
+              /* @__PURE__ */ jsxDEV("ul", { "data-replit-metadata": "client/src/pages/student.tsx:350:24", "data-component-name": "ul", className: "list-disc list-inside mt-1 space-y-1", children: scenario.learningObjectives?.slice(0, 2).map(
+                (objective, index) => /* @__PURE__ */ jsxDEV("li", { "data-replit-metadata": "client/src/pages/student.tsx:352:22", "data-component-name": "li", className: "text-xs", children: objective }, index, false, {
+                  fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+                  lineNumber: 352,
+                  columnNumber: 23
+                }, this)
+              ) }, void 0, false, {
+                fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+                lineNumber: 350,
+                columnNumber: 25
+              }, this)
+            ] }, void 0, true, {
+              fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+              lineNumber: 348,
+              columnNumber: 23
+            }, this),
+            /* @__PURE__ */ jsxDEV(
+              Button,
+              {
+                "data-replit-metadata": "client/src/pages/student.tsx:356:22",
+                "data-component-name": "Button",
+                onClick: () => handleStartSession(scenario.id),
+                disabled: createSessionMutation.isPending,
+                className: "w-full",
+                children: [
+                  /* @__PURE__ */ jsxDEV(Play, { "data-replit-metadata": "client/src/pages/student.tsx:361:24", "data-component-name": "Play", className: "w-4 h-4 mr-2" }, void 0, false, {
+                    fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+                    lineNumber: 361,
+                    columnNumber: 25
+                  }, this),
+                  "Commencer"
+                ]
+              },
+              void 0,
+              true,
+              {
+                fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+                lineNumber: 356,
+                columnNumber: 23
+              },
+              this
+            )
+          ] }, void 0, true, {
+            fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+            lineNumber: 347,
+            columnNumber: 21
+          }, this) }, void 0, false, {
+            fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+            lineNumber: 346,
+            columnNumber: 19
+          }, this)
+        ] }, scenario.id, true, {
+          fileName: "/home/runner/workspace/client/src/pages/student.tsx",
+          lineNumber: 331,
+          columnNumber: 13
+        }, this)
+      )', 'scenarios.map' is undefined)
+Click outside, press Esc key, or fix the code to dismiss.
+You can also disable this overlay by setting server.hmr.overlay to false in vite.config.js.
