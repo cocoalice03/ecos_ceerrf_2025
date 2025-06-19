@@ -1,428 +1,467 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Play, MessageSquare, Clock, Award, TrendingUp, User, Bot, Send, BookOpen, Stethoscope, Users } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import QuickDiagnostic from '@/components/debug/QuickDiagnostic';
+import { useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Play, Clock, CheckCircle2, AlertCircle, BarChart3, FileText, Calendar, CheckCircle, BookOpen, TrendingUp } from "lucide-react";
+import PatientSimulator from "@/components/ecos/PatientSimulator";
+import EvaluationReport from "@/components/ecos/EvaluationReport";
+import StudentDiagnostic from "@/components/debug/StudentDiagnostic";
+import QuickDiagnostic from "@/components/debug/QuickDiagnostic";
+import { apiRequest } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
 
 interface StudentPageProps {
   email: string;
 }
 
 export default function StudentPage({ email }: StudentPageProps) {
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [currentMessage, setCurrentMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
+  const [viewingReport, setViewingReport] = useState<number | null>(null);
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
   const [showQuickDiagnostic, setShowQuickDiagnostic] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [accountCreated, setAccountCreated] = useState(false);
 
-  // Fetch available scenarios for the student
-  const { data: scenariosData, isLoading: scenariosLoading } = useQuery<any>({
-    queryKey: [`/api/student/available-scenarios?email=${encodeURIComponent(email)}`],
+  // Check for scenario parameter in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const scenarioParam = urlParams.get('scenario');
+
+  // Decode email if it comes from URL (in case it's URL encoded)
+  const decodedEmail = email ? decodeURIComponent(email) : email;
+
+  // Auto-create student account when accessing via URL
+  React.useEffect(() => {
+    const autoCreateAccount = async () => {
+      if (decodedEmail && !accountCreated) {
+        try {
+          console.log('🚀 Auto-creating student account for:', decodedEmail);
+
+          const response = await apiRequest('POST', '/api/student/auto-register', {
+            email: decodedEmail
+          });
+
+          console.log('✅ Student account created/updated:', response);
+
+          // If this is a new user, also create webhook session for integration
+          if (response.isNewUser) {
+            try {
+              await apiRequest('POST', '/api/webhook', {
+                email: decodedEmail
+              });
+              console.log('🔗 Webhook session created for new user:', decodedEmail);
+            } catch (webhookError) {
+              console.log('⚠️ Webhook integration warning:', webhookError);
+            }
+          }
+
+          setAccountCreated(true);
+        } catch (error) {
+          console.error('❌ Error auto-creating student account:', error);
+          // Continue anyway - the existing fallback in available-scenarios will handle it
+          setAccountCreated(true);
+        }
+      }
+    };
+
+    autoCreateAccount();
+  }, [decodedEmail, accountCreated]);
+
+  // Fetch available scenarios from student endpoint (filtered by training sessions)
+  const { data: studentData, isLoading: scenariosLoading } = useQuery({
+    queryKey: ['student-scenarios', decodedEmail],
+    queryFn: async () => {
+      console.log('Fetching available scenarios for email:', decodedEmail);
+      const response = await apiRequest('GET', `/api/student/available-scenarios?email=${encodeURIComponent(decodedEmail)}`);
+      console.log('Available scenarios response:', response);
+      console.log('Number of scenarios received:', response.scenarios?.length || 0);
+      return response;
+    },
+    enabled: !!decodedEmail,
   });
 
-  const scenarios = scenariosData?.scenarios || [];
+  const scenarios = studentData?.scenarios || [];
+  const trainingSessions = studentData?.trainingSessions || [];
 
-  // Fetch student's session history
-  const { data: sessionsData, isLoading: sessionsLoading } = useQuery<any>({
-    queryKey: [`/api/ecos/sessions?email=${encodeURIComponent(email)}`],
+  // Fetch student sessions
+  const { data: sessions, isLoading: sessionsLoading, refetch: refetchSessions } = useQuery({
+    queryKey: ['student-sessions', decodedEmail],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/ecos/sessions?email=${decodedEmail}`);
+      return response.sessions || [];
+    }
   });
 
-  const sessions = sessionsData?.sessions || [];
 
-  // Fetch current session details if active
-  const { data: currentSession = {} } = useQuery<any>({
-    queryKey: [`/api/ecos/sessions/${activeSessionId}`],
-    enabled: !!activeSessionId,
-  });
-
-  // Create a new training session
-  const createSessionMutation = useMutation({
-    mutationFn: (scenarioId: string) => 
-      apiRequest('POST', '/api/ecos/sessions', {
-        scenarioId,
-        studentEmail: email,
-      }),
+  // Start session mutation
+  const startSessionMutation = useMutation({
+    mutationFn: async (scenarioId: number) => {
+      console.log('Starting session with decoded email:', decodedEmail, 'and scenario:', scenarioId);
+      return apiRequest('POST', '/api/ecos/sessions', {
+        email: decodedEmail,
+        scenarioId
+      });
+    },
     onSuccess: (data) => {
-      setActiveSessionId(data.id);
-      setCurrentScenarioId(data.scenarioId);
-      setChatMessages([]);
-      queryClient.invalidateQueries({ queryKey: ['/api/ecos/sessions'] });
-      toast({
-        title: "Session créée",
-        description: "Votre session d'entraînement a commencé.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer la session.",
-        variant: "destructive",
-      });
-    },
+      setActiveSessionId(data.sessionId);
+      refetchSessions();
+    }
   });
 
-  // Send message to patient simulator
-  const sendMessageMutation = useMutation({
-    mutationFn: (message: string) => 
-      apiRequest('POST', '/api/ecos/patient-simulator', {
-        sessionId: activeSessionId,
-        message,
-        studentEmail: email,
-      }),
-    onSuccess: (data) => {
-      const newUserMessage = {
-        id: Date.now(),
-        role: 'user',
-        content: currentMessage,
-        timestamp: new Date().toISOString(),
-      };
-      const newBotMessage = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date().toISOString(),
-      };
-      setChatMessages(prev => [...prev, newUserMessage, newBotMessage]);
-      setCurrentMessage('');
-      queryClient.invalidateQueries({ queryKey: ['/api/ecos/sessions', activeSessionId] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer le message.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Complete session and get evaluation
-  const completeSessionMutation = useMutation({
-    mutationFn: () => 
-      apiRequest('POST', '/api/ecos/evaluate', {
-        sessionId: activeSessionId,
-        studentEmail: email,
-      }),
-    onSuccess: () => {
-      setActiveSessionId(null);
-      setCurrentScenarioId(null);
-      setChatMessages([]);
-      queryClient.invalidateQueries({ queryKey: ['/api/ecos/sessions'] });
-      toast({
-        title: "Session terminée",
-        description: "Votre évaluation a été générée. Consultez vos résultats.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de terminer la session.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleStartSession = (scenarioId: string) => {
-    createSessionMutation.mutate(scenarioId);
+  const handleStartSession = (scenarioId: number) => {
+    startSessionMutation.mutate(scenarioId);
   };
 
-  const handleSendMessage = () => {
-    if (!currentMessage.trim() || !activeSessionId) return;
-    sendMessageMutation.mutate(currentMessage);
-  };
+  // Auto-start session if scenario parameter is provided in URL
+  React.useEffect(() => {
+    if (scenarioParam && !activeSessionId && scenarios && scenarios.length > 0) {
+      const scenarioId = parseInt(scenarioParam);
+      const scenarioExists = scenarios.find((s: any) => s.id === scenarioId);
+      if (scenarioExists) {
+        console.log('Auto-starting scenario:', scenarioId);
+        handleStartSession(scenarioId);
+      }
+    }
+  }, [scenarioParam, scenarios, activeSessionId]);
 
-  const handleCompleteSession = () => {
-    if (!activeSessionId) return;
-    completeSessionMutation.mutate();
-  };
+  // Add keyboard shortcut for debugging (Ctrl+Shift+D)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        setShowQuickDiagnostic(true);
+      }
+    };
 
-  const handleViewReport = (sessionId: string) => {
-    // Navigate to report view (implement based on your routing)
-    window.open(`/ecos/sessions/${sessionId}/report`, '_blank');
-  };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleSessionEnd = () => {
+    setActiveSessionId(null);
+    refetchSessions();
+
+    // Clear the scenario parameter from URL to prevent auto-restart
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('scenario')) {
+      urlParams.delete('scenario');
+      const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+      window.history.replaceState({}, '', newUrl);
     }
   };
 
-  // Load messages when session becomes active
-  useEffect(() => {
-    if (currentSession?.messages) {
-      setChatMessages(currentSession.messages);
-    }
-  }, [currentSession]);
+  const handleViewReport = (sessionId: number) => {
+    setViewingReport(sessionId);
+  };
 
-  if (activeSessionId && currentScenarioId) {
-    const currentScenario = scenarios.find((s: any) => s.id === currentScenarioId);
-
+  // If viewing diagnostic
+  if (showDiagnostic) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Session ECOS Active</h1>
-              <p className="text-gray-600">{currentScenario?.title}</p>
-            </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setActiveSessionId(null);
-                  setCurrentScenarioId(null);
-                  setChatMessages([]);
-                }}
-              >
-                Abandonner
-              </Button>
-              <Button 
-                onClick={handleCompleteSession}
-                disabled={completeSessionMutation.isPending}
-              >
-                Terminer Session
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200 mb-6">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">Diagnostic Étudiant</h1>
+              <Button variant="outline" onClick={() => setShowDiagnostic(false)}>
+                Retour au Dashboard
               </Button>
             </div>
           </div>
         </div>
-
-        <Card className="h-[600px] flex flex-col">
-          <CardHeader className="pb-4">
-            <div className="flex items-center space-x-2">
-              <User className="w-5 h-5 text-blue-600" />
-              <CardTitle className="text-lg">Consultation Virtuelle</CardTitle>
-              <Badge variant="outline" className="ml-auto">
-                En cours
-              </Badge>
-            </div>
-            <CardDescription>
-              {currentScenario?.description}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="flex-1 flex flex-col">
-            <ScrollArea className="flex-1 pr-4 mb-4">
-              <div className="space-y-4">
-                {chatMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                        message.role === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}
-                    >
-                      <div className="flex items-start space-x-2">
-                        {message.role === 'assistant' && (
-                          <Bot className="w-4 h-4 mt-1 flex-shrink-0" />
-                        )}
-                        <div className="flex-1">
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
-                          }`}>
-                            {new Date(message.timestamp).toLocaleTimeString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {sendMessageMutation.isPending && (
-                  <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-lg px-4 py-2">
-                      <div className="flex items-center space-x-2">
-                        <Bot className="w-4 h-4" />
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-
-            <div className="flex space-x-2">
-              <Textarea
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                onKeyDown={handleKeyDown as any}
-                placeholder="Tapez votre question ou commentaire au patient..."
-                className="flex-1 min-h-[60px] resize-none"
-                disabled={sendMessageMutation.isPending}
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!currentMessage.trim() || sendMessageMutation.isPending}
-                size="lg"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <StudentDiagnostic email={decodedEmail} />
       </div>
     );
   }
 
+  // If viewing report
+  if (viewingReport) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-200 mb-6">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">Rapport d'Évaluation</h1>
+              <Button variant="outline" onClick={() => setViewingReport(null)}>
+                Retour au Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+        <EvaluationReport sessionId={viewingReport} email={decodedEmail} />
+      </div>
+    );
+  }
+
+  // If in active session
+  if (activeSessionId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <PatientSimulator 
+          sessionId={activeSessionId} 
+          email={decodedEmail} 
+          onSessionEnd={handleSessionEnd}
+        />
+      </div>
+    );
+  }
+
+  const stats = {
+    completedSessions: sessions?.filter((s: any) => s.status === 'completed').length || 0,
+    inProgressSessions: sessions?.filter((s: any) => s.status === 'in_progress').length || 0,
+    availableScenarios: scenarios?.length || 0
+  };
+
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Espace Étudiant</h1>
-        <p className="text-gray-600">Bienvenue {email}</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Dashboard Étudiant ECOS</h1>
+              <p className="text-gray-600">Bienvenue, {decodedEmail}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowQuickDiagnostic(true)}
+                className="text-xs"
+              >
+                Debug
+              </Button>
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                Mode Étudiant
+              </Badge>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <Tabs defaultValue="scenarios" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="scenarios" className="flex items-center space-x-2">
-            <BookOpen className="w-4 h-4" />
-            <span>Scénarios Disponibles</span>
-          </TabsTrigger>
-          <TabsTrigger value="progress" className="flex items-center space-x-2">
-            <TrendingUp className="w-4 h-4" />
-            <span>Progression</span>
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center space-x-2">
-            <Clock className="w-4 h-4" />
-            <span>Historique</span>
-          </TabsTrigger>
+      {/* Hero Section - Main Section */}
+      <section className="hero mb-8">
+        <div className="px-6 py-12">
+          <div className="hero-content">
+            <div className="flex-1">
+              <div className="hero-text">
+                <h2>L'Avenir de la Formation Médicale</h2>
+                <p>
+                  Plateforme d'apprentissage nouvelle génération avec simulations IA, évaluations intelligentes et suivi personnalisé pour les professionnels de santé
+                </p>
+              </div>
+            </div>
+            <div className="flex-1">
+              <img 
+                src="/images/happy_student.jpg"
+                alt="Étudiant heureux"
+                className="w-full h-64 object-cover rounded-lg shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Scénarios Disponibles</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.availableScenarios}</p>
+              </div>
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                <img 
+                  src="/images/cahier.png"
+                  alt="Scénarios disponibles"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Sessions en Cours</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.inProgressSessions}</p>
+              </div>
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                <img 
+                  src="/images/horloge.png"
+                  alt="Sessions en cours"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Sessions Terminées</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.completedSessions}</p>
+              </div>
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                <img 
+                  src="/images/vraie.png"
+                  alt="Sessions terminées"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Tabs defaultValue="scenarios" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 h-20 p-2">
+          <TabsTrigger value="scenarios" className="h-16 px-8 py-4 mx-1 tabs-trigger-enhanced">Nouveaux Examens</TabsTrigger>
+          <TabsTrigger value="history" className="h-16 px-8 py-4 mx-1 tabs-trigger-enhanced">Historique</TabsTrigger>
         </TabsList>
 
         <TabsContent value="scenarios" className="mt-6">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {scenariosLoading ? (
-              [...Array(6)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader>
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-20 bg-gray-200 rounded mb-4"></div>
-                    <div className="h-9 bg-gray-200 rounded"></div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (scenarios && Array.isArray(scenarios) && scenarios.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <Stethoscope className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
-                <p className="text-gray-500">
-                  Contactez votre enseignant pour obtenir l'accès aux scénarios d'entraînement.
-                </p>
-              </div>
-            ) : (
-              scenarios && Array.isArray(scenarios) && scenarios.map((scenario: any) => (
-                <Card key={scenario.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="text-xs">
-                        {scenario.difficulty || 'Standard'}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {scenario.duration || '30'} min
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg">{scenario.title}</CardTitle>
-                    <CardDescription className="text-sm">
-                      {scenario.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="text-sm text-gray-600">
-                        <strong>Objectifs:</strong>
-                        <ul className="list-disc list-inside mt-1 space-y-1">
-                          {scenario.learningObjectives?.slice(0, 2).map((objective: string, index: number) => (
-                            <li key={index} className="text-xs">{objective}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <Button 
-                        onClick={() => handleStartSession(scenario.id)}
-                        disabled={createSessionMutation.isPending}
-                        className="w-full"
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        Commencer
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="progress" className="mt-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
-                  <span>Statistiques Générales</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Sessions Complétées</span>
-                  <span className="text-2xl font-bold text-green-600">
-                    {sessions.filter((s: any) => s.status === 'completed').length || 0}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Sessions en Cours</span>
-                  <span className="text-2xl font-bold text-blue-600">
-                    {sessions.filter((s: any) => s.status === 'in_progress').length || 0}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Score Moyen</span>
-                  <span className="text-2xl font-bold text-purple-600">
-                    {sessions.length > 0 ? 
-                      Math.round(sessions.reduce((acc: number, s: any) => acc + (s.score || 0), 0) / sessions.length) 
-                      : 0}%
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Compétences Développées</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {['Anamnèse', 'Examen Clinique', 'Diagnostic', 'Communication'].map((skill) => (
-                  <div key={skill} className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{skill}</span>
-                      <span>{Math.floor(Math.random() * 30) + 70}%</span>
-                    </div>
-                    <Progress value={Math.floor(Math.random() * 30) + 70} className="h-2" />
+        {/* Training Sessions Info */}
+        {!activeSessionId && !viewingReport && trainingSessions?.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Sessions de Formation Actives
+              </CardTitle>
+              <CardDescription>
+                Vous participez actuellement aux sessions de formation suivantes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {trainingSessions.map((session: any) => (
+                  <div key={session.sessionId} className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-800">{session.sessionTitle}</span>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Available Scenarios */}
+        {!activeSessionId && !viewingReport && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Scénarios Disponibles</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {scenariosLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="animate-pulse">
+                      <CardContent className="p-6">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-full mb-4"></div>
+                        <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : scenarios?.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
+                    <p className="text-gray-600">
+                      {studentData?.message || "Aucun scénario ECOS n'est actuellement disponible pour vous."}
+                    </p>
+                    {trainingSessions?.length === 0 && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        Vous n'êtes inscrit à aucune session de formation active. Contactez votre enseignant pour plus d'informations.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {scenarios?.map((scenario: any) => (
+                    <div key={scenario.id} className="feature-card feature-card-overlay">
+                      {/* Photo panoramique en haut */}
+                      <div className="relative">
+                        {scenario.id === 1 ? (
+                          <img 
+                            src="/images/douleur_thoracique.png"
+                            className="feature-header-image"
+                            alt="Consultation d'urgence - Douleur thoracique"
+                          />
+                        ) : scenario.id === 2 ? (
+                          <img 
+                            src="/images/douleur_thoracic.png"
+                            className="feature-header-image"
+                            alt="Examen de l'épaule douloureuse"
+                          />
+                        ) : scenario.id === 3 ? (
+                          <img 
+                            src="/images/trauma_poignet.png"
+                            className="feature-header-image"
+                            alt="Traumatisme du poignet"
+                          />
+                        ) : scenario.id === 4 ? (
+                          <img 
+                            src="/images/arthrose_de_la_main.png"
+                            className="feature-header-image"
+                            alt="Arthrose de la main"
+                          />
+                        ) : scenario.id === 5 ? (
+                          <img 
+                            src="/images/syndrome_du_canal_carpien.png"
+                            className="feature-header-image"
+                            alt="Syndrome du canal carpien"
+                          />
+                        ) : (
+                          <img 
+                            src="/images/cahier.png"
+                            className="feature-header-image"
+                            alt="Scénario d'examen"
+                          />
+                        )}
+
+                        {/* Overlay qui apparaît au hover */}
+                        <div className="feature-overlay-content">
+                          <div className="feature-overlay-text">
+                            <Play className="w-8 h-8 mx-auto mb-2" />
+                            Commencer l'Examen
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Contenu de la carte */}
+                      <div className="feature-content">
+                        <h3 className="feature-title">{scenario.title}</h3>
+                        <p className="feature-description line-clamp-3">
+                          {scenario.description}
+                        </p>
+                        <Button
+                          onClick={() => handleStartSession(scenario.id)}
+                          disabled={startSessionMutation.isPending}
+                          className="w-full mt-4"
+                          style={{ background: 'hsl(var(--primary) / 0.9)' }}
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          {startSessionMutation.isPending ? "Démarrage..." : "Commencer l'Examen"}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
@@ -440,11 +479,11 @@ export default function StudentPage({ email }: StudentPageProps) {
                     </div>
                   ))}
                 </div>
-              ) : (sessions.length === 0 ? (
+              ) : sessions?.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">Aucune session trouvée</p>
               ) : (
                 <div className="space-y-4">
-                  {sessions.map((session: any) => (
+                  {sessions?.map((session: any) => (
                     <div key={session.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-center">
                         <div>
@@ -483,13 +522,12 @@ export default function StudentPage({ email }: StudentPageProps) {
                           )}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
       </Tabs>
 
       {/* Quick Diagnostic Modal */}

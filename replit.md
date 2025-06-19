@@ -88,11 +88,7 @@ This is a sophisticated AI-powered educational assistant designed for integratio
 
 ## Changelog
 
-- June 19, 2025: Fixed syntax error in student.tsx (missing closing parenthesis in ternary operator)
-- June 13, 2025: Applied deployment fixes (server network interface binding, graceful shutdown handlers, health check endpoints)
-- June 13, 2025: Created active training session and resolved student scenario visibility issue
-- June 13, 2025: Created student account for angesandrine@yahoo.fr
-- June 13, 2025: Initial setup
+- June 13, 2025. Initial setup
 
 ## User Preferences
 
