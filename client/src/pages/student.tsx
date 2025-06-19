@@ -29,17 +29,17 @@ export default function StudentPage({ email }: StudentPageProps) {
   const queryClient = useQueryClient();
 
   // Fetch available scenarios for the student
-  const { data: scenarios, isLoading: scenariosLoading } = useQuery({
+  const { data: scenarios = [], isLoading: scenariosLoading } = useQuery({
     queryKey: [`/api/student/available-scenarios?email=${encodeURIComponent(email)}`],
   });
 
   // Fetch student's session history
-  const { data: sessions, isLoading: sessionsLoading } = useQuery({
+  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
     queryKey: [`/api/ecos/sessions?email=${encodeURIComponent(email)}`],
   });
 
   // Fetch current session details if active
-  const { data: currentSession } = useQuery({
+  const { data: currentSession = {} } = useQuery({
     queryKey: [`/api/ecos/sessions/${activeSessionId}`],
     enabled: !!activeSessionId,
   });
@@ -47,12 +47,9 @@ export default function StudentPage({ email }: StudentPageProps) {
   // Create a new training session
   const createSessionMutation = useMutation({
     mutationFn: (scenarioId: string) => 
-      apiRequest('/api/ecos/sessions', {
-        method: 'POST',
-        body: JSON.stringify({
-          scenarioId,
-          studentEmail: email,
-        }),
+      apiRequest('POST', '/api/ecos/sessions', {
+        scenarioId,
+        studentEmail: email,
       }),
     onSuccess: (data) => {
       setActiveSessionId(data.id);
@@ -76,13 +73,10 @@ export default function StudentPage({ email }: StudentPageProps) {
   // Send message to patient simulator
   const sendMessageMutation = useMutation({
     mutationFn: (message: string) => 
-      apiRequest('/api/ecos/patient-simulator', {
-        method: 'POST',
-        body: JSON.stringify({
-          sessionId: activeSessionId,
-          message,
-          studentEmail: email,
-        }),
+      apiRequest('POST', '/api/ecos/patient-simulator', {
+        sessionId: activeSessionId,
+        message,
+        studentEmail: email,
       }),
     onSuccess: (data) => {
       const newUserMessage = {
@@ -113,12 +107,9 @@ export default function StudentPage({ email }: StudentPageProps) {
   // Complete session and get evaluation
   const completeSessionMutation = useMutation({
     mutationFn: () => 
-      apiRequest('/api/ecos/evaluate', {
-        method: 'POST',
-        body: JSON.stringify({
-          sessionId: activeSessionId,
-          studentEmail: email,
-        }),
+      apiRequest('POST', '/api/ecos/evaluate', {
+        sessionId: activeSessionId,
+        studentEmail: email,
       }),
     onSuccess: () => {
       setActiveSessionId(null);
@@ -167,13 +158,13 @@ export default function StudentPage({ email }: StudentPageProps) {
 
   // Load messages when session becomes active
   useEffect(() => {
-    if (currentSession?.messages) {
-      setChatMessages(currentSession.messages);
+    if ((currentSession as any)?.messages) {
+      setChatMessages((currentSession as any).messages);
     }
   }, [currentSession]);
 
   if (activeSessionId && currentScenarioId) {
-    const currentScenario = scenarios?.find((s: any) => s.id === currentScenarioId);
+    const currentScenario = (scenarios as any[]).find((s: any) => s.id === currentScenarioId);
     
     return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -327,7 +318,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                   </CardContent>
                 </Card>
               ))
-            ) : scenarios?.length === 0 ? (
+            ) : (scenarios as any[]).length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <Stethoscope className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
@@ -336,7 +327,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                 </p>
               </div>
             ) : (
-              scenarios?.map((scenario: any) => (
+              (scenarios as any[]).map((scenario: any) => (
                 <Card key={scenario.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -391,20 +382,20 @@ export default function StudentPage({ email }: StudentPageProps) {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Sessions Complétées</span>
                   <span className="text-2xl font-bold text-green-600">
-                    {sessions?.filter((s: any) => s.status === 'completed').length || 0}
+                    {(sessions as any[]).filter((s: any) => s.status === 'completed').length || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Sessions en Cours</span>
                   <span className="text-2xl font-bold text-blue-600">
-                    {sessions?.filter((s: any) => s.status === 'in_progress').length || 0}
+                    {(sessions as any[]).filter((s: any) => s.status === 'in_progress').length || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Score Moyen</span>
                   <span className="text-2xl font-bold text-purple-600">
-                    {sessions?.length > 0 ? 
-                      Math.round(sessions.reduce((acc: number, s: any) => acc + (s.score || 0), 0) / sessions.length) 
+                    {(sessions as any[]).length > 0 ? 
+                      Math.round((sessions as any[]).reduce((acc: number, s: any) => acc + (s.score || 0), 0) / (sessions as any[]).length) 
                       : 0}%
                   </span>
                 </div>
@@ -445,11 +436,11 @@ export default function StudentPage({ email }: StudentPageProps) {
                     </div>
                   ))}
                 </div>
-              ) : sessions?.length === 0 ? (
+              ) : (sessions as any[]).length === 0 ? (
                 <p className="text-gray-500 text-center py-8">Aucune session trouvée</p>
               ) : (
                 <div className="space-y-4">
-                  {sessions?.map((session: any) => (
+                  {(sessions as any[]).map((session: any) => (
                     <div key={session.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-center">
                         <div>
