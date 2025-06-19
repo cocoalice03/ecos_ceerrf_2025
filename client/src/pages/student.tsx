@@ -29,14 +29,18 @@ export default function StudentPage({ email }: StudentPageProps) {
   const queryClient = useQueryClient();
 
   // Fetch available scenarios for the student
-  const { data: scenarios = [], isLoading: scenariosLoading } = useQuery<any[]>({
+  const { data: scenariosData, isLoading: scenariosLoading } = useQuery<any>({
     queryKey: [`/api/student/available-scenarios?email=${encodeURIComponent(email)}`],
   });
 
+  const scenarios = scenariosData?.scenarios || [];
+
   // Fetch student's session history
-  const { data: sessions = [], isLoading: sessionsLoading } = useQuery<any[]>({
+  const { data: sessionsData, isLoading: sessionsLoading } = useQuery<any>({
     queryKey: [`/api/ecos/sessions?email=${encodeURIComponent(email)}`],
   });
+
+  const sessions = sessionsData?.sessions || [];
 
   // Fetch current session details if active
   const { data: currentSession = {} } = useQuery<any>({
@@ -158,13 +162,13 @@ export default function StudentPage({ email }: StudentPageProps) {
 
   // Load messages when session becomes active
   useEffect(() => {
-    if ((currentSession as any)?.messages) {
-      setChatMessages((currentSession as any).messages);
+    if (currentSession?.messages) {
+      setChatMessages(currentSession.messages);
     }
   }, [currentSession]);
 
   if (activeSessionId && currentScenarioId) {
-    const currentScenario = (scenarios as any[]).find((s: any) => s.id === currentScenarioId);
+    const currentScenario = scenarios.find((s: any) => s.id === currentScenarioId);
 
     return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -382,20 +386,20 @@ export default function StudentPage({ email }: StudentPageProps) {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Sessions Complétées</span>
                   <span className="text-2xl font-bold text-green-600">
-                    {(sessions as any[]).filter((s: any) => s.status === 'completed').length || 0}
+                    {sessions.filter((s: any) => s.status === 'completed').length || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Sessions en Cours</span>
                   <span className="text-2xl font-bold text-blue-600">
-                    {(sessions as any[]).filter((s: any) => s.status === 'in_progress').length || 0}
+                    {sessions.filter((s: any) => s.status === 'in_progress').length || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Score Moyen</span>
                   <span className="text-2xl font-bold text-purple-600">
-                    {(sessions as any[]).length > 0 ? 
-                      Math.round((sessions as any[]).reduce((acc: number, s: any) => acc + (s.score || 0), 0) / (sessions as any[]).length) 
+                    {sessions.length > 0 ? 
+                      Math.round(sessions.reduce((acc: number, s: any) => acc + (s.score || 0), 0) / sessions.length) 
                       : 0}%
                   </span>
                 </div>
@@ -436,11 +440,11 @@ export default function StudentPage({ email }: StudentPageProps) {
                     </div>
                   ))}
                 </div>
-              ) : ((sessions as any[]).length === 0 ? (
+              ) : (sessions.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">Aucune session trouvée</p>
               ) : (
                 <div className="space-y-4">
-                  {(sessions as any[]).map((session: any) => (
+                  {sessions.map((session: any) => (
                     <div key={session.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-center">
                         <div>
