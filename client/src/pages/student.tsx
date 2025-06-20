@@ -477,7 +477,8 @@ export default function StudentPage({ email }: StudentPageProps) {
                       </Card>
                     ))}
                   </div>
-                )}
+                )
+                }
               </CardContent>
             </Card>
           )}
