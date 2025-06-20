@@ -24,12 +24,17 @@ export default function StudentPage({ email }: StudentPageProps) {
   const [showQuickDiagnostic, setShowQuickDiagnostic] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
 
-  // Check for scenario parameter in URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const scenarioParam = urlParams.get('scenario');
+  // Check for scenario parameter in URL (client-side only)
+  const [scenarioParam, setScenarioParam] = useState<string | null>(null);
 
   // Decode email if it comes from URL (in case it's URL encoded)
   const decodedEmail = email ? decodeURIComponent(email) : email;
+
+  // Get URL parameters client-side only
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setScenarioParam(params.get('scenario'));
+  }, []);
 
   // Auto-create student account when accessing via URL
   React.useEffect(() => {
