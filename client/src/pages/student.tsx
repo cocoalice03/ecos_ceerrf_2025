@@ -389,86 +389,94 @@ export default function StudentPage({ email }: StudentPageProps) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {scenarios?.map((scenario: any) => (
-                    <div key={scenario.id} className="feature-card feature-card-overlay">
-                      {/* Photo panoramique en haut */}
-                      <div className="relative">
+                    <Card key={scenario.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      {/* Image d'en-tête */}
+                      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
                         {scenario.id === 1 ? (
                           <img 
                             src="/images/douleur_thoracique.png"
-                            className="feature-header-image"
+                            className="w-full h-full object-cover"
                             alt="Consultation d'urgence - Douleur thoracique"
                           />
                         ) : scenario.id === 2 ? (
                           <img 
                             src="/images/douleur_thoracic.png"
-                            className="feature-header-image"
+                            className="w-full h-full object-cover"
                             alt="Examen de l'épaule douloureuse"
                           />
                         ) : scenario.id === 3 ? (
                           <img 
                             src="/images/trauma_poignet.png"
-                            className="feature-header-image"
+                            className="w-full h-full object-cover"
                             alt="Traumatisme du poignet"
                           />
                         ) : scenario.id === 4 ? (
                           <img 
                             src="/images/arthrose_de_la_main.png"
-                            className="feature-header-image"
+                            className="w-full h-full object-cover"
                             alt="Arthrose de la main"
                           />
                         ) : scenario.id === 5 ? (
                           <img 
                             src="/images/syndrome_du_canal_carpien.png"
-                            className="feature-header-image"
+                            className="w-full h-full object-cover"
                             alt="Syndrome du canal carpien"
                           />
                         ) : (
-                          <img 
-                            src="/images/cahier.png"
-                            className="feature-header-image"
-                            alt="Scénario d'examen"
-                          />
-                        )}
-
-                        {/* Overlay qui apparaît au hover */}
-                        <div className="feature-overlay-content">
-                          <div className="feature-overlay-text">
-                            <Play className="w-8 h-8 mx-auto mb-2" />
-                            Commencer l'Examen
+                          <div className="w-full h-full flex items-center justify-center">
+                            <img 
+                              src="/images/cahier.png"
+                              className="w-16 h-16 opacity-60"
+                              alt="Scénario d'examen"
+                            />
                           </div>
+                        )}
+                        
+                        {/* Badge du scénario */}
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-white/90 text-gray-700 shadow-sm">
+                            Scénario #{scenario.id}
+                          </Badge>
                         </div>
                       </div>
 
-                      {/* Contenu de la carte */}
-                      <div className="feature-content">
-                        <h3 className="feature-title">{scenario.title || `Scénario ${scenario.id}`}</h3>
-                        <p className="feature-description line-clamp-3">
-                          {scenario.description || 'Description non disponible'}
-                        </p>
-                        {scenario.pineconeIndex && (
-                          <Badge variant="outline" className="w-fit mt-2">
-                            Index: {scenario.pineconeIndex}
-                          </Badge>
-                        )}
-                        <Button 
-                          onClick={() => startScenario(scenario.id)} 
-                          className="w-full mt-4 group"
-                          disabled={startSessionMutation.isPending}
-                        >
-                          {startSessionMutation.isPending ? (
-                            <div className="flex items-center">
-                              <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
-                              Initialisation...
-                            </div>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                              Commencer l'Examen
-                            </>
+                      <CardContent className="p-6">
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              {scenario.title || `Scénario ${scenario.id}`}
+                            </h3>
+                            <p className="text-sm text-gray-600 line-clamp-3">
+                              {scenario.description || 'Description non disponible'}
+                            </p>
+                          </div>
+
+                          {scenario.pineconeIndex && (
+                            <Badge variant="outline" className="w-fit">
+                              Index: {scenario.pineconeIndex}
+                            </Badge>
                           )}
-                        </Button>
-                      </div>
-                    </div>
+
+                          <Button 
+                            onClick={() => handleStartSession(scenario.id)} 
+                            className="w-full group bg-blue-600 hover:bg-blue-700"
+                            disabled={startSessionMutation.isPending}
+                          >
+                            {startSessionMutation.isPending ? (
+                              <div className="flex items-center">
+                                <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
+                                Initialisation...
+                              </div>
+                            ) : (
+                              <>
+                                <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                                Commencer l'Examen
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               )}
