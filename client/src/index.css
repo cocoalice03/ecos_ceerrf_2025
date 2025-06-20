@@ -316,7 +316,11 @@
 }
 
 .feature-card-overlay {
-  @apply relative group cursor-pointer;
+  @apply relative cursor-pointer;
+}
+
+.feature-card-overlay:hover {
+  @apply group;
 }
 
 .feature-header-image {
