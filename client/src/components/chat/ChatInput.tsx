@@ -1,8 +1,4 @@
-
 import { useState, FormEvent } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
 
 interface ChatInputProps {
   onSendQuestion: (question: string) => void;
@@ -21,23 +17,24 @@ export default function ChatInput({ onSendQuestion, isDisabled = false }: ChatIn
   };
 
   return (
-    <form className="flex items-center space-x-3" onSubmit={handleSubmit}>
-      <Input
-        type="text"
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        placeholder="Posez votre question sur le contenu du cours..."
-        className="flex-grow"
-        disabled={isDisabled}
-      />
-      <Button
-        type="submit"
-        disabled={!question.trim() || isDisabled}
-        className="px-6"
-      >
-        <Send className="w-4 h-4 mr-2" />
-        Envoyer
-      </Button>
-    </form>
+    <div className="bg-white rounded-xl shadow-card p-2">
+      <form className="flex items-center space-x-2" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="Posez votre question sur le contenu du cours..."
+          className="flex-grow px-4 py-3 text-neutral-700 bg-transparent border-none focus:outline-none"
+          disabled={isDisabled}
+        />
+        <button
+          type="submit"
+          disabled={!question.trim() || isDisabled}
+          className="p-2 rounded-full bg-primary text-white hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span className="material-icons">send</span>
+        </button>
+      </form>
+    </div>
   );
 }

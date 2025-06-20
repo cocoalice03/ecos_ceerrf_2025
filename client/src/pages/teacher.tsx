@@ -816,7 +816,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                             Assigné
                           </Badge>
                         </div>
-
+                        
                         {/* Show ECOS sessions for this student */}
                         <div className="space-y-2">
                           {studentSessions.filter((s: any) => s.ecosSessionId).length > 0 ? (
@@ -868,7 +868,7 @@ function TeacherPage({ email }: TeacherPageProps) {
             </Card>
           </TabsContent>
 
-
+          
         </Tabs>
       </div>
 
@@ -915,7 +915,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                   Fermer
                 </Button>
               </div>
-
+              
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -926,17 +926,17 @@ function TeacherPage({ email }: TeacherPageProps) {
                       </Badge>
                     </div>
                   </div>
-
+                  
                   <div>
                     <label className="text-sm font-medium text-gray-600">Scénario</label>
                     <p className="mt-1 text-sm">{viewingSessionDetails.scenarioTitle || `Scénario #${viewingSessionDetails.scenarioId}`}</p>
                   </div>
-
+                  
                   <div>
                     <label className="text-sm font-medium text-gray-600">Étudiant</label>
                     <p className="mt-1 text-sm">{viewingSessionDetails.student_id}</p>
                   </div>
-
+                  
                   <div>
                     <label className="text-sm font-medium text-gray-600">Durée</label>
                     <p className="mt-1 text-sm">
@@ -947,19 +947,19 @@ function TeacherPage({ email }: TeacherPageProps) {
                     </p>
                   </div>
                 </div>
-
+                
                 <div>
                   <label className="text-sm font-medium text-gray-600">Heure de début</label>
                   <p className="mt-1 text-sm">{new Date(viewingSessionDetails.startTime).toLocaleString('fr-FR')}</p>
                 </div>
-
+                
                 {viewingSessionDetails.endTime && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Heure de fin</label>
                     <p className="mt-1 text-sm">{new Date(viewingSessionDetails.endTime).toLocaleString('fr-FR')}</p>
                   </div>
                 )}
-
+                
                 {viewingSessionDetails.status === 'completed' && (
                   <div className="pt-4 border-t">
                     <Button
@@ -994,7 +994,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                   </Button>
                 </div>
               </div>
-
+              
               <div className="p-6">
                 {isReportLoading ? (
                   <div className="text-center py-8">
