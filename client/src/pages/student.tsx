@@ -23,9 +23,13 @@ export default function StudentPage({ email }: StudentPageProps) {
   const [showDiagnostic, setShowDiagnostic] = useState(false);
   const [showQuickDiagnostic, setShowQuickDiagnostic] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
-
-  // Check for scenario parameter in URL (client-side only)
   const [scenarioParam, setScenarioParam] = useState<string | null>(null);
+
+  // Se déclenche **seulement côté client**, après le premier render
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setScenarioParam(params.get('scenario'));
+  }, []);
 
   // Decode email if it comes from URL (in case it's URL encoded)
   const decodedEmail = email ? decodeURIComponent(email) : email;
@@ -33,7 +37,6 @@ export default function StudentPage({ email }: StudentPageProps) {
   // Get URL parameters client-side only
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setScenarioParam(params.get('scenario'));
   }, []);
 
   // Auto-create student account when accessing via URL
@@ -434,7 +437,7 @@ export default function StudentPage({ email }: StudentPageProps) {
                               />
                             </div>
                           )}
-                          
+
                           {/* Badge du scénario */}
                           <div className="absolute top-3 right-3">
                             <Badge className="bg-white/90 text-gray-700 shadow-sm">
