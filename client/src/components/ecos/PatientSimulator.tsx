@@ -133,7 +133,6 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
                 <span>{formatTime(remainingTime)}</span>
               </Badge>
               <Button 
-                variant="destructive" 
                 onClick={handleEndSession}
                 disabled={endSessionMutation.isPending}
               >
