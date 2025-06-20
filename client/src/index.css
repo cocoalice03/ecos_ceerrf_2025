@@ -316,7 +316,7 @@
 }
 
 .feature-card-overlay {
-  @apply relative cursor-pointer;
+  @apply relative group cursor-pointer;
 }
 
 .feature-header-image {
