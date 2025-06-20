@@ -371,24 +371,22 @@ export default function StudentPage({ email }: StudentPageProps) {
                       </Card>
                     ))}
                   </div>
-                ) : scenarios?.length === 0 ? (
+                ) : scenarios.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center">
                       <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
                       <p className="text-gray-600">
-                        {studentData?.message || "Aucun scénario ECOS n'est actuellement disponible pour vous."}
+                        Aucun scénario ECOS n'est actuellement disponible pour vous.
                       </p>
-                      {trainingSessions?.length === 0 && (
-                        <p className="text-sm text-gray-500 mt-2">
-                          Vous n'êtes inscrit à aucune session de formation active. Contactez votre enseignant pour plus d'informations.
-                        </p>
-                      )}
+                      <p className="text-sm text-gray-500 mt-2">
+                        Contactez votre enseignant pour plus d'informations.
+                      </p>
                     </CardContent>
                   </Card>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {scenarios?.map((scenario: any) => (
+                    {scenarios.map((scenario: any) => (
                       <Card key={scenario.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                         {/* Image d'en-tête */}
                         <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -500,11 +498,11 @@ export default function StudentPage({ email }: StudentPageProps) {
                     </div>
                   ))}
                 </div>
-              ) : sessions?.length === 0 ? (
+              ) : sessions.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">Aucune session trouvée</p>
               ) : (
                 <div className="space-y-4">
-                  {sessions?.map((session: any) => (
+                  {sessions.map((session: any) => (
                     <div key={session.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-center">
                         <div>
@@ -545,10 +543,10 @@ export default function StudentPage({ email }: StudentPageProps) {
                       </div>
                     ))}
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Quick Diagnostic Modal */}
