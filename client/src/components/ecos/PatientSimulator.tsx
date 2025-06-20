@@ -157,7 +157,7 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
           <div className="flex-1 overflow-y-auto space-y-4 mb-4 p-4 bg-gray-50 rounded-lg">
             {messages.length === 0 && (
               <div className="text-center text-gray-500 py-8">
-                <Bot className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                
                 <p>Bonjour Docteur, je suis votre patient pour cet examen.</p>
                 <p className="text-sm">Commencez votre consultation en me posant des questions.</p>
               </div>
