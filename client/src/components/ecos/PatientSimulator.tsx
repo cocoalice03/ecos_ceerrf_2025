@@ -212,7 +212,7 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
               value={currentQuery}
               onChange={(e) => setCurrentQuery(e.target.value)}
               placeholder="Posez votre question au patient..."
-              className="flex-1"
+              className="flex-1 border-2 border-blue-500"
               rows={2}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
