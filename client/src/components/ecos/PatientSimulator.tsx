@@ -117,7 +117,7 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Session Header */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-2 border-blue-500">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
