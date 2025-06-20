@@ -144,7 +144,7 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
       </Card>
 
       {/* Chat Interface */}
-      <Card className="h-[600px] flex flex-col">
+      <Card className="h-[600px] flex flex-col border-2 border-blue-500">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <span>Simulation Patient</span>
