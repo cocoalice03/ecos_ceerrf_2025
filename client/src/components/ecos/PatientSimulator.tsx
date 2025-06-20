@@ -147,7 +147,6 @@ export default function PatientSimulator({ sessionId, email, onSessionEnd }: Pat
       <Card className="h-[600px] flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Bot className="w-5 h-5" />
             <span>Simulation Patient</span>
           </CardTitle>
         </CardHeader>
