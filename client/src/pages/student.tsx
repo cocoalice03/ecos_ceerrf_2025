@@ -41,7 +41,7 @@ export default function StudentPage({ email }: StudentPageProps) {
           });
 
           console.log('✅ Student account created/updated:', response);
-          
+
           // If this is a new user, also create webhook session for integration
           if (response.isNewUser) {
             try {
@@ -53,7 +53,7 @@ export default function StudentPage({ email }: StudentPageProps) {
               console.log('⚠️ Webhook integration warning:', webhookError);
             }
           }
-          
+
           setAccountCreated(true);
         } catch (error) {
           console.error('❌ Error auto-creating student account:', error);
@@ -217,24 +217,28 @@ export default function StudentPage({ email }: StudentPageProps) {
       </div>
 
       {/* Hero Section - Main Section */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <section className="hero bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg mb-8">
+        <section className="scenario-header particle-effect">
           <div className="px-6 py-12">
             <div className="hero-content flex items-center gap-12">
               <div className="flex-1">
                 <div className="hero-text">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">L'Avenir de la Formation Médicale</h2>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                  <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+                    L'Avenir de la Formation Médicale
+                  </h2>
+                  <p className="text-gray-700 text-lg leading-relaxed mb-6 font-medium">
                     Plateforme d'apprentissage nouvelle génération avec simulations IA, évaluations intelligentes et suivi personnalisé pour les professionnels de santé
                   </p>
                 </div>
               </div>
               <div className="flex-1">
-                <img 
-                  src="/images/happy_student.jpg"
-                  alt="Étudiant heureux"
-                  className="w-full h-64 object-cover rounded-lg shadow-lg"
-                />
+                <div className="relative">
+                  <img 
+                    src="/images/happy_student.jpg"
+                    alt="Étudiant heureux"
+                    className="w-full h-72 object-cover rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent rounded-2xl"></div>
+                </div>
               </div>
             </div>
           </div>

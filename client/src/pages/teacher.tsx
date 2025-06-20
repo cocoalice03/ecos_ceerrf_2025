@@ -448,24 +448,28 @@ function TeacherPage({ email }: TeacherPageProps) {
       </div>
 
       {/* Hero Section - Main Section */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <section className="hero bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl mb-8 border border-blue-100 shadow-sm">
+        <section className="scenario-header particle-effect border border-blue-200 shadow-xl">
           <div className="px-6 py-12">
             <div className="hero-content flex items-center gap-12">
               <div className="flex-1">
                 <div className="hero-text">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Plateforme Pédagogique Avancée</h2>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                  <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+                    Plateforme Pédagogique Avancée
+                  </h2>
+                  <p className="text-gray-700 text-lg leading-relaxed mb-6 font-medium">
                     Créez des scénarios ECOS immersifs, organisez vos sessions de formation et évaluez vos étudiants avec notre système intelligent basé sur l'IA
                   </p>
                 </div>
               </div>
               <div className="flex-1">
-                <img 
-                  src="/images/teacher_professional.jpg"
-                  alt="Enseignante professionnelle"
-                  className="w-full h-64 object-cover rounded-lg shadow-lg"
-                />
+                <div className="relative">
+                  <img 
+                    src="/images/teacher_professional.jpg"
+                    alt="Enseignante professionnelle"
+                    className="w-full h-72 object-cover rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-purple-600/20 to-transparent rounded-2xl"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -824,7 +828,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                             Assigné
                           </Badge>
                         </div>
-                        
+
                         {/* Show ECOS sessions for this student */}
                         <div className="space-y-2">
                           {studentSessions.filter((s: any) => s.ecosSessionId).length > 0 ? (
@@ -876,7 +880,7 @@ function TeacherPage({ email }: TeacherPageProps) {
             </Card>
           </TabsContent>
 
-          
+
         </Tabs>
       </div>
 
@@ -923,7 +927,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                   Fermer
                 </Button>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -934,17 +938,17 @@ function TeacherPage({ email }: TeacherPageProps) {
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium text-gray-600">Scénario</label>
                     <p className="mt-1 text-sm">{viewingSessionDetails.scenarioTitle || `Scénario #${viewingSessionDetails.scenarioId}`}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium text-gray-600">Étudiant</label>
                     <p className="mt-1 text-sm">{viewingSessionDetails.student_id}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium text-gray-600">Durée</label>
                     <p className="mt-1 text-sm">
@@ -955,19 +959,19 @@ function TeacherPage({ email }: TeacherPageProps) {
                     </p>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-gray-600">Heure de début</label>
                   <p className="mt-1 text-sm">{new Date(viewingSessionDetails.startTime).toLocaleString('fr-FR')}</p>
                 </div>
-                
+
                 {viewingSessionDetails.endTime && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Heure de fin</label>
                     <p className="mt-1 text-sm">{new Date(viewingSessionDetails.endTime).toLocaleString('fr-FR')}</p>
                   </div>
                 )}
-                
+
                 {viewingSessionDetails.status === 'completed' && (
                   <div className="pt-4 border-t">
                     <Button
@@ -1002,7 +1006,7 @@ function TeacherPage({ email }: TeacherPageProps) {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="p-6">
                 {isReportLoading ? (
                   <div className="text-center py-8">
