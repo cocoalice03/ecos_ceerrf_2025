@@ -327,162 +327,162 @@ export default function StudentPage({ email }: StudentPageProps) {
         </TabsList>
 
         <TabsContent value="scenarios" className="mt-6">
-        {/* Training Sessions Info */}
-        {!activeSessionId && !viewingReport && trainingSessions?.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Sessions de Formation Actives
-              </CardTitle>
-              <CardDescription>
-                Vous participez actuellement aux sessions de formation suivantes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {trainingSessions.map((session: any) => (
-                  <div key={session.sessionId} className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800">{session.sessionTitle}</span>
+          {/* Training Sessions Info */}
+          {!activeSessionId && !viewingReport && trainingSessions?.length > 0 && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Sessions de Formation Actives
+                </CardTitle>
+                <CardDescription>
+                  Vous participez actuellement aux sessions de formation suivantes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {trainingSessions.map((session: any) => (
+                    <div key={session.sessionId} className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">{session.sessionTitle}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Available Scenarios */}
+          {!activeSessionId && !viewingReport && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Scénarios Disponibles</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {scenariosLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(3)].map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardContent className="p-6">
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-full mb-4"></div>
+                          <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Available Scenarios */}
-        {!activeSessionId && !viewingReport && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Scénarios Disponibles</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {scenariosLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[...Array(3)].map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <CardContent className="p-6">
-                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-full mb-4"></div>
-                        <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : scenarios?.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
-                    <p className="text-gray-600">
-                      {studentData?.message || "Aucun scénario ECOS n'est actuellement disponible pour vous."}
-                    </p>
-                    {trainingSessions?.length === 0 && (
-                      <p className="text-sm text-gray-500 mt-2">
-                        Vous n'êtes inscrit à aucune session de formation active. Contactez votre enseignant pour plus d'informations.
+                ) : scenarios?.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun scénario disponible</h3>
+                      <p className="text-gray-600">
+                        {studentData?.message || "Aucun scénario ECOS n'est actuellement disponible pour vous."}
                       </p>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {scenarios?.map((scenario: any) => (
-                    <Card key={scenario.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                      {/* Image d'en-tête */}
-                      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
-                        {scenario.id === 1 ? (
-                          <img 
-                            src="/images/douleur_thoracique.png"
-                            className="w-full h-full object-cover"
-                            alt="Consultation d'urgence - Douleur thoracique"
-                          />
-                        ) : scenario.id === 2 ? (
-                          <img 
-                            src="/images/douleur_thoracic.png"
-                            className="w-full h-full object-cover"
-                            alt="Examen de l'épaule douloureuse"
-                          />
-                        ) : scenario.id === 3 ? (
-                          <img 
-                            src="/images/trauma_poignet.png"
-                            className="w-full h-full object-cover"
-                            alt="Traumatisme du poignet"
-                          />
-                        ) : scenario.id === 4 ? (
-                          <img 
-                            src="/images/arthrose_de_la_main.png"
-                            className="w-full h-full object-cover"
-                            alt="Arthrose de la main"
-                          />
-                        ) : scenario.id === 5 ? (
-                          <img 
-                            src="/images/syndrome_du_canal_carpien.png"
-                            className="w-full h-full object-cover"
-                            alt="Syndrome du canal carpien"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
+                      {trainingSessions?.length === 0 && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          Vous n'êtes inscrit à aucune session de formation active. Contactez votre enseignant pour plus d'informations.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {scenarios?.map((scenario: any) => (
+                      <Card key={scenario.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                        {/* Image d'en-tête */}
+                        <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
+                          {scenario.id === 1 ? (
                             <img 
-                              src="/images/cahier.png"
-                              className="w-16 h-16 opacity-60"
-                              alt="Scénario d'examen"
+                              src="/images/douleur_thoracique.png"
+                              className="w-full h-full object-cover"
+                              alt="Consultation d'urgence - Douleur thoracique"
                             />
-                          </div>
-                        )}
-                        
-                        {/* Badge du scénario */}
-                        <div className="absolute top-3 right-3">
-                          <Badge className="bg-white/90 text-gray-700 shadow-sm">
-                            Scénario #{scenario.id}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                              {scenario.title || `Scénario ${scenario.id}`}
-                            </h3>
-                            <p className="text-sm text-gray-600 line-clamp-3">
-                              {scenario.description || 'Description non disponible'}
-                            </p>
-                          </div>
-
-                          {scenario.pineconeIndex && (
-                            <Badge variant="outline" className="w-fit">
-                              Index: {scenario.pineconeIndex}
-                            </Badge>
+                          ) : scenario.id === 2 ? (
+                            <img 
+                              src="/images/douleur_thoracic.png"
+                              className="w-full h-full object-cover"
+                              alt="Examen de l'épaule douloureuse"
+                            />
+                          ) : scenario.id === 3 ? (
+                            <img 
+                              src="/images/trauma_poignet.png"
+                              className="w-full h-full object-cover"
+                              alt="Traumatisme du poignet"
+                            />
+                          ) : scenario.id === 4 ? (
+                            <img 
+                              src="/images/arthrose_de_la_main.png"
+                              className="w-full h-full object-cover"
+                              alt="Arthrose de la main"
+                            />
+                          ) : scenario.id === 5 ? (
+                            <img 
+                              src="/images/syndrome_du_canal_carpien.png"
+                              className="w-full h-full object-cover"
+                              alt="Syndrome du canal carpien"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <img 
+                                src="/images/cahier.png"
+                                className="w-16 h-16 opacity-60"
+                                alt="Scénario d'examen"
+                              />
+                            </div>
                           )}
-
-                          <Button 
-                            onClick={() => handleStartSession(scenario.id)} 
-                            className="w-full group bg-blue-600 hover:bg-blue-700"
-                            disabled={startSessionMutation.isPending}
-                          >
-                            {startSessionMutation.isPending ? (
-                              <div className="flex items-center">
-                                <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
-                                Initialisation...
-                              </div>
-                            ) : (
-                              <>
-                                <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                                Commencer l'Examen
-                              </>
-                            )}
-                          </Button>
+                          
+                          {/* Badge du scénario */}
+                          <div className="absolute top-3 right-3">
+                            <Badge className="bg-white/90 text-gray-700 shadow-sm">
+                              Scénario #{scenario.id}
+                            </Badge>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+
+                        <CardContent className="p-6">
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                {scenario.title || `Scénario ${scenario.id}`}
+                              </h3>
+                              <p className="text-sm text-gray-600 line-clamp-3">
+                                {scenario.description || 'Description non disponible'}
+                              </p>
+                            </div>
+
+                            {scenario.pineconeIndex && (
+                              <Badge variant="outline" className="w-fit">
+                                Index: {scenario.pineconeIndex}
+                              </Badge>
+                            )}
+
+                            <Button 
+                              onClick={() => handleStartSession(scenario.id)} 
+                              className="w-full group bg-blue-600 hover:bg-blue-700"
+                              disabled={startSessionMutation.isPending}
+                            >
+                              {startSessionMutation.isPending ? (
+                                <div className="flex items-center">
+                                  <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
+                                  Initialisation...
+                                </div>
+                              ) : (
+                                <>
+                                  <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                                  Commencer l'Examen
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
