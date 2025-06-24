@@ -296,6 +296,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Database URL endpoint for debugging (remove in production)
+  app.get("/api/debug/db-url", async (req: Request, res: Response) => {
+    try {
+      const dbUrl = process.env.DATABASE_URL;
+      if (!dbUrl) {
+        return res.status(500).json({ error: 'DATABASE_URL not configured' });
+      }
+      
+      // Mask password for security
+      const maskedUrl = dbUrl.replace(/:[^:]*@/, ':***@');
+      
+      return res.status(200).json({ 
+        masked_url: maskedUrl,
+        host: new URL(dbUrl).hostname,
+        database: new URL(dbUrl).pathname.slice(1),
+        port: new URL(dbUrl).port || '5432'
+      });
+    } catch (error) {
+      return res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // Webhook endpoint for LearnWorlds/Zapier integration
   app.post("/api/webhook", async (req: Request, res: Response) => {
     try {
