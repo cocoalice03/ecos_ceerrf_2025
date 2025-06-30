@@ -109,6 +109,9 @@ export const teacherApi = {
   },
 };
 
+import { FirestoreService } from './firestore.service';
+
+// Version mise à jour pour utiliser Firestore
 export const useDashboardData = (email: string) => {
   return useQuery({
     queryKey: ['dashboard-data', email],
@@ -116,7 +119,8 @@ export const useDashboardData = (email: string) => {
       console.log('🔄 Fetching dashboard data for:', email);
 
       try {
-        const response = await apiRequest('GET', `/api/teacher/dashboard?email=${encodeURIComponent(email)}`);
+        // Utiliser FirestoreService au lieu de l'API backend
+        const response = await FirestoreService.getDashboardData(email);
         console.log('📊 Dashboard data loaded:', response);
         return response;
       } catch (error) {

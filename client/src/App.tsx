@@ -12,6 +12,7 @@ import StudentPage from "@/pages/student";
 import DiagnosticPage from "@/pages/diagnostic";
 import { apiRequest } from "@/lib/queryClient";
 import { MessageCircle } from "lucide-react";
+import { authenticateWithEmail, getStoredEmail } from "@/lib/firebase-auth";
 
 interface AppProps {
   initialEmail: string | null;
@@ -92,14 +93,25 @@ function App({ initialEmail }: AppProps) {
       if (initialEmail) {
         try {
           setAuthenticating(true);
-          // Create or update session via webhook endpoint
-          await apiRequest("POST", "/api/webhook", { email: initialEmail });
-          setEmail(initialEmail);
+          // Utiliser Firebase Auth au lieu de l'API webhook
+          const authResult = await authenticateWithEmail(initialEmail);
+          if (authResult.success) {
+            setEmail(initialEmail);
+          } else {
+            console.error("Authentication error:", authResult.error);
+            setEmail(null);
+          }
         } catch (error) {
           console.error("Authentication error:", error);
           setEmail(null);
         } finally {
           setAuthenticating(false);
+        }
+      } else {
+        // Vérifier si l'utilisateur a un email enregistré dans localStorage
+        const storedEmail = getStoredEmail();
+        if (storedEmail) {
+          setEmail(storedEmail);
         }
       }
     }
@@ -110,10 +122,18 @@ function App({ initialEmail }: AppProps) {
   useEffect(() => {
     async function detectUser() {
       try {
-        // Always use the admin email for testing since we're debugging auth issues
-        const testEmail = 'cherubindavid@gmail.com';
-        console.log('Using admin email for debugging:', testEmail);
-        setEmail(testEmail);
+        // Vérifier si l'utilisateur a un email enregistré via Firebase
+        const storedEmail = getStoredEmail();
+        if (storedEmail) {
+          setEmail(storedEmail);
+        } else {
+          // Fallback pour le développement - utiliser l'email admin
+          const testEmail = 'cherubindavid@gmail.com';
+          console.log('Using admin email for debugging:', testEmail);
+          setEmail(testEmail);
+          // Authentifier avec Firebase pour la cohérence
+          await authenticateWithEmail(testEmail);
+        }
       } catch (error) {
         console.error('Error detecting user:', error);
         const testEmail = 'cherubindavid@gmail.com';
@@ -123,8 +143,13 @@ function App({ initialEmail }: AppProps) {
       }
     }
 
-    detectUser();
-  }, []);
+    if (!email && !authenticating) {
+      // Detect user state
+      detectUser();
+    } else {
+      setIsLoading(false);
+    }
+  }, [email, authenticating]);
 
   if (authenticating) {
     return (

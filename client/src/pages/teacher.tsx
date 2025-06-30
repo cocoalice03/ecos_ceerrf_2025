@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FirestoreService } from '../lib/firestore.service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -322,13 +323,15 @@ function TeacherPage({ email }: TeacherPageProps) {
   const { data: dashboardData, error: dashboardError, isLoading: isDashboardLoading } = useDashboardData(email || '');
   const { data: assignedStudents, isLoading: isStudentsLoading } = useTeacherStudents(email || '');
 
-  // Fallback: try to get scenarios from student endpoint if dashboard fails
-  const { data: studentScenarios } = useQuery({
-    queryKey: ['student-scenarios-fallback', email],
+  // Service Firestore déjà importé en haut du fichier
+  // Fallback pour récupérer les scénarios si le dashboard échoue
+  const { data: fallbackScenarios } = useQuery({
+    queryKey: ['fallback-scenarios', email],
     queryFn: async () => {
       try {
-        const response = await apiRequest('GET', `/api/student/available-scenarios?email=${encodeURIComponent(email || '')}`);
-        return response.scenarios || [];
+        // Utilisation de FirestoreService au lieu de l'API backend
+        const scenarios = await FirestoreService.getScenarios(email || '');
+        return scenarios || [];
       } catch (error) {
         console.error('Fallback scenarios fetch failed:', error);
         return [];
@@ -348,14 +351,15 @@ function TeacherPage({ email }: TeacherPageProps) {
   });
 
   // Check if we have actual errors vs just partial data
-  const hasRealError = dashboardError || (dashboardData?.partial && dashboardData?.scenarios?.length === 0);
+  // La propriété partial est simulée dans les stats pour compatibilité
+  const hasRealError = dashboardError || (dashboardData?.stats?.partial === true && dashboardData?.scenarios?.length === 0);
 
   console.log('Dashboard data:', dashboardData);
   console.log('Dashboard loading:', isDashboardLoading);
   console.log('Dashboard error:', dashboardError);
 
   // Provide fallback data structure
-  const scenarios = dashboardData?.scenarios || studentScenarios || [];
+  const scenarios = dashboardData?.scenarios || fallbackScenarios || [];
   const sessions = dashboardData?.sessions || [];
 
   console.log('Scenarios:', scenarios);
@@ -514,7 +518,7 @@ function TeacherPage({ email }: TeacherPageProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Sessions Complétées</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.completedSessions}</p>
+                  <span className="text-lg font-bold text-green-600">{stats?.completedSessions || 0}</span>
                 </div>
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
                   <img 
@@ -606,17 +610,17 @@ function TeacherPage({ email }: TeacherPageProps) {
                       <span className="text-sm text-gray-600">Taux de completion</span>
                       <span className="text-lg font-bold text-gray-900">
                         {sessions.length > 0 
-                          ? Math.round((stats.completedSessions / sessions.length) * 100)
+                          ? Math.round(((stats?.completedSessions || 0) / sessions.length) * 100)
                           : 0}%
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-2">
                       <span className="text-sm text-gray-600">Sessions actives</span>
-                      <span className="text-lg font-bold text-gray-900">{stats.activeSessions}</span>
+                      <span className="text-lg font-bold text-gray-900">{stats?.activeSessions || 0}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
                       <span className="text-sm text-gray-600">Étudiants engagés</span>
-                      <span className="text-lg font-bold text-gray-900">{stats.totalStudents}</span>
+                      <span className="text-lg font-bold text-gray-900">{stats?.totalStudents || 0}</span>
                     </div>
                   </div>
                 </CardContent>
