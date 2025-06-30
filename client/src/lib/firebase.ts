@@ -3,16 +3,19 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 // Nous n'importons pas Analytics car cela peut causer des problèmes côté serveur
 
-// Configuration Firebase directement définie ici pour le client
+// Configuration Firebase avec variables d'environnement et valeurs par défaut pour le développement
+console.log('Variables env Vite:', import.meta.env.VITE_FIREBASE_API_KEY ? 'API Key présente' : 'API Key manquante');
+
+// Configuration Firebase exclusivement via variables d'environnement
+// IMPORTANT : Ces valeurs DOIVENT être définies dans le fichier .env
 const firebaseConfig = {
-  apiKey: "AIzaSyA880kh-hCSEApiFX5gAnr-B25Q5ZM-NE0",
-  authDomain: "sqltry-d4ebb.firebaseapp.com",
-  databaseURL: "https://sqltry-d4ebb-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "sqltry-d4ebb",
-  storageBucket: "sqltry-d4ebb.firebasestorage.app",
-  messagingSenderId: "472326334906",
-  appId: "1:472326334906:web:43e734faf2ffcd0e395583",
-  measurementId: "G-G9Y5PML2RJ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialiser Firebase avec validation de la configuration
