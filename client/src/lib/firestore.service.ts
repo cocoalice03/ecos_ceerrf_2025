@@ -35,8 +35,19 @@ export class FirestoreService {
       // Cette implémentation doit être adaptée à votre modèle Firestore réel
       const mockData: DashboardData = {
         scenarios: [
+          // Scénarios existants
           { id: '1', title: 'ECOS Scénario 1', type: 'clinical', status: 'active', createdAt: new Date().toISOString(), exchanges: 5 },
-          { id: '2', title: 'ECOS Scénario 2', type: 'emergency', status: 'active', createdAt: new Date().toISOString(), exchanges: 8 }
+          { id: '2', title: 'ECOS Scénario 2', type: 'emergency', status: 'active', createdAt: new Date().toISOString(), exchanges: 8 },
+          // Cas pour infirmiers
+          { id: '3', title: 'Cas clinique : Prise en charge d\'un patient diabétique', type: 'infirmier', status: 'active', createdAt: new Date().toISOString(), exchanges: 10 },
+          { id: '4', title: 'Cas d\'urgence : Gestion d\'une réaction allergique grave', type: 'infirmier', status: 'active', createdAt: new Date().toISOString(), exchanges: 12 },
+          { id: '5', title: 'Cas de suivi : Soins post-opératoires à domicile', type: 'infirmier', status: 'active', createdAt: new Date().toISOString(), exchanges: 8 },
+          // Cas pour kinésithérapeutes
+          { id: '6', title: 'Rééducation post-AVC : Plan de soins', type: 'kinesitherapeute', status: 'active', createdAt: new Date().toISOString(), exchanges: 7 },
+          { id: '7', title: 'Prise en charge d\'une lombalgie chronique', type: 'kinesitherapeute', status: 'active', createdAt: new Date().toISOString(), exchanges: 9 },
+          // Cas pour aides-soignants
+          { id: '8', title: 'Aide à la toilette d\'une personne à mobilité réduite', type: 'aide-soignant', status: 'active', createdAt: new Date().toISOString(), exchanges: 6 },
+          { id: '9', title: 'Accompagnement d\'un patient en fin de vie', type: 'aide-soignant', status: 'active', createdAt: new Date().toISOString(), exchanges: 5 },
         ],
         sessions: [
           { id: '101', scenarioId: '1', studentEmail: 'student@example.com', completedAt: new Date().toISOString(), score: 85, status: 'completed' },
@@ -44,7 +55,7 @@ export class FirestoreService {
           { id: '103', scenarioId: '2', studentEmail: 'another@example.com', status: 'active' }
         ],
         stats: {
-          totalScenarios: 2,
+          totalScenarios: 9, // 2 existants + 7 nouveaux
           totalSessions: 3,
           totalUsers: 2,
           completionRate: 66,
@@ -108,8 +119,19 @@ export class FirestoreService {
     try {
       // Données temporaires pour simuler les scénarios pendant la migration
       const mockScenarios = [
-        { id: '1', title: 'ECOS Scénario 1', type: 'clinical', status: 'active', createdAt: new Date().toISOString() },
-        { id: '2', title: 'ECOS Scénario 2', type: 'emergency', status: 'active', createdAt: new Date().toISOString() }
+          // Scénarios existants
+          { id: '1', title: 'ECOS Scénario 1', type: 'clinical', status: 'active', createdAt: new Date().toISOString(), exchanges: 5 },
+          { id: '2', title: 'ECOS Scénario 2', type: 'emergency', status: 'active', createdAt: new Date().toISOString(), exchanges: 8 },
+          // Cas pour infirmiers
+          { id: '3', title: 'Cas clinique : Prise en charge d\'un patient diabétique', type: 'infirmier', status: 'active', createdAt: new Date().toISOString(), exchanges: 10 },
+          { id: '4', title: 'Cas d\'urgence : Gestion d\'une réaction allergique grave', type: 'infirmier', status: 'active', createdAt: new Date().toISOString(), exchanges: 12 },
+          { id: '5', title: 'Cas de suivi : Soins post-opératoires à domicile', type: 'infirmier', status: 'active', createdAt: new Date().toISOString(), exchanges: 8 },
+          // Cas pour kinésithérapeutes
+          { id: '6', title: 'Rééducation post-AVC : Plan de soins', type: 'kinesitherapeute', status: 'active', createdAt: new Date().toISOString(), exchanges: 7 },
+          { id: '7', title: 'Prise en charge d\'une lombalgie chronique', type: 'kinesitherapeute', status: 'active', createdAt: new Date().toISOString(), exchanges: 9 },
+          // Cas pour aides-soignants
+          { id: '8', title: 'Aide à la toilette d\'une personne à mobilité réduite', type: 'aide-soignant', status: 'active', createdAt: new Date().toISOString(), exchanges: 6 },
+          { id: '9', title: 'Accompagnement d\'un patient en fin de vie', type: 'aide-soignant', status: 'active', createdAt: new Date().toISOString(), exchanges: 5 },
       ];
 
       // Simuler un délai réseau comme en production
